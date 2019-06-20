@@ -146,12 +146,29 @@ static struct node* _new_node(char* key, MapValue val, hash_t key_hash) {
 }
 
 static void add_node(Map* m, struct node* node, int index) {
-	struct node* old_node = m->__data[index];
-
-	if (old_node == NULL || old_node->_hash_val == node->_hash_val) {
+	struct node* head_node = m->__data[index];
+	/*
+	 *  If the node at the index is empty, put the node there. If there is a
+	 *  node at that index but the raw hash value is the same then the key was
+	 *  the same and we are going to free the old node and remplace it. If the
+	 *  raw hash is different then we have a hash collition and we are inserting
+	 *  a node into the binary tree rooted at the 'head_node'
+	 */
+	if (head_node == NULL) {
+		m->__data[index] = node;
+	} else if (head_node->_hash_val == node->_hash_val) {
+		/*
+		 *  Getting two hash values that are the same is extremly unlikly given
+		 *  different inputs which is why we are freeing the memory.
+		 *  This is different that getting a hash collition which is after you
+		 *  take the modulus of the hash.
+		 *  if the hash value of the two is the same then we are going to free
+		 *  the memory from the old node and replace it with the new one.
+		 */
+		free(m->__data[index]);
 		m->__data[index] = node;
 	} else {
-		insert_node(old_node, node);
+		insert_node(head_node, node);
 	}
 }
 

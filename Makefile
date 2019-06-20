@@ -10,4 +10,7 @@ $(TestBin): $(SRC) test.c
 clean:
 	rm $(TestBin)
 
-.PHONY: clean
+proc:
+	gcc -E hashmap.c test.c > preproc.i
+
+.PHONY: clean proc

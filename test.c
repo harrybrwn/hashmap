@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-#define MapValue void*
 #include "hashmap.h"
 
 char *randstring(size_t length) {
