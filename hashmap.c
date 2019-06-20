@@ -5,13 +5,13 @@
 
 typedef unsigned long hash_t;
 
-typedef struct node {
+struct node {
 	char* key;
 	void* value;
 
 	struct node* _right, * _left;
 	hash_t       _hash_val;
-} __tree_leaf;
+};
 
 // 'djb2' by Dan Bernstein
 hash_t hash(char* str) {
