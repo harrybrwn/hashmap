@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#define TYPE void*
-#include "hashmap.h"
+#include <string.h>
+#include <assert.h>
 
+#define MapValue void*
+#include "hashmap.h"
 
 char *randstring(size_t length) {
     static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
@@ -24,40 +26,62 @@ unsigned long hash(char* str);
 
 void new_val() {
 	Map* map = new_map();
-	put(map, "key", "this is a value");
-	printf("%s\n", (char*)get(map, "key"));
 
-	put(map, "key", "updated value stored in the map");
-	printf("%s\n", (char*)get(map, "key"));
+    char* val = "this is a value";
+	put(map, "key", val);
+    assert(strcmp(val, (char*)get(map, "key")) == 0);
+
+    val = "updated value stored in the map";
+	put(map, "key", val);
+    assert(strcmp(val, (char*)get(map, "key")) == 0);
+
 	close_map(map);
 }
+
+struct node {
+    char* key;
+	void* value;
+
+	struct node* _right, * _left;
+	unsigned long _hash_val;
+};
 
 void test_collitions() {
 	Map* m = new_map();
 	int n = 16;
-	char* keys[16] = {"7GKu#m'?Hn", "ya?F9JS6HW", "xoO96tWdi-", "c2dvl0gUvm",
-					 "AeZB4t", "jB75,f", "L7YD6T",
-				 	 "EY?nDc8", "a4ZITOo", "TUibNyo", "rZJnN5C", "7i0o4KL", "di-SRs8", "?StNEiH", "1'7xPkH", "#vKWM11"};
+
+    // these keys all collide when the map has a length of 32 (the default length)
+	char* keys[16] = {
+        "7GKu#m'?Hn", "ya?F9JS6HW", "xoO96tWdi-", "c2dvl0gUvm",
+		"AeZB4t",     "jB75,f",     "L7YD6T",     "EY?nDc8",
+        "a4ZITOo",    "TUibNyo",    "rZJnN5C",    "7i0o4KL",
+        "di-SRs8",    "?StNEiH",    "1'7xPkH",    "#vKWM11"
+    };
 
 	int x[n];
 	for (int i = 0; i < n; i++) {
 		x[i] = i;
 		put(m, keys[i], &x[i]);
 	}
-	// printf("%i\n", *(int*)get(m, "di-SRs8"));
-	// printf("%i\n", *(int*)get(m, "AeZB4t"));
 
-	print_map(m);
-	resize_map(&m, 3);
+    int nonNullKeys = 0;
+    for (int i = 0; i < n; i++) {
+        assert(i == *(int*)get(m, keys[i]));
+        if (m->__data[i] != NULL)
+            nonNullKeys++;
+    }
+    assert(nonNullKeys == 1);
 
-	// printf("%lu\n", m->__size);
-	print_map(m);
-	// printf("%i\n", *(int*)get(m, "7i0o4KL"));
-
+    resize_map(&m, 3);
+    for (int i = 0; i < n; i++)
+        assert(i == *(int*)get(m, keys[i]));
+    assert(m->__size == 3);
 	close_map(m);
 }
 
 int main() {
 	test_collitions();
-	printf("%s\n", __FILE__);
+    new_val();
+
+    printf("OK %s\n", __FILE__);
 }
