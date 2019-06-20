@@ -1,6 +1,10 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct node; // binary tree node
 
 typedef struct hashmap {
@@ -24,5 +28,9 @@ void* get(Map* m, char* key);
 void delete(Map * m, char* key);
 void resize_map(Map** m, size_t size);
 void print_map(Map*);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,7 +1,11 @@
 #include <stdlib.h>
+#include <stdio.h>
+
 #include "hashmap.h"
 
-#include <stdio.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef unsigned long hash_t;
 
@@ -239,3 +243,7 @@ void resize_map(Map** old_m, size_t size) {
 	close_map(*old_m);
 	(*old_m) = new_m;
 }
+
+#ifdef __cplusplus
+}
+#endif

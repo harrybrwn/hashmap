@@ -1,13 +1,13 @@
 CC=gcc
 CFLAGS=-Wall -g -std=c99
 
-SRC=hashmap.c test.c
+SRC=hashmap.c
 TestBin=test
 
-test: $(SRC)
-	$(CC) -o $@ $(CFLAGS) $(SRC)
+$(TestBin): $(SRC) test.c
+	$(CC) -o $@ $(CFLAGS) $(SRC) test.c
 
 clean:
-	rm test
+	rm $(TestBin)
 
-.PHONY: clean test
+.PHONY: clean
