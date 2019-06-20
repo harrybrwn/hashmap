@@ -11,7 +11,7 @@ typedef unsigned long hash_t;
 
 struct node {
 	char* key;
-	void* value;
+	MapValue value;
 
 	struct node* _right, * _left;
 	hash_t       _hash_val;
@@ -135,7 +135,7 @@ static void delete_tree(struct node* leaf) {
 	}
 }
 
-static struct node* _new_node(char* key, void* val, hash_t key_hash) {
+static struct node* _new_node(char* key, MapValue val, hash_t key_hash) {
 	struct node* n = malloc(sizeof(struct node));
 	n->key = key;
 	n->value = val;
@@ -155,13 +155,13 @@ static void add_node(Map* m, struct node* node, int index) {
 	}
 }
 
-void put(Map* m, char* key, void* val) {
+void put(Map* m, char* key, MapValue val) {
 	hash_t key_hash = hash(key);
 	int    index = key_hash % m->__size;
 	add_node(m, _new_node(key, val, key_hash), index);
 }
 
-void* get(Map* m, char* key) {
+MapValue get(Map* m, char* key) {
 	hash_t k_hash = hash(key);
 	int    index = k_hash % m->__size;
 

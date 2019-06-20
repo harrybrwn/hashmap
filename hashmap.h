@@ -1,6 +1,14 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
+#ifndef DEFAULT_MAP_TYPE
+  #define DEFAULT_MAP_TYPE void*
+#endif
+
+#if !defined(MapValue)
+  #define MapValue DEFAULT_MAP_TYPE
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,18 +27,21 @@ Map* new_map();
 void close_map(Map*);
 
 // put addes a void pointer at a key
-void put(Map* m, char* key, void* val);
+void put(Map* m, char* key, MapValue val);
 
 // get returns the void pointer stored at a key.
-void* get(Map* m, char* key);
+MapValue get(Map* m, char* key);
 
 // delete will delete the data stored at a keys.
 void delete(Map * m, char* key);
+
+// resize_map changes the map to the given size
 void resize_map(Map** m, size_t size);
+
 void print_map(Map*);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* HASHMAP_H */
