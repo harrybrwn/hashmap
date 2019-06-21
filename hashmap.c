@@ -254,7 +254,6 @@ void Map_resize(Map** old_m, size_t size) {
 static int node_keys(struct node*, char**, int);
 
 void Map_keys(Map* m, char** keys) {
-	// char** map_keys = malloc(sizeof(char*) * m->item_count);
 	int pos = 0;
 	struct node* node;
 
