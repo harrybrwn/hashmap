@@ -1,9 +1,7 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#ifndef DEFAULT_MAP_TYPE
-  #define DEFAULT_MAP_TYPE void*
-#endif
+#define DEFAULT_MAP_TYPE void*
 
 #if !defined(MapValue)
   #define MapValue DEFAULT_MAP_TYPE
@@ -20,11 +18,11 @@ typedef struct hashmap {
 	size_t        __size;
 } Map;
 
-// new_map creates a new map
-Map* new_map();
+// New_Map creates a new map
+Map* New_Map();
 
-// close_map frees the memory allocated by new_map
-void close_map(Map*);
+// Map_close frees the memory allocated by new_map
+void Map_close(Map*);
 
 // put addes a void pointer at a key
 void put(Map* m, char* key, MapValue val);
@@ -35,8 +33,8 @@ MapValue get(Map* m, char* key);
 // delete will delete the data stored at a keys.
 void delete(Map * m, char* key);
 
-// resize_map changes the map to the given size
-void resize_map(Map** m, size_t size);
+// Map_resize changes the map to the given size
+void Map_resize(Map** m, size_t size);
 
 void print_map(Map*);
 

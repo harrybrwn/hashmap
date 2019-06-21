@@ -28,20 +28,14 @@ hash_t hash(char* str) {
 	return hash;
 }
 
-Map* new_map() {
-	Map* m = malloc(sizeof(Map));
-	m->__size = 32;
-	m->__data = malloc(sizeof(struct node*) * m->__size);
-
-	for (int i = 0; i < m->__size; i++) {
-		m->__data[i] = NULL;
-	}
-	return m;
-}
-
+static Map* create_map(size_t);
 static void delete_tree(struct node*);
 
-void close_map(Map* m) {
+Map* New_Map() {
+	return create_map(32);
+}
+
+void Map_close(Map* m) {
 	for (int i = 0; i < m->__size; i++) {
 		delete_tree(m->__data[i]);
 	}
@@ -53,16 +47,13 @@ static void insert_node(struct node* root, struct node* new) {
 	if (new->_hash_val < root->_hash_val) {
 		if (root->_left != NULL) {
 			return insert_node(root->_left, new);
-		} else {
-			root->_left = new;
 		}
-	}
-	if (new->_hash_val > root->_hash_val) {
+		root->_left = new;
+	} else if (new->_hash_val > root->_hash_val) {
 		if (root->_right != NULL) {
 			return insert_node(root->_right, new);
-		} else {
-			root->_right = new;
 		}
+		root->_right = new;
 	}
 }
 
@@ -159,10 +150,9 @@ static void add_node(Map* m, struct node* node, int index) {
 	} else if (head_node->_hash_val == node->_hash_val) {
 		/*
 		 *  Getting two hash values that are the same is extremly unlikly given
-		 *  different inputs which is why we are freeing the memory.
-		 *  This is different that getting a hash collition which is after you
-		 *  take the modulus of the hash.
-		 *  if the hash value of the two is the same then we are going to free
+		 *  different inputs. This is different that getting a hash collition
+		 *  which is after you take the modulus of the hash.
+		 *  If the hash value of the two is the same then we are going to free
 		 *  the memory from the old node and replace it with the new one.
 		 */
 		free(m->__data[index]);
@@ -243,22 +233,27 @@ static void copy_nodes(Map* m, struct node* n) {
 	add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
 }
 
-void resize_map(Map** old_m, size_t size) {
-	Map* new_m = malloc(sizeof(Map));
-	new_m->__size = size;
-	new_m->__data = malloc(sizeof(struct node*) * new_m->__size);
+void Map_resize(Map** old_m, size_t size) {
+	Map* new_m = create_map(size);
 
-	for (int i = 0; i < new_m->__size; i++) {
-		new_m->__data[i] = NULL;
-	}
-
+	struct node* tmp;
 	for (int i = 0; i < (*old_m)->__size; i++) {
-		if ((*old_m)->__data[i] != NULL) {
-			copy_nodes(new_m, (*old_m)->__data[i]);
+		tmp = (*old_m)->__data[i];
+		if (tmp != NULL) {
+			copy_nodes(new_m, tmp);
 		}
 	}
-	close_map(*old_m);
+	Map_close(*old_m);
 	(*old_m) = new_m;
+}
+
+static Map* create_map(size_t size) {
+	Map* m = malloc(sizeof(Map));
+	m->__size = size;
+	m->__data = malloc(sizeof(struct node*) * m->__size);
+	for (int i = 0; i < size; i++)
+		m->__data[i] = NULL;
+	return m;
 }
 
 #ifdef __cplusplus

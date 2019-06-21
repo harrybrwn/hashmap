@@ -23,7 +23,7 @@ char *randstring(size_t length) {
 unsigned long hash(char* str);
 
 void new_val() {
-	Map* map = new_map();
+	Map* map = New_Map();
 
     char* val = "this is a value";
 	put(map, "key", val);
@@ -33,7 +33,7 @@ void new_val() {
 	put(map, "key", val);
     assert(strcmp(val, (char*)get(map, "key")) == 0);
 
-	close_map(map);
+	Map_close(map);
 }
 
 struct node {
@@ -45,7 +45,7 @@ struct node {
 };
 
 void test_collitions() {
-	Map* m = new_map();
+	Map* m = New_Map();
 	int n = 16;
 
     // these keys all collide when the map has a length of 32 (the default length)
@@ -70,11 +70,11 @@ void test_collitions() {
     }
     assert(nonNullKeys == 1);
 
-    resize_map(&m, 3);
+    Map_resize(&m, 3);
     for (int i = 0; i < n; i++)
         assert(i == *(int*)get(m, keys[i]));
     assert(m->__size == 3);
-	close_map(m);
+	Map_close(m);
 }
 
 int main() {
