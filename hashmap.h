@@ -20,13 +20,13 @@ typedef struct hashmap {
 	size_t item_count;
 } Map;
 
-// New_Map creates a new map
+// New_Map creates a new map.
 Map* New_Map();
 
-// Map_close frees the memory allocated by new_map
+// Map_close frees the memory allocated by new_map.
 void Map_close(Map*);
 
-// Map_put addes a void pointer at a key
+// Map_put addes a void pointer at a key.
 void Map_put(Map* m, char* key, MapValue val);
 
 // Map_get returns the void pointer stored at a key.

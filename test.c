@@ -61,7 +61,7 @@ void test_collitions() {
 	Map* m = New_Map();
 	int n = 16;
 
-    // these keys all collide when the map has a length of 32 (the default length)
+    // these keys all collide when the map has a length of 32 useing djb2 (the default length)
 	char* keys[16] = {
         "7GKu#m'?Hn", "ya?F9JS6HW", "xoO96tWdi-", "c2dvl0gUvm",
 		"AeZB4t",     "jB75,f",     "L7YD6T",     "EY?nDc8",
@@ -91,6 +91,7 @@ void test_collitions() {
     }
     // this test is invalid because of new double hashing
     // assert(nonNullKeys == 1);
+
     Map_resize(&m, 3);
     for (int i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));

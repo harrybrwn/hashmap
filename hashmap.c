@@ -38,14 +38,14 @@ hash_t sdbm(char *str) {
 }
 
 hash_t rshash(char *str) {
-  hash_t a = 63689, b = 378551, hash = 0;
-  int c;
+ 	hash_t a = 63689, b = 378551, hash = 0;
+  	int c;
 
-  while ((c = *str++)) {
-    hash = hash * a + c;
-    a = a * b;
-  }
-  return (hash & 0x7FFFFFFF);
+ 	while ((c = *str++)) {
+    	hash = hash * a + c;
+    	a = a * b;
+  	}
+  	return (hash & 0x7FFFFFFF);
 }
 
 hash_t prehash(char* str) {
@@ -142,9 +142,8 @@ void Map_keys(Map* m, char** keys) {
 
 	for (int i = 0; i < m->__size; i++) {
 		node = m->__data[i];
-		if (node != NULL) {
+		if (node != NULL)
 			pos = node_keys(node, keys, pos);
-		}
 	}
 }
 
