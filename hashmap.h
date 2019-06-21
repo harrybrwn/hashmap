@@ -45,8 +45,6 @@ void Map_resize(Map** m, size_t size);
 // field.
 void Map_keys(Map*, char**);
 
-void print_map(Map*);
-
 #ifdef __cplusplus
 }
 #endif

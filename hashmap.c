@@ -58,54 +58,6 @@ static void insert_node(struct node* root, struct node* new) {
 	}
 }
 
-static void print_node(struct node* leaf) {
-	char* left_key;
-	char* right_key;
-
-	if (leaf->_left != NULL)
-		left_key = leaf->_left->key;
-	else
-		left_key = "nil";
-
-	if (leaf->_right != NULL)
-		right_key = leaf->_right->key;
-	else
-		right_key = "nil";
-
-	printf("        (%s)\n", leaf->key);
-	printf("       /          \\\n");
-	printf("     (%s)      (%s)\n", left_key, right_key);
-}
-
-static void print_tree(struct node* root) {
-	print_node(root);
-
-	if (root->_left != NULL)
-		print_tree(root->_left);
-	if (root->_right != NULL)
-		print_tree(root->_right);
-}
-
-void print_map(Map* m) {
-	for (int i = 0; i < m->__size; i++) {
-		if (m->__data[i] == NULL) {
-			printf("nil ");
-			continue;
-		}
-		printf("%s ", m->__data[i]->key);
-	}
-	printf("\n");
-
-	for (int i = 0; i < m->__size; i++) {
-		if (m->__data[i] == NULL) {
-			continue;
-		}
-		printf("\n%s\n", m->__data[i]->key);
-		print_tree(m->__data[i]);
-		printf("\n\n");
-	}
-}
-
 struct node* search(struct node* root, hash_t key_hash) {
 	if (root->_hash_val == key_hash) {
 		return root;
