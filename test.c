@@ -74,6 +74,18 @@ void test_collitions() {
     for (int i = 0; i < n; i++)
         assert(i == *(int*)get(m, keys[i]));
     assert(m->__size == 3);
+
+    char* mkeys[m->item_count];
+    Map_keys(m, mkeys);
+    for (int i = 0; i < m->item_count; i++) {
+        for (int k = 0; k < n; k++) {
+            if (strcmp(mkeys[i], keys[k]) == 0)
+                goto Found;
+        }
+        assert(0);
+    Found:;
+    }
+
 	Map_close(m);
 }
 
