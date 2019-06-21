@@ -15,7 +15,9 @@ struct node; // binary tree node
 
 typedef struct hashmap {
 	struct node** __data;
-	size_t        __size;
+
+	size_t __size;
+	size_t item_count;
 } Map;
 
 // New_Map creates a new map
@@ -35,6 +37,13 @@ void delete(Map * m, char* key);
 
 // Map_resize changes the map to the given size
 void Map_resize(Map** m, size_t size);
+
+// Map_keys takes a Map and an array of strings and populates the array with
+// all the keys used in the Map.
+//
+// The string array given should have a length equal to the map's "item_count"
+// field.
+void Map_keys(Map*, char**);
 
 void print_map(Map*);
 

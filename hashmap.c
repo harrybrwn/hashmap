@@ -13,8 +13,9 @@ struct node {
 	char* key;
 	MapValue value;
 
-	struct node* _right, * _left;
-	hash_t       _hash_val;
+	struct
+	node*  _right, * _left;
+	hash_t _hash_val;
 };
 
 // 'djb2' by Dan Bernstein
@@ -166,6 +167,7 @@ void put(Map* m, char* key, MapValue val) {
 	hash_t key_hash = hash(key);
 	int    index = key_hash % m->__size;
 	add_node(m, _new_node(key, val, key_hash), index);
+	m->item_count++;
 }
 
 MapValue get(Map* m, char* key) {
@@ -219,6 +221,7 @@ void delete(Map* m, char* key) {
 		free(m->__data[index]);
 		m->__data[index] = NULL;
 	}
+	m->item_count--;
 }
 
 static void copy_nodes(Map* m, struct node* n) {
@@ -235,6 +238,7 @@ static void copy_nodes(Map* m, struct node* n) {
 
 void Map_resize(Map** old_m, size_t size) {
 	Map* new_m = create_map(size);
+	new_m->item_count = (*old_m)->item_count;
 
 	struct node* tmp;
 	for (int i = 0; i < (*old_m)->__size; i++) {
@@ -247,13 +251,42 @@ void Map_resize(Map** old_m, size_t size) {
 	(*old_m) = new_m;
 }
 
+static int node_keys(struct node*, char**, int);
+
+void Map_keys(Map* m, char** keys) {
+	// char** map_keys = malloc(sizeof(char*) * m->item_count);
+	int pos = 0;
+	struct node* node;
+
+	for (int i = 0; i < m->__size; i++) {
+		node = m->__data[i];
+		if (node != NULL) {
+			pos = node_keys(node, keys, pos);
+		}
+	}
+}
+
 static Map* create_map(size_t size) {
 	Map* m = malloc(sizeof(Map));
 	m->__size = size;
 	m->__data = malloc(sizeof(struct node*) * m->__size);
 	for (int i = 0; i < size; i++)
 		m->__data[i] = NULL;
+	m->item_count = 0;
 	return m;
+}
+
+static int node_keys(struct node* n, char** keys, int pos) {
+	if (n == NULL) {
+		return pos;
+	}
+	keys[pos++] = n->key;
+
+	if (n->_left != NULL)
+		pos = node_keys(n->_left, keys, pos);
+	if (n->_right != NULL)
+		pos = node_keys(n->_right, keys, pos);
+	return pos;
 }
 
 #ifdef __cplusplus
