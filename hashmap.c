@@ -8,7 +8,7 @@ extern "C" {
 typedef unsigned long hash_t;
 
 struct node {
-	char* key;
+	char*    key;
 	MapValue value;
 
 	struct
@@ -17,7 +17,7 @@ struct node {
 };
 
 // 'djb2' by Dan Bernstein
-hash_t hash(char* str) {
+hash_t djb2(char* str) {
 	hash_t hash = 5381;
 	int    c;
 
@@ -27,14 +27,37 @@ hash_t hash(char* str) {
 	return hash;
 }
 
+hash_t sdbm(char *str) {
+    unsigned long hash = 0;
+    int c;
+
+    while((c = *str++))
+        hash = c + (hash << 6) + (hash << 16) - hash;
+
+    return hash;
+}
+
+hash_t rshash(char *str) {
+  hash_t a = 63689, b = 378551, hash = 0;
+  int c;
+
+  while ((c = *str++)) {
+    hash = hash * a + c;
+    a = a * b;
+  }
+  return (hash & 0x7FFFFFFF);
+}
+
+hash_t prehash(char* str) {
+	return djb2(str) + sdbm(str);
+}
+
 static Map* create_map(size_t);
 static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
 struct node* search(struct node*, hash_t);
-static void delete_leaf(struct node**, hash_t)
-static int node_keys(struct node*, char**, int);
-static void copy_nodes(Map*, struct node*);
+static void delete_leaf(struct node**, hash_t);
 
 Map* New_Map() {
 	return create_map(32);
@@ -49,14 +72,16 @@ void Map_close(Map* m) {
 }
 
 void Map_put(Map* m, char* key, MapValue val) {
-	hash_t key_hash = hash(key);
+	hash_t key_hash = prehash(key);
 	int    index = key_hash % m->__size;
-	add_node(m, _new_node(key, val, key_hash), index);
-	m->item_count++;
+
+ 	add_node(m, _new_node(key, val, key_hash), index);
+	if (++m->item_count >= m->__size)
+		Map_resize(&m, m->__size*2);
 }
 
 MapValue Map_get(Map* m, char* key) {
-	hash_t k_hash = hash(key);
+	hash_t k_hash = prehash(key);
 	int    index = k_hash % m->__size;
 
 	struct node* root = m->__data[index];
@@ -75,7 +100,7 @@ MapValue Map_get(Map* m, char* key) {
 }
 
 void Map_delete(Map* m, char* key) {
-	hash_t k_hash = hash(key);
+	hash_t k_hash = prehash(key);
 	int    index = k_hash % m->__size;
 
 	struct node* root = m->__data[index];
@@ -92,6 +117,8 @@ void Map_delete(Map* m, char* key) {
 	m->item_count--;
 }
 
+static void copy_nodes(Map*, struct node*);
+
 void Map_resize(Map** old_m, size_t size) {
 	Map* new_m = create_map(size);
 	new_m->item_count = (*old_m)->item_count;
@@ -106,6 +133,8 @@ void Map_resize(Map** old_m, size_t size) {
 	Map_close(*old_m);
 	(*old_m) = new_m;
 }
+
+static int node_keys(struct node*, char**, int);
 
 void Map_keys(Map* m, char** keys) {
 	int pos = 0;
@@ -154,7 +183,8 @@ static void delete_tree(struct node* leaf) {
 	}
 }
 
-static struct node* _new_node(char* key, MapValue val, hash_t key_hash) {
+static struct node*
+_new_node(char* key, MapValue val, hash_t key_hash) {
 	struct node* n = malloc(sizeof(struct node));
 	n->key = key;
 	n->value = val;

@@ -20,18 +20,31 @@ char *randstring(size_t length) {
     return str;
 }
 
-unsigned long hash(char* str);
+
+typedef unsigned long hash_t;
+hash_t sdbm(char *str);
+hash_t prehash(char* str);
+
+void test_prehash() {
+    hash_t a = prehash("abc");
+    hash_t b = prehash("cba");
+    hash_t c = prehash("bca");
+
+    assert(a != b);
+    assert(c != a);
+    assert(c != b);
+}
 
 void new_val() {
 	Map* map = New_Map();
 
     char* val = "this is a value";
-	put(map, "key", val);
-    assert(strcmp(val, (char*)get(map, "key")) == 0);
+	Map_put(map, "key", val);
+    assert(strcmp(val, (char*)Map_get(map, "key")) == 0);
 
     val = "updated value stored in the map";
-	put(map, "key", val);
-    assert(strcmp(val, (char*)get(map, "key")) == 0);
+	Map_put(map, "key", val);
+    assert(strcmp(val, (char*)Map_get(map, "key")) == 0);
 
 	Map_close(map);
 }
@@ -59,20 +72,28 @@ void test_collitions() {
 	int x[n];
 	for (int i = 0; i < n; i++) {
 		x[i] = i;
-		put(m, keys[i], &x[i]);
+		Map_put(m, keys[i], &x[i]);
 	}
+
+    for (int i = 0; i < m->__size; i++) {
+        if (m->__data[i] == NULL) {
+            printf("null, ");
+        } else {
+            printf("%s, ", m->__data[i]->key);
+        }
+    }
 
     int nonNullKeys = 0;
     for (int i = 0; i < n; i++) {
-        assert(i == *(int*)get(m, keys[i]));
+        assert(i == *(int*)Map_get(m, keys[i]));
         if (m->__data[i] != NULL)
             nonNullKeys++;
     }
-    assert(nonNullKeys == 1);
-
+    // this test is invalid because of new double hashing
+    // assert(nonNullKeys == 1);
     Map_resize(&m, 3);
     for (int i = 0; i < n; i++)
-        assert(i == *(int*)get(m, keys[i]));
+        assert(i == *(int*)Map_get(m, keys[i]));
     assert(m->__size == 3);
 
     char* mkeys[m->item_count];
@@ -85,13 +106,13 @@ void test_collitions() {
         assert(0);
     Found:;
     }
-
 	Map_close(m);
 }
 
 int main() {
 	test_collitions();
     new_val();
+    test_prehash();
 
     printf("OK %s\n", __FILE__);
 }

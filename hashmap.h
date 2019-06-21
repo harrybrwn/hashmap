@@ -35,7 +35,8 @@ MapValue Map_get(Map* m, char* key);
 // Map_delete will delete the data stored at a keys.
 void Map_delete(Map * m, char* key);
 
-// Map_resize changes the map to the given size
+// Map_resize resizzes the map to the given size. The Map given will be copied
+// to a new map that has a different size.
 void Map_resize(Map** m, size_t size);
 
 // Map_keys takes a Map and an array of strings and populates the array with
