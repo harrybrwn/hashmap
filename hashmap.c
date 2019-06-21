@@ -1,6 +1,4 @@
 #include <stdlib.h>
-#include <stdio.h>
-
 #include "hashmap.h"
 
 #ifdef __cplusplus
@@ -31,6 +29,12 @@ hash_t hash(char* str) {
 
 static Map* create_map(size_t);
 static void delete_tree(struct node*);
+static void add_node(Map*, struct node*, int);
+static struct node* _new_node(char*, MapValue, hash_t);
+struct node* search(struct node*, hash_t);
+static void delete_leaf(struct node**, hash_t)
+static int node_keys(struct node*, char**, int);
+static void copy_nodes(Map*, struct node*);
 
 Map* New_Map() {
 	return create_map(32);
@@ -42,6 +46,77 @@ void Map_close(Map* m) {
 	}
 	free(m->__data);
 	free(m);
+}
+
+void Map_put(Map* m, char* key, MapValue val) {
+	hash_t key_hash = hash(key);
+	int    index = key_hash % m->__size;
+	add_node(m, _new_node(key, val, key_hash), index);
+	m->item_count++;
+}
+
+MapValue Map_get(Map* m, char* key) {
+	hash_t k_hash = hash(key);
+	int    index = k_hash % m->__size;
+
+	struct node* root = m->__data[index];
+	if (root == NULL) {
+		return NULL;
+	}
+
+	if (k_hash != root->_hash_val) {
+		struct node* n = search(root, k_hash);
+		if (n == NULL) {
+			return NULL;
+		}
+		return n->value;
+	}
+	return root->value;
+}
+
+void Map_delete(Map* m, char* key) {
+	hash_t k_hash = hash(key);
+	int    index = k_hash % m->__size;
+
+	struct node* root = m->__data[index];
+	if (root == NULL) {
+		return;
+	}
+
+	if (k_hash != root->_hash_val) {
+		delete_leaf(&root, k_hash);
+	} else {
+		free(m->__data[index]);
+		m->__data[index] = NULL;
+	}
+	m->item_count--;
+}
+
+void Map_resize(Map** old_m, size_t size) {
+	Map* new_m = create_map(size);
+	new_m->item_count = (*old_m)->item_count;
+
+	struct node* tmp;
+	for (int i = 0; i < (*old_m)->__size; i++) {
+		tmp = (*old_m)->__data[i];
+		if (tmp != NULL) {
+			copy_nodes(new_m, tmp);
+		}
+	}
+	Map_close(*old_m);
+	(*old_m) = new_m;
+}
+
+void Map_keys(Map* m, char** keys) {
+	int pos = 0;
+	struct node* node;
+
+	for (int i = 0; i < m->__size; i++) {
+		node = m->__data[i];
+		if (node != NULL) {
+			pos = node_keys(node, keys, pos);
+		}
+	}
 }
 
 static void insert_node(struct node* root, struct node* new) {
@@ -115,32 +190,6 @@ static void add_node(Map* m, struct node* node, int index) {
 	}
 }
 
-void put(Map* m, char* key, MapValue val) {
-	hash_t key_hash = hash(key);
-	int    index = key_hash % m->__size;
-	add_node(m, _new_node(key, val, key_hash), index);
-	m->item_count++;
-}
-
-MapValue get(Map* m, char* key) {
-	hash_t k_hash = hash(key);
-	int    index = k_hash % m->__size;
-
-	struct node* root = m->__data[index];
-	if (root == NULL) {
-		return NULL;
-	}
-
-	if (k_hash != root->_hash_val) {
-		struct node* n = search(root, k_hash);
-		if (n == NULL) {
-			return NULL;
-		}
-		return n->value;
-	}
-	return root->value;
-}
-
 static void delete_leaf(struct node** leaf, hash_t key_hash) {
 	if ((*leaf) == NULL) {
 		return;
@@ -158,24 +207,6 @@ static void delete_leaf(struct node** leaf, hash_t key_hash) {
 	}
 }
 
-void delete(Map* m, char* key) {
-	hash_t k_hash = hash(key);
-	int    index = k_hash % m->__size;
-
-	struct node* root = m->__data[index];
-	if (root == NULL) {
-		return;
-	}
-
-	if (k_hash != root->_hash_val) {
-		delete_leaf(&root, k_hash);
-	} else {
-		free(m->__data[index]);
-		m->__data[index] = NULL;
-	}
-	m->item_count--;
-}
-
 static void copy_nodes(Map* m, struct node* n) {
 	if (n->_left != NULL) {
 		copy_nodes(m, n->_left);
@@ -186,35 +217,6 @@ static void copy_nodes(Map* m, struct node* n) {
 
 	int index = n->_hash_val % m->__size;
 	add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
-}
-
-void Map_resize(Map** old_m, size_t size) {
-	Map* new_m = create_map(size);
-	new_m->item_count = (*old_m)->item_count;
-
-	struct node* tmp;
-	for (int i = 0; i < (*old_m)->__size; i++) {
-		tmp = (*old_m)->__data[i];
-		if (tmp != NULL) {
-			copy_nodes(new_m, tmp);
-		}
-	}
-	Map_close(*old_m);
-	(*old_m) = new_m;
-}
-
-static int node_keys(struct node*, char**, int);
-
-void Map_keys(Map* m, char** keys) {
-	int pos = 0;
-	struct node* node;
-
-	for (int i = 0; i < m->__size; i++) {
-		node = m->__data[i];
-		if (node != NULL) {
-			pos = node_keys(node, keys, pos);
-		}
-	}
 }
 
 static Map* create_map(size_t size) {

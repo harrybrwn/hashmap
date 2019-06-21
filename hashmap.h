@@ -26,14 +26,14 @@ Map* New_Map();
 // Map_close frees the memory allocated by new_map
 void Map_close(Map*);
 
-// put addes a void pointer at a key
-void put(Map* m, char* key, MapValue val);
+// Map_put addes a void pointer at a key
+void Map_put(Map* m, char* key, MapValue val);
 
-// get returns the void pointer stored at a key.
-MapValue get(Map* m, char* key);
+// Map_get returns the void pointer stored at a key.
+MapValue Map_get(Map* m, char* key);
 
-// delete will delete the data stored at a keys.
-void delete(Map * m, char* key);
+// Map_delete will delete the data stored at a keys.
+void Map_delete(Map * m, char* key);
 
 // Map_resize changes the map to the given size
 void Map_resize(Map** m, size_t size);
