@@ -1,17 +1,13 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
-#define DEFAULT_MAP_TYPE void*
-
 #if !defined(MapValue)
-  #define MapValue DEFAULT_MAP_TYPE
+  #define MapValue void*
 #endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct node; // binary tree node
 
 typedef struct hashmap {
 	struct node** __data;
