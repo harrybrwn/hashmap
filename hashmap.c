@@ -16,7 +16,6 @@ struct node {
 	hash_t _hash_val;
 };
 
-// 'djb2' by Dan Bernstein
 hash_t djb2(char* str) {
 	hash_t hash = 5381;
 	int    c;
@@ -49,14 +48,14 @@ hash_t rshash(char *str) {
 }
 
 hash_t prehash(char* str) {
-	return djb2(str) + sdbm(str);
+	return djb2(str);
 }
 
 static Map* create_map(size_t);
 static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
-struct node* search(struct node*, hash_t);
+static struct node* search(struct node*, hash_t);
 static void delete_leaf(struct node**, hash_t);
 
 Map* New_Map() {
@@ -161,7 +160,7 @@ static void insert_node(struct node* root, struct node* new) {
 	}
 }
 
-struct node* search(struct node* root, hash_t key_hash) {
+static struct node* search(struct node* root, hash_t key_hash) {
 	if (root->_hash_val == key_hash) {
 		return root;
 	}

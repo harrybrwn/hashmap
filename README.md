@@ -23,10 +23,10 @@ included then the hashmap will use that type. If it is not defined by a user, th
 default is `void*`.
 
 ### Functions
-New_Map creates a new map.<br>
+New_Map creates a new map. Allocates the Map on the heap.<br>
 `Map* New_Map()`
 
-Map_close frees the memory allocated by new_map.<br>
+Map_close frees the memory allocated by new_map. Only needs to be called if the Map was allocated on the heap.<br>
 `void Map_close(Map*)`
 
 Map_put addes a void pointer at a key.<br>

@@ -115,9 +115,11 @@ void test_collitions() {
 		Map_put(m, keys[i], &x[i]);
 	}
 
-    int nonNullKeys = 0;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));
+
+    int nonNullKeys = 0;
+    for (int i = 0; i < m->__size; i++) {
         if (m->__data[i] != NULL)
             nonNullKeys++;
     }

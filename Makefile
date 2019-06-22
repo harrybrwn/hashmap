@@ -6,7 +6,6 @@ TestBin=test
 
 $(TestBin): $(SRC) test.c
 	$(CC) -o $@ $(CFLAGS) $(SRC) test.c
-	./test
 
 clean:
 	rm $(TestBin)

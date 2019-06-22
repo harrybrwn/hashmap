@@ -11,15 +11,17 @@ extern "C" {
 
 typedef struct hashmap {
 	struct node** __data;
+    int _initialized;
 
 	size_t __size;
 	size_t item_count;
 } Map;
 
-// New_Map creates a new map.
+// New_Map creates a new map. Allocates the Map on the heap.
 Map* New_Map();
 
-// Map_close frees the memory allocated by new_map.
+// Map_close frees the memory allocated by new_map. Only needs to be called
+// if the Map was allocated on the heap.
 void Map_close(Map*);
 
 // Map_put addes a void pointer at a key.
@@ -40,7 +42,7 @@ void Map_resize(Map** m, size_t size);
 //
 // The string array given should have a length equal to the map's "item_count"
 // field.
-void Map_keys(Map*, char**);
+void Map_keys(Map* m, char** keys);
 
 #ifdef __cplusplus
 }
