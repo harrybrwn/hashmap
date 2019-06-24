@@ -96,16 +96,36 @@ void TestMap() {
 struct node {
 	char*    key;
 	MapValue value;
+	int height;
 
 	struct
 	node*  _right, * _left;
 	hash_t _hash_val;
 };
 
+void print_tree(struct node* root, int level, int type) {
+    if (root != NULL) {
+        for (int i = 0; i < (level*4); i++) printf("%c", ' ');
+
+        if (type < 0)
+            printf("left: {");
+        else if (type > 0)
+            printf("right: {");
+        else if (type == 0)
+            printf("root: {");
+
+        printf("val: %lu, ", root->_hash_val);
+        printf("height: %d", root->height);
+        printf("}\n");
+
+        print_tree(root->_left, level + 1, -1);
+        print_tree(root->_right, level + 1, 1);
+    }
+}
+
 void test_collitions() {
 	Map* m = New_Map();
 	int n = 20;
-
     // these keys all collide is a hash table of length 'm->__size' using 'prehash'
     char** keys = collition_keys(6, m->__size, prehash, n);
 
@@ -154,11 +174,90 @@ void test_resize() {
     Map_close(m);
 }
 
+void insert_node(struct node** root, struct node* new);
+
+void delete_tree(struct node* leaf) {
+	if (leaf != NULL) {
+		delete_tree(leaf->_right);
+		delete_tree(leaf->_left);
+		free(leaf);
+	}
+}
+
+static struct node* newnode(hash_t val) {
+    struct node* n = malloc(sizeof(struct node));
+    n->_hash_val = val;
+    n->height = 0;
+    n->_left = NULL;
+    n->_right = NULL;
+    return n;
+}
+
+struct node* node_rotateleft(struct node* n);
+struct node* node_rotateright(struct node* n);
+
+void test_avl_insert() {
+    int vals[] = {3, 7, 4, 2};
+    struct node* root = newnode(5);
+
+    for (int i = 0; i < 4; i++) insert_node(&root, newnode(vals[i]));
+    assert(root->height == 2);
+
+    assert(root->_hash_val == 5);
+    root = node_rotateright(root);
+    assert(root->_hash_val == 3);
+    delete_tree(root);
+    root = NULL;
+}
+
+void test_avl_balence() {
+    struct node* root = newnode(41);
+    int vals[] = {65, 20, 50, 26, 11, 29, 23};
+
+    for (int i = 0; i < 7; i++)
+        insert_node(&root, newnode(vals[i]));
+
+    insert_node(&root, newnode(55));
+    assert(root->_right->_hash_val == 55);
+    assert(root->_right->_right->_hash_val == 65);
+    assert(root->_right->_left->_hash_val == 50);
+    delete_tree(root);
+    root = NULL;
+
+    root = newnode(41);
+    int newvals[] = {65, 20, 50, 29, 11, 26};
+    for (int i = 0; i < 6; i++)
+        insert_node(&root, newnode(newvals[i]));
+    assert(root->_left->_right->_hash_val == 29);
+
+    insert_node(&root, newnode(23));
+    assert(root->_left->_right->_hash_val == 26);
+    delete_tree(root);
+    root = NULL;
+
+    root = newnode(5);
+    insert_node(&root, newnode(1));
+    insert_node(&root, newnode(8));
+    insert_node(&root, newnode(3));
+    assert(root->_left->_right->_hash_val == 3);
+    insert_node(&root, newnode(4));
+    assert(root->_hash_val == 5);
+    insert_node(&root, newnode(2));
+    assert(root->_hash_val == 3);
+    insert_node(&root, newnode(6));
+    assert(root->_right->_right->_hash_val == 8);
+    insert_node(&root, newnode(7));
+    assert(root->_right->_right->_hash_val == 7);
+    delete_tree(root);
+}
+
 int main() {
     TestMap();
 	test_collitions();
     test_prehash();
     test_resize();
+    test_avl_insert();
+    test_avl_balence();
 
     printf("OK %s\n", __FILE__);
 }

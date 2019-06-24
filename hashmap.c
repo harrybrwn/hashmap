@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "hashmap.h"
 
 #ifdef __cplusplus
@@ -10,6 +11,7 @@ typedef unsigned long hash_t;
 struct node {
 	char*    key;
 	MapValue value;
+	int      height;
 
 	struct
 	node*  _right, * _left;
@@ -27,7 +29,7 @@ hash_t djb2(char* str) {
 }
 
 hash_t sdbm(char *str) {
-    unsigned long hash = 0;
+    hash_t hash = 0;
     int c;
 
     while ((c = *str++))
@@ -73,7 +75,6 @@ void Map_close(Map* m) {
 void Map_put(Map* m, char* key, MapValue val) {
 	hash_t key_hash = prehash(key);
 	int    index = key_hash % m->__size;
-
  	add_node(m, _new_node(key, val, key_hash), index);
 	if (++m->item_count >= m->__size)
 		Map_resize(&m, m->__size*2);
@@ -146,18 +147,94 @@ void Map_keys(Map* m, char** keys) {
 	}
 }
 
-static void insert_node(struct node* root, struct node* new) {
-	if (new->_hash_val < root->_hash_val) {
-		if (root->_left != NULL) {
-			return insert_node(root->_left, new);
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+
+static int node_height(struct node* n) {
+	if (n == NULL)
+		return -1;
+	else
+		return n->height;
+}
+
+#define MAXHEIGHT(XX, YY) MAX(node_height(XX), node_height(YY))
+
+struct node* node_rotateleft(struct node* n) {
+	struct node *head;
+
+	head = n->_right;
+	n->_right = head->_left;
+	head->_left = n;
+
+	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
+	head->height = MAX(node_height(head->_left), node_height(head->_right)) + 1;
+	return head;
+}
+
+struct node* node_rotateright(struct node* n) {
+	struct node *head;
+
+	head = n->_left;
+	n->_left = head->_right;
+	head->_right = n;
+
+	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
+	head->height = MAX(node_height(head->_left), node_height(head->_right)) + 1;
+	return head;
+}
+
+static struct node* node_rotateright_double(struct node* n) {
+	n->_left = node_rotateleft(n->_left);
+	return node_rotateright(n);
+}
+
+static struct node* node_rotateleft_double(struct node* n) {
+	n->_right = node_rotateright(n->_right);
+	return node_rotateleft(n);
+}
+
+#define HEIGHT_DIFF(NODE_A, NODE_B) (node_height(NODE_A) - node_height(NODE_B))
+
+static void init_height(struct node* n) {
+	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
+}
+
+void insert_node(struct node** root, struct node* new) {
+	if (new->_hash_val < (*root)->_hash_val) {
+		/* insert left */
+		if ((*root)->_left != NULL) {
+			insert_node(&(*root)->_left, new);
+			init_height(*root);
+
+			// if left side is double-unbalenced... rotate right
+			if (HEIGHT_DIFF((*root)->_left, (*root)->_right) == 2) {
+				if (new->_hash_val < (*root)->_left->_hash_val)
+					*root = node_rotateright(*root);
+				else
+					*root = node_rotateright_double(*root);
+			}
+			return;
 		}
-		root->_left = new;
-	} else if (new->_hash_val > root->_hash_val) {
-		if (root->_right != NULL) {
-			return insert_node(root->_right, new);
+		(*root)->_left = new;
+	} else if (new->_hash_val > (*root)->_hash_val) {
+		/* insert right */
+		if ((*root)->_right != NULL) {
+			insert_node(&(*root)->_right, new);
+			init_height(*root);
+
+			// if right side is double-unbalenced... rotate left
+			if (HEIGHT_DIFF((*root)->_right, (*root)->_left) == 2) {
+				if (new->_hash_val > (*root)->_right->_hash_val)
+					*root = node_rotateleft(*root);
+				else
+					*root = node_rotateleft_double(*root);
+			}
+			return;
 		}
-		root->_right = new;
+		(*root)->_right = new;
 	}
+
+	init_height(*root);
+	return;
 }
 
 static struct node* search(struct node* root, hash_t key_hash) {
@@ -186,6 +263,7 @@ _new_node(char* key, MapValue val, hash_t key_hash) {
 	struct node* n = malloc(sizeof(struct node));
 	n->key = key;
 	n->value = val;
+	n->height = 0;
 	n->_left = NULL;
 	n->_right = NULL;
 	n->_hash_val = key_hash;
@@ -214,7 +292,7 @@ static void add_node(Map* m, struct node* node, int index) {
 		free(m->__data[index]);
 		m->__data[index] = node;
 	} else {
-		insert_node(head_node, node);
+		insert_node(&m->__data[index], node);
 	}
 }
 
