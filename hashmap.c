@@ -14,7 +14,7 @@ struct node {
 	int      height;
 
 	struct
-	node*  _right, * _left;
+	node*  right, * left;
 	hash_t _hash_val;
 };
 
@@ -75,7 +75,8 @@ void Map_close(Map* m) {
 void Map_put(Map* m, char* key, MapValue val) {
 	hash_t key_hash = prehash(key);
 	int    index = key_hash % m->__size;
- 	add_node(m, _new_node(key, val, key_hash), index);
+
+	add_node(m, _new_node(key, val, key_hash), index);
 	if (++m->item_count >= m->__size)
 		Map_resize(&m, m->__size*2);
 }
@@ -85,15 +86,13 @@ MapValue Map_get(Map* m, char* key) {
 	int    index = k_hash % m->__size;
 
 	struct node* root = m->__data[index];
-	if (root == NULL) {
+	if (root == NULL)
 		return NULL;
-	}
 
 	if (k_hash != root->_hash_val) {
 		struct node* n = search(root, k_hash);
-		if (n == NULL) {
+		if (n == NULL)
 			return NULL;
-		}
 		return n->value;
 	}
 	return root->value;
@@ -126,9 +125,8 @@ void Map_resize(Map** old_m, size_t size) {
 	struct node* tmp;
 	for (int i = 0; i < (*old_m)->__size; i++) {
 		tmp = (*old_m)->__data[i];
-		if (tmp != NULL) {
+		if (tmp != NULL)
 			copy_nodes(new_m, tmp);
-		}
 	}
 	Map_close(*old_m);
 	(*old_m) = new_m;
@@ -149,111 +147,105 @@ void Map_keys(Map* m, char** keys) {
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
-static int node_height(struct node* n) {
+static int height(struct node* n) {
 	if (n == NULL)
 		return -1;
 	else
 		return n->height;
 }
 
-#define MAXHEIGHT(XX, YY) MAX(node_height(XX), node_height(YY))
+#define MAXHEIGHT(XX, YY) MAX(height(XX), height(YY))
 
 struct node* node_rotateleft(struct node* n) {
 	struct node *head;
 
-	head = n->_right;
-	n->_right = head->_left;
-	head->_left = n;
+	head = n->right;
+	n->right = head->left;
+	head->left = n;
 
-	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
-	head->height = MAX(node_height(head->_left), node_height(head->_right)) + 1;
+	n->height = MAX(height(n->left), height(n->right)) + 1;
+	head->height = MAX(height(head->left), height(head->right)) + 1;
 	return head;
 }
 
 struct node* node_rotateright(struct node* n) {
 	struct node *head;
 
-	head = n->_left;
-	n->_left = head->_right;
-	head->_right = n;
+	head = n->left;
+	n->left = head->right;
+	head->right = n;
 
-	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
-	head->height = MAX(node_height(head->_left), node_height(head->_right)) + 1;
+	n->height = MAX(height(n->left), height(n->right)) + 1;
+	head->height = MAX(height(head->left), height(head->right)) + 1;
 	return head;
 }
 
 static struct node* node_rotateright_double(struct node* n) {
-	n->_left = node_rotateleft(n->_left);
+	n->left = node_rotateleft(n->left);
 	return node_rotateright(n);
 }
 
 static struct node* node_rotateleft_double(struct node* n) {
-	n->_right = node_rotateright(n->_right);
+	n->right = node_rotateright(n->right);
 	return node_rotateleft(n);
 }
 
-#define HEIGHT_DIFF(NODE_A, NODE_B) (node_height(NODE_A) - node_height(NODE_B))
-
-static void init_height(struct node* n) {
-	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
-}
-
 static void balance_left(struct node** root, hash_t new_hash) {
-	if (new_hash < (*root)->_left->_hash_val)
+	if (new_hash < (*root)->left->_hash_val)
 		*root = node_rotateright(*root);
 	else
 		*root = node_rotateright_double(*root);
 }
 
 static void balance_right(struct node** root, hash_t new_hash) {
-	if (new_hash > (*root)->_right->_hash_val)
+	if (new_hash > (*root)->right->_hash_val)
 		*root = node_rotateleft(*root);
 	else
 		*root = node_rotateleft_double(*root);
 }
 
+#define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A) - height(NODE_B))
+
 void insert_node(struct node** root, struct node* new) {
 	if (new->_hash_val < (*root)->_hash_val) {
 		/* insert left */
-		if ((*root)->_left != NULL) {
-			insert_node(&(*root)->_left, new);
+		if ((*root)->left != NULL) {
+			insert_node(&(*root)->left, new);
 
 			// if left side is double-unbalenced... rotate right
-			if (HEIGHT_DIFF((*root)->_left, (*root)->_right) == 2)
+			if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2)
 				balance_left(root, new->_hash_val);
 		} else
-			(*root)->_left = new;
+			(*root)->left = new;
 	} else if (new->_hash_val > (*root)->_hash_val) {
 		/* insert right */
-		if ((*root)->_right != NULL) {
-			insert_node(&(*root)->_right, new);
+		if ((*root)->right != NULL) {
+			insert_node(&(*root)->right, new);
 
 			// if right side is double-unbalenced... rotate left
-			if (HEIGHT_DIFF((*root)->_right, (*root)->_left) == 2)
+			if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2)
 				balance_right(root, new->_hash_val);
 		} else
-			(*root)->_right = new;
+			(*root)->right = new;
 	}
-	init_height(*root);
+	(*root)->height = MAX(height((*root)->left), height((*root)->right)) + 1;
 }
 
 static struct node* search(struct node* root, hash_t key_hash) {
-	if (root->_hash_val == key_hash) {
+	if (root->_hash_val == key_hash)
 		return root;
-	}
 
-	if (key_hash < root->_hash_val) {
-		return search(root->_left, key_hash);
-	} else if (key_hash > root->_hash_val) {
-		return search(root->_right, key_hash);
-	}
+	if (key_hash < root->_hash_val)
+		return search(root->left, key_hash);
+	else if (key_hash > root->_hash_val)
+		return search(root->right, key_hash);
 	return NULL;
 }
 
 static void delete_tree(struct node* leaf) {
 	if (leaf != NULL) {
-		delete_tree(leaf->_right);
-		delete_tree(leaf->_left);
+		delete_tree(leaf->right);
+		delete_tree(leaf->left);
 		free(leaf);
 	}
 }
@@ -264,8 +256,8 @@ _new_node(char* key, MapValue val, hash_t key_hash) {
 	n->key = key;
 	n->value = val;
 	n->height = 0;
-	n->_left = NULL;
-	n->_right = NULL;
+	n->left = NULL;
+	n->right = NULL;
 	n->_hash_val = key_hash;
 	return n;
 }
@@ -307,19 +299,18 @@ static void delete_leaf(struct node** leaf, hash_t key_hash) {
 	}
 
 	if (key_hash < (*leaf)->_hash_val) {
-		return delete_leaf(&(*leaf)->_left, key_hash);
+		return delete_leaf(&(*leaf)->left, key_hash);
 	} else if (key_hash > (*leaf)->_hash_val) {
-		return delete_leaf(&(*leaf)->_left, key_hash);
+		return delete_leaf(&(*leaf)->left, key_hash);
 	}
 }
 
 static void copy_nodes(Map* m, struct node* n) {
-	if (n->_left != NULL) {
-		copy_nodes(m, n->_left);
-	}
-	if (n->_right != NULL) {
-		copy_nodes(m, n->_right);
-	}
+	if (n->left != NULL)
+		copy_nodes(m, n->left);
+
+	if (n->right != NULL)
+		copy_nodes(m, n->right);
 
 	int index = n->_hash_val % m->__size;
 	add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
@@ -341,10 +332,10 @@ static int node_keys(struct node* n, char** keys, int pos) {
 	}
 	keys[pos++] = n->key;
 
-	if (n->_left != NULL)
-		pos = node_keys(n->_left, keys, pos);
-	if (n->_right != NULL)
-		pos = node_keys(n->_right, keys, pos);
+	if (n->left != NULL)
+		pos = node_keys(n->left, keys, pos);
+	if (n->right != NULL)
+		pos = node_keys(n->right, keys, pos);
 	return pos;
 }
 

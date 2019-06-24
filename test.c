@@ -93,13 +93,25 @@ void TestMap() {
 	Map_close(map);
 }
 
+void test_Map_delete() {
+    Map* m = New_Map();
+    int val = 9001;
+    Map_put(m, "key1", &val);
+    assert(*(int*)Map_get(m, "key1") == val);
+
+    Map_delete(m, "key1");
+    int* res = (int*)Map_get(m, "key1");
+    assert(res == NULL);
+    Map_close(m);
+}
+
 struct node {
 	char*    key;
 	MapValue value;
 	int height;
 
 	struct
-	node*  _right, * _left;
+	node*  right, * left;
 	hash_t _hash_val;
 };
 
@@ -118,8 +130,8 @@ void print_tree(struct node* root, int level, int type) {
         printf("height: %d", root->height);
         printf("}\n");
 
-        print_tree(root->_left, level + 1, -1);
-        print_tree(root->_right, level + 1, 1);
+        print_tree(root->left, level + 1, -1);
+        print_tree(root->right, level + 1, 1);
     }
 }
 
@@ -149,7 +161,7 @@ void test_collitions() {
 	Map_close(m);
 }
 
-void test_resize() {
+void test_Map_resize() {
     Map* m = New_Map();
     int n = 28;
     char** keys = rand_keys(n);
@@ -178,8 +190,8 @@ void insert_node(struct node** root, struct node* new);
 
 void delete_tree(struct node* leaf) {
 	if (leaf != NULL) {
-		delete_tree(leaf->_right);
-		delete_tree(leaf->_left);
+		delete_tree(leaf->right);
+		delete_tree(leaf->left);
 		free(leaf);
 	}
 }
@@ -188,8 +200,8 @@ static struct node* newnode(hash_t val) {
     struct node* n = malloc(sizeof(struct node));
     n->_hash_val = val;
     n->height = 0;
-    n->_left = NULL;
-    n->_right = NULL;
+    n->left = NULL;
+    n->right = NULL;
     return n;
 }
 
@@ -213,9 +225,9 @@ void test_avl_balence() {
         insert_node(&root, newnode(vals[i]));
 
     insert_node(&root, newnode(55));
-    assert(root->_right->_hash_val == 55);
-    assert(root->_right->_right->_hash_val == 65);
-    assert(root->_right->_left->_hash_val == 50);
+    assert(root->right->_hash_val == 55);
+    assert(root->right->right->_hash_val == 65);
+    assert(root->right->left->_hash_val == 50);
     delete_tree(root);
     root = NULL;
 
@@ -223,10 +235,10 @@ void test_avl_balence() {
     int newvals[] = {65, 20, 50, 29, 11, 26};
     for (int i = 0; i < 6; i++)
         insert_node(&root, newnode(newvals[i]));
-    assert(root->_left->_right->_hash_val == 29);
+    assert(root->left->right->_hash_val == 29);
 
     insert_node(&root, newnode(23));
-    assert(root->_left->_right->_hash_val == 26);
+    assert(root->left->right->_hash_val == 26);
     delete_tree(root);
     root = NULL;
 
@@ -234,15 +246,15 @@ void test_avl_balence() {
     insert_node(&root, newnode(1));
     insert_node(&root, newnode(8));
     insert_node(&root, newnode(3));
-    assert(root->_left->_right->_hash_val == 3);
+    assert(root->left->right->_hash_val == 3);
     insert_node(&root, newnode(4));
     assert(root->_hash_val == 5);
     insert_node(&root, newnode(2));
     assert(root->_hash_val == 3);
     insert_node(&root, newnode(6));
-    assert(root->_right->_right->_hash_val == 8);
+    assert(root->right->right->_hash_val == 8);
     insert_node(&root, newnode(7));
-    assert(root->_right->_right->_hash_val == 7);
+    assert(root->right->right->_hash_val == 7);
     delete_tree(root);
 }
 
@@ -250,7 +262,8 @@ int main() {
     TestMap();
 	test_collitions();
     test_prehash();
-    test_resize();
+    test_Map_delete();
+    test_Map_resize();
     test_avl_insert();
     test_avl_balence();
 
