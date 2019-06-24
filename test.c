@@ -193,9 +193,6 @@ static struct node* newnode(hash_t val) {
     return n;
 }
 
-struct node* node_rotateleft(struct node* n);
-struct node* node_rotateright(struct node* n);
-
 void test_avl_insert() {
     int vals[] = {3, 7, 4, 2};
     struct node* root = newnode(5);
@@ -204,8 +201,6 @@ void test_avl_insert() {
     assert(root->height == 2);
 
     assert(root->_hash_val == 5);
-    root = node_rotateright(root);
-    assert(root->_hash_val == 3);
     delete_tree(root);
     root = NULL;
 }

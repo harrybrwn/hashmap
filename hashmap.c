@@ -198,43 +198,43 @@ static void init_height(struct node* n) {
 	n->height = MAX(node_height(n->_left), node_height(n->_right)) + 1;
 }
 
+static void balance_left(struct node** root, hash_t new_hash) {
+	if (new_hash < (*root)->_left->_hash_val)
+		*root = node_rotateright(*root);
+	else
+		*root = node_rotateright_double(*root);
+}
+
+static void balance_right(struct node** root, hash_t new_hash) {
+	if (new_hash > (*root)->_right->_hash_val)
+		*root = node_rotateleft(*root);
+	else
+		*root = node_rotateleft_double(*root);
+}
+
 void insert_node(struct node** root, struct node* new) {
 	if (new->_hash_val < (*root)->_hash_val) {
 		/* insert left */
 		if ((*root)->_left != NULL) {
 			insert_node(&(*root)->_left, new);
-			init_height(*root);
 
 			// if left side is double-unbalenced... rotate right
-			if (HEIGHT_DIFF((*root)->_left, (*root)->_right) == 2) {
-				if (new->_hash_val < (*root)->_left->_hash_val)
-					*root = node_rotateright(*root);
-				else
-					*root = node_rotateright_double(*root);
-			}
-			return;
-		}
-		(*root)->_left = new;
+			if (HEIGHT_DIFF((*root)->_left, (*root)->_right) == 2)
+				balance_left(root, new->_hash_val);
+		} else
+			(*root)->_left = new;
 	} else if (new->_hash_val > (*root)->_hash_val) {
 		/* insert right */
 		if ((*root)->_right != NULL) {
 			insert_node(&(*root)->_right, new);
-			init_height(*root);
 
 			// if right side is double-unbalenced... rotate left
-			if (HEIGHT_DIFF((*root)->_right, (*root)->_left) == 2) {
-				if (new->_hash_val > (*root)->_right->_hash_val)
-					*root = node_rotateleft(*root);
-				else
-					*root = node_rotateleft_double(*root);
-			}
-			return;
-		}
-		(*root)->_right = new;
+			if (HEIGHT_DIFF((*root)->_right, (*root)->_left) == 2)
+				balance_right(root, new->_hash_val);
+		} else
+			(*root)->_right = new;
 	}
-
 	init_height(*root);
-	return;
 }
 
 static struct node* search(struct node* root, hash_t key_hash) {
