@@ -14,7 +14,7 @@
     Same_Arr_val:; \
     }
 
-char *randstring(size_t length) {
+char* randstring(size_t length) {
     static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     char *str = NULL;
     if (length) {
@@ -105,10 +105,11 @@ void test_Map_delete() {
     Map_close(m);
 }
 
+#pragma pack(1)
 struct node {
 	char*    key;
 	MapValue value;
-	int height;
+	unsigned char height;
 
 	struct
 	node*  right, * left;
@@ -135,6 +136,30 @@ void print_tree(struct node* root, int level, int type) {
     }
 }
 
+#define SPACE_INCR 20
+
+static void _print_avl(struct node* n, int space, char side) {
+    if (n == NULL)
+        return;
+
+    space += SPACE_INCR;
+    _print_avl(n->right, space, 'R');
+
+    printf("\n");
+    for (int i = SPACE_INCR; i < space; i++)
+        printf(" ");
+
+    printf("(%lu)\n", n->_hash_val);
+
+    _print_avl(n->left, space, 'L');
+    if (side == 'L' && n->left == NULL && n->right == NULL)
+        printf("\n");
+}
+
+void print_avl(struct node* n) {
+    _print_avl(n, 0, 'C');
+}
+
 void test_collitions() {
 	Map* m = New_Map();
 	int n = 20;
@@ -146,6 +171,8 @@ void test_collitions() {
 		x[i] = i;
 		Map_put(m, keys[i], &x[i]);
 	}
+    // int index = prehash(keys[0]) % m->__size;
+    // print_avl(m->__data[index]);
 
     for (int i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));
@@ -258,7 +285,47 @@ void test_avl_balence() {
     delete_tree(root);
 }
 
+#include <pthread.h>
+#include <unistd.h>
+
+void *test_threads_inner1(void *data) {
+    char* res = Map_get((Map*)data, "test");
+    printf("testing thread 1\n");
+    assert(strcmp(res, "testing multi-threads") == 0);
+    return NULL;
+}
+
+void* test_threads_inner2(void* data) {
+    char* res = Map_get((Map*)data, "test");
+    printf("testing thread 2\n");
+    assert(strcmp(res, "testing multi-threads") == 0);
+    return (void*)69;
+}
+
+void test_threads_main() {
+    pthread_t thread1, thread2;
+
+    Map* map = New_Map();
+    Map_put(map, "test", "testing multi-threads");
+
+    pthread_create(&thread1, NULL, test_threads_inner1, map);
+    pthread_create(&thread2, NULL, test_threads_inner2, map);
+    pthread_join(thread1, NULL);
+    pthread_join(thread2, NULL);
+    printf("main thread\n");
+    Map_close(map);
+}
+
+#include <unistd.h>
+
+void test() {
+    printf("%lu\n", sizeof(size_t));
+    printf("Map size: %lu\n", sizeof(Map));
+    printf("node size: %lu\n", sizeof(struct node));
+}
+
 int main() {
+    printf("start\n");
     TestMap();
 	test_collitions();
     test_prehash();
@@ -266,6 +333,8 @@ int main() {
     test_Map_resize();
     test_avl_insert();
     test_avl_balence();
+    // test_threads_main();
+    test();
 
     printf("OK %s\n", __FILE__);
 }

@@ -9,11 +9,11 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
 typedef struct hashmap {
 	struct node** __data;
-    int _initialized;
+    size_t __size;
 
-	size_t __size;
 	size_t item_count;
 } Map;
 
