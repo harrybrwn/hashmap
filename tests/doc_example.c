@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #define MapValue unsigned char
-#include "../hashmap.h"
+#include "hashmap.h"
 
 static Map* map = NULL;
 

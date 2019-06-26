@@ -1,3 +1,9 @@
+# Libraries
+*.so
+*.o
+*.a
+/lib/
+
 # Testing binaries
 test.exe
 test

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "../hashmap.h"
+#include "hashmap.h"
 
 #define ARR_CMP(ARR1, LEN1, ARR2, LEN2) \
     for (int i = 0; i < LEN1; i++) { \
