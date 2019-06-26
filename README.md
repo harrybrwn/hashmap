@@ -1,9 +1,9 @@
 # hashmap
 
 This is my hash table implimentation.
-I am using double hashing with djb2 by Dan Bernstein and sdbm for the string pre-hashing function.
+I am using djb2 by Dan Bernstein for the string pre-hashing function.
 
-To handle hash collitions, I am using a binary search tree.
+To handle hash collitions, I am using auto balancing binary search trees (avl trees).
 
 ## Docs
 ### Structs
@@ -23,27 +23,49 @@ included then the hashmap will use that type. If it is not defined by a user, th
 default is `void*`.
 
 ### Functions
-New_Map creates a new map. Allocates the Map on the heap.<br>
-`Map* New_Map()`
+`Map* New_Map()`<br>
+New_Map creates a new map. Allocates the Map on the heap.
 
-Map_close frees the memory allocated by new_map. Only needs to be called if the Map was allocated on the heap.<br>
-`void Map_close(Map*)`
+`void Map_close(Map* m)`<br>
+Map_close frees the memory allocated by new_map. Only needs to be called if the Map was allocated on the heap.
 
-Map_put addes a void pointer at a key.<br>
-`void Map_put(Map* m, char* key, MapValue val)`
+`void Map_put(Map* m, char* key, MapValue val)`<br>
+Map_put addes a void pointer at a key.
 
-Map_get returns the void pointer stored at a key.<br>
-`MapValue Map_get(Map* m, char* key)`
+`MapValue Map_get(Map* m, char* key)`<br>
+Map_get returns the void pointer stored at a key.
 
-Map_delete will delete the data stored at a keys.<br>
-`void Map_delete(Map * m, char* key)`
+`void Map_delete(Map * m, char* key)`<br>
+Map_delete will delete the data stored at a keys.
 
+`void Map_resize(Map** m, size_t size)`<br>
 Map_resize resizzes the map to the given size. The Map given will be copied
-to a new map that has a different size.<br>
-`void Map_resize(Map** m, size_t size)`
+to a new map that has a different size.
 
+`void Map_keys(Map* m, char** keys)`<br>
 Map_keys takes a Map and an array of strings and populates the array with
 all the keys used in the Map.
 The string array given should have a length equal to the map's "item_count"
-field.<br>
-`void Map_keys(Map*, char**)`
+field.
+
+### Example
+```c
+#include <stdio.h>
+
+#define MapValue unsigned char
+#include "hashmap.h"
+
+static Map* map = NULL;
+
+void init() {
+	map = New_Map();
+
+	Map_put(map, "working", 1);
+}
+
+int main() {
+	if (Map_get(map, "working")) {
+		printf("everything is working great :) \n");
+	}
+}
+```

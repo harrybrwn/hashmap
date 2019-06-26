@@ -1,6 +1,7 @@
 # Testing binaries
 test.exe
 test
+/tests/
 
 preproc.i
 

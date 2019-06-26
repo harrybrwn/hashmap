@@ -31,7 +31,16 @@ char* randstring(size_t length) {
 }
 
 typedef unsigned long hash_t;
-hash_t prehash(char* str);
+
+hash_t _prehash(char* str) {
+    hash_t hash = 5381;
+	int    c;
+
+	while ((c = *str++))
+		hash = ((hash << 5) + hash) + c;
+
+	return hash;
+}
 
 static char** rand_keys(int len) {
     char** keys = malloc(sizeof(char*)*len);
@@ -70,9 +79,9 @@ void free_string_arr(char** arr, int len) {
 }
 
 void test_prehash() {
-    hash_t a = prehash("abc");
-    hash_t b = prehash("cba");
-    hash_t c = prehash("bca");
+    hash_t a = _prehash("abc");
+    hash_t b = _prehash("cba");
+    hash_t c = _prehash("bca");
 
     assert(a != b);
     assert(c != a);
@@ -106,6 +115,7 @@ void test_Map_delete() {
 }
 
 #pragma pack(1)
+
 struct node {
 	char*    key;
 	MapValue value;
@@ -164,15 +174,13 @@ void test_collitions() {
 	Map* m = New_Map();
 	int n = 20;
     // these keys all collide is a hash table of length 'm->__size' using 'prehash'
-    char** keys = collition_keys(6, m->__size, prehash, n);
+    char** keys = collition_keys(6, m->__size, _prehash, n);
 
 	int x[n];
 	for (int i = 0; i < n; i++) {
 		x[i] = i;
 		Map_put(m, keys[i], &x[i]);
 	}
-    // int index = prehash(keys[0]) % m->__size;
-    // print_avl(m->__data[index]);
 
     for (int i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));
@@ -285,39 +293,6 @@ void test_avl_balence() {
     delete_tree(root);
 }
 
-#include <pthread.h>
-#include <unistd.h>
-
-void *test_threads_inner1(void *data) {
-    char* res = Map_get((Map*)data, "test");
-    printf("testing thread 1\n");
-    assert(strcmp(res, "testing multi-threads") == 0);
-    return NULL;
-}
-
-void* test_threads_inner2(void* data) {
-    char* res = Map_get((Map*)data, "test");
-    printf("testing thread 2\n");
-    assert(strcmp(res, "testing multi-threads") == 0);
-    return (void*)69;
-}
-
-void test_threads_main() {
-    pthread_t thread1, thread2;
-
-    Map* map = New_Map();
-    Map_put(map, "test", "testing multi-threads");
-
-    pthread_create(&thread1, NULL, test_threads_inner1, map);
-    pthread_create(&thread2, NULL, test_threads_inner2, map);
-    pthread_join(thread1, NULL);
-    pthread_join(thread2, NULL);
-    printf("main thread\n");
-    Map_close(map);
-}
-
-#include <unistd.h>
-
 void test() {
     printf("%lu\n", sizeof(size_t));
     printf("Map size: %lu\n", sizeof(Map));
@@ -332,7 +307,6 @@ int main() {
     test_Map_resize();
     test_avl_insert();
     test_avl_balence();
-    // test_threads_main();
     test();
 
     printf("OK %s\n", __FILE__);

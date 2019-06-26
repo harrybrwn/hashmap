@@ -1,12 +1,11 @@
 CC=gcc
-CFLAGS=-Wall -pg -std=c99
+CFLAGS=-Wall -std=c99 -pg
 
 SRC=hashmap.c
 TestBin=test
-Linking=-lpthread
 
 $(TestBin): $(SRC) test.c
-	$(CC) -o $@ $(CFLAGS) $(SRC) test.c $(Linking)
+	$(CC) -o $@ $(CFLAGS) $(SRC) test.c
 
 clean:
 	rm $(TestBin)
@@ -15,6 +14,7 @@ proc:
 	gcc -E hashmap.c test.c > preproc.i
 
 profile: $(TestBin)
-	gprof test gmon.out > prof_out
+	$(CC) -o test -std=c99 -pg $(SRC) test.c
+	gprof ./test gmon.out > prof_out
 
 .PHONY: clean proc profile
