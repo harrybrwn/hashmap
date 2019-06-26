@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -g -std=c99
+CFLAGS=-Wall -pg -std=c99
 
 SRC=hashmap.c
 TestBin=test
@@ -14,4 +14,7 @@ clean:
 proc:
 	gcc -E hashmap.c test.c > preproc.i
 
-.PHONY: clean proc
+profile: $(TestBin)
+	gprof test gmon.out > prof_out
+
+.PHONY: clean proc profile

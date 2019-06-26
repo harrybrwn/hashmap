@@ -3,3 +3,6 @@ test.exe
 test
 
 preproc.i
+
+prof_out
+gmon.out

@@ -151,7 +151,7 @@ void Map_keys(Map* m, char** keys) {
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
-static int height(struct node* n) {
+static inline int height(struct node* n) {
 	if (n == NULL)
 		return -1;
 	else
@@ -160,7 +160,7 @@ static int height(struct node* n) {
 
 #define MAXHEIGHT(XX, YY) MAX(height(XX), height(YY))
 
-struct node* node_rotateleft(struct node* n) {
+static inline struct node* node_rotateleft(struct node* n) {
 	struct node *head;
 
 	head = n->right;
@@ -172,7 +172,7 @@ struct node* node_rotateleft(struct node* n) {
 	return head;
 }
 
-struct node* node_rotateright(struct node* n) {
+static inline struct node* node_rotateright(struct node* n) {
 	struct node *head;
 
 	head = n->left;
@@ -184,7 +184,7 @@ struct node* node_rotateright(struct node* n) {
 	return head;
 }
 
-static void balance_left(struct node** root, hash_t new_hash) {
+static inline void balance_left(struct node** root, hash_t new_hash) {
 	if (new_hash < (*root)->left->_hash_val) {
 		*root = node_rotateright(*root);
 	} else {
@@ -194,10 +194,10 @@ static void balance_left(struct node** root, hash_t new_hash) {
 	}
 }
 
-static void balance_right(struct node** root, hash_t new_hash) {
-	if (new_hash > (*root)->right->_hash_val)
+static inline void balance_right(struct node** root, hash_t new_hash) {
+	if (new_hash > (*root)->right->_hash_val) {
 		*root = node_rotateleft(*root);
-	else {
+	} else {
 		// double rotate left
 		(*root)->right = node_rotateright((*root)->right);
 		*root = node_rotateleft(*root);

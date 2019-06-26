@@ -325,7 +325,6 @@ void test() {
 }
 
 int main() {
-    printf("start\n");
     TestMap();
 	test_collitions();
     test_prehash();
