@@ -1,9 +1,9 @@
 # Testing binaries
 test.exe
 test
-/tests/
+doc_example
 
+# Other files
 preproc.i
-
 prof_out
 gmon.out

@@ -64,7 +64,11 @@ void init() {
 }
 
 int main() {
-	if (Map_get(map, "working")) {
+	init();
+
+	MapValue working = Map_get(map, "working");
+
+	if (working) {
 		printf("everything is working great :) \n");
 	}
 }
