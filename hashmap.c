@@ -6,9 +6,10 @@
 extern "C" {
 #endif
 
+#pragma pack(1)
+
 typedef unsigned long hash_t;
 
-#pragma pack(1)
 struct node {
 	char*    key;
 	MapValue value;
@@ -22,7 +23,7 @@ struct node {
 	hash_t _hash_val;
 };
 
-hash_t djb2(char* str) {
+static inline hash_t djb2(char* str) {
 	hash_t hash = 5381;
 	int    c;
 
@@ -32,7 +33,7 @@ hash_t djb2(char* str) {
 	return hash;
 }
 
-hash_t sdbm(char *str) {
+static inline hash_t sdbm(char *str) {
     hash_t hash = 0;
     int c;
 
@@ -160,7 +161,7 @@ static inline int height(struct node* n) {
 
 #define MAXHEIGHT(XX, YY) MAX(height(XX), height(YY))
 
-static inline struct node* node_rotateleft(struct node* n) {
+static struct node* node_rotateleft(struct node* n) {
 	struct node *head;
 
 	head = n->right;
@@ -172,7 +173,7 @@ static inline struct node* node_rotateleft(struct node* n) {
 	return head;
 }
 
-static inline struct node* node_rotateright(struct node* n) {
+static struct node* node_rotateright(struct node* n) {
 	struct node *head;
 
 	head = n->left;
@@ -184,8 +185,10 @@ static inline struct node* node_rotateright(struct node* n) {
 	return head;
 }
 
-static inline void balance_left(struct node** root, hash_t new_hash) {
+static inline void
+balance_left_side(struct node** root, hash_t new_hash) {
 	if (new_hash < (*root)->left->_hash_val) {
+		// single rotate right
 		*root = node_rotateright(*root);
 	} else {
 		// double rotate right
@@ -194,8 +197,10 @@ static inline void balance_left(struct node** root, hash_t new_hash) {
 	}
 }
 
-static inline void balance_right(struct node** root, hash_t new_hash) {
+static inline void
+balance_right_side(struct node** root, hash_t new_hash) {
 	if (new_hash > (*root)->right->_hash_val) {
+		// single rotate left
 		*root = node_rotateleft(*root);
 	} else {
 		// double rotate left
@@ -204,7 +209,7 @@ static inline void balance_right(struct node** root, hash_t new_hash) {
 	}
 }
 
-#define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A) - height(NODE_B))
+#define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
 
 void insert_node(struct node** root, struct node* new) {
 	if (new->_hash_val < (*root)->_hash_val) {
@@ -214,7 +219,7 @@ void insert_node(struct node** root, struct node* new) {
 
 			// if left side is double-unbalenced... rotate right
 			if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2)
-				balance_left(root, new->_hash_val);
+				balance_left_side(root, new->_hash_val);
 		} else
 			(*root)->left = new;
 	} else if (new->_hash_val > (*root)->_hash_val) {
@@ -224,7 +229,7 @@ void insert_node(struct node** root, struct node* new) {
 
 			// if right side is double-unbalenced... rotate left
 			if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2)
-				balance_right(root, new->_hash_val);
+				balance_right_side(root, new->_hash_val);
 		} else
 			(*root)->right = new;
 	}

@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #pragma pack(1)
+
 typedef struct hashmap {
 	struct node** __data;
     size_t __size;
