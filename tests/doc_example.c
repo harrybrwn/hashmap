@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #define MapValue unsigned char
 #include "../hashmap.h"
@@ -17,5 +18,8 @@ int main() {
 
 	if (working) {
 		printf("everything is working great :) \n");
+	} else {
+		printf("map is not working\n");
+		exit(1);
 	}
 }
