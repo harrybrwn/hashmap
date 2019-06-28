@@ -10,7 +10,7 @@ LibDir=lib
 # Binaries
 Test=$(TestDir)/test
 Example=$(TestDir)/doc_example
-StaticLib=$(LibDir)/libhashmap_s.a
+StaticLib=$(LibDir)/libhashmapstatic.a
 SharedLib=$(LibDir)/libhashmap.so
 
 all: $(Test) $(Example) lib
@@ -25,7 +25,7 @@ $(Test): $(SRC) $(Test).c
 	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $^
 
 $(Example): $(SRC) $(Example).c $(StaticLib)
-	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(Example).c -lhashmap_s
+	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(Example).c -lhashmapstatic
 
 lib: $(SharedLib) $(StaticLib)
 .PHONY: lib
@@ -45,7 +45,7 @@ clean: all
 	rm $(Test) $(Example)
 
 proc:
-	gcc -E hashmap.c test.c > preproc.i
+	gcc -I. -E hashmap.c $(Test).c > preproc.i
 
 profile: $(TestBin)
 	$(CC) -o test -std=c99 -pg $(SRC) test.c

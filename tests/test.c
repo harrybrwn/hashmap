@@ -294,9 +294,7 @@ void test_avl_balence() {
 }
 
 void test() {
-    printf("%lu\n", sizeof(size_t));
-    printf("Map size: %lu\n", sizeof(Map));
-    printf("node size: %lu\n", sizeof(struct node));
+
 }
 
 int main() {
