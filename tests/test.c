@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
 #include "hashmap.h"
+#include "tests/test_common.h"
 
 #define ARR_CMP(ARR1, LEN1, ARR2, LEN2) \
     for (int i = 0; i < LEN1; i++) { \
@@ -14,22 +16,6 @@
     Same_Arr_val:; \
     }
 
-char* randstring(size_t length) {
-    static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
-    char *str = NULL;
-    if (length) {
-        str = malloc(sizeof(char) * (length + 1));
-        if (str) {
-            for (int n = 0;n < length;n++) {
-                int key = rand() % (int)(sizeof(charset) - 1);
-                str[n] = charset[key];
-            }
-            str[length] = '\0';
-        }
-    }
-    return str;
-}
-
 typedef unsigned long hash_t;
 
 hash_t _prehash(char* str) {
@@ -40,14 +26,6 @@ hash_t _prehash(char* str) {
 		hash = ((hash << 5) + hash) + c;
 
 	return hash;
-}
-
-static char** rand_keys(int len) {
-    char** keys = malloc(sizeof(char*)*len);
-    for (int i = 0; i < len; i++) {
-        keys[i] = randstring(10);
-    }
-    return keys;
 }
 
 static char** collition_keys(size_t str_len,
@@ -72,11 +50,11 @@ static char** collition_keys(size_t str_len,
     return arr;
 }
 
-void free_string_arr(char** arr, int len) {
-    for (int i = 0; i < len; i++)
-        free(arr[i]);
-    free(arr);
-}
+// void free_string_arr(char** arr, int len) {
+//     for (int i = 0; i < len; i++)
+//         free(arr[i]);
+//     free(arr);
+// }
 
 void test_prehash() {
     hash_t a = _prehash("abc");
@@ -196,6 +174,26 @@ void test_collitions() {
 	Map_close(m);
 }
 
+void test_Map_keys()
+{
+	Map* m = New_Map();
+	int n = 39;
+	char** keys = rand_keys(n);
+	int data[n];
+	for (int i = 0; i < n; i++)
+	{
+		data[i] = i;
+		Map_put(m, keys[i], &data[i]);
+	}
+	assert(m->item_count == n);
+	
+	char* mapkeys[m->item_count];
+	Map_keys(m, mapkeys);
+	ARR_CMP(mapkeys, m->item_count, keys, n);
+	Map_close(m);
+	free_string_arr(keys, n);
+}
+
 void test_Map_resize() {
     Map* m = New_Map();
     int n = 28;
@@ -209,16 +207,20 @@ void test_Map_resize() {
     Map_resize(&m, n + 1);
     assert(m->__size == n + 1);
 
-    char* mapkeys[m->item_count];
-    Map_keys(m, mapkeys);
-    ARR_CMP(mapkeys, m->item_count, keys, n);
-
     Map_resize(&m, 3);
     for (int i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));
     assert(m->__size == 3);
     free_string_arr(keys, n);
     Map_close(m);
+
+	// m = New_Map();
+	// n = 500;
+	// Map_resize(&m, n);
+	// assert(m->__size == n);
+	// for (int i = 0; i < m->__size; i++)
+	// 	assert(m->__data[i] == NULL);
+	// Map_close(m);
 }
 
 void insert_node(struct node** root, struct node* new);
@@ -298,12 +300,15 @@ void test() {
 }
 
 int main() {
-    TestMap();
 	test_collitions();
     test_prehash();
+ 
+    TestMap();
     test_Map_delete();
-    test_Map_resize();
-    test_avl_insert();
+	test_Map_resize();
+	test_Map_keys();
+
+	test_avl_insert();
     test_avl_balence();
     test();
 
