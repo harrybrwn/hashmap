@@ -82,8 +82,9 @@ void Map_put(Map* m, char* key, MapValue val) {
 	int    index = key_hash % m->__size;
 
 	add_node(m, _new_node(key, val, key_hash), index);
-	if (++m->item_count >= m->__size)
-		Map_resize(&m, m->__size*2);
+	m->item_count++;
+	// if (m->item_count >= m->__size)
+	// 	Map_resize(&m, m->__size*2);
 }
 
 MapValue Map_get(Map* m, char* key) {
@@ -105,10 +106,11 @@ MapValue Map_get(Map* m, char* key) {
 
 void Map_delete(Map* m, char* key) {
 	hash_t k_hash = prehash(key);
-	int    index = k_hash % m->__size;
+	size_t    index = k_hash % m->__size;
 
 	struct node* root = m->__data[index];
 	if (root == NULL) {
+		m->item_count--;
 		return;
 	}
 
@@ -258,6 +260,10 @@ static void delete_tree(struct node* leaf) {
 static struct node*
 _new_node(char* key, MapValue val, hash_t key_hash) {
 	struct node* n = malloc(sizeof(struct node));
+	if (n == NULL) {
+		perror("Error: out of memory allocating nodes");
+		return NULL;
+	}
 	n->key = key;
 	n->value = val;
 	n->height = 0;
@@ -323,8 +329,16 @@ static void copy_nodes(Map* m, struct node* n) {
 
 static Map* create_map(size_t size) {
 	Map* m = malloc(sizeof(Map));
+	if (m == NULL) {
+		perror("Error: ran out of memory allocating a Map");
+		return NULL;
+	}
 	m->__size = size;
 	m->__data = malloc(sizeof(struct node*) * m->__size);
+	if (m->__data == NULL) {
+		perror("Error: ran out of memory allocating a node array");
+		return m;
+	}
 	for (int i = 0; i < size; i++)
 		m->__data[i] = NULL;
 	m->item_count = 0;

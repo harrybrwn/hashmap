@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -std=c99 -g
+CFLAGS=-Wall -std=c11 -g
 
 SRC=hashmap.c
 
@@ -10,39 +10,53 @@ LibDir=lib
 # Binaries
 Test=$(TestDir)/test
 Example=$(TestDir)/doc_example
+Benchmark=$(TestDir)/benchmarks
+TestSRC=tests/test_common.c
+
 StaticLib=$(LibDir)/libhashmapstatic.a
 SharedLib=$(LibDir)/libhashmap.so
 
-all: $(Test) $(Example) lib
+all: $(Test) $(Example) $(Benchmark) lib
 
-test: $(Test) $(Example)
+test: $(Test) $(Example) $(Benchmark)
 	@./$(Test)
 	@./$(Example) > /dev/null
+	@./$(Benchmark)
 
-.PHONY: all test
+bench: $(Benchmark)
+	@./$(Benchmark)
 
-$(Test): $(SRC) $(Test).c
+.PHONY: all test bench
+
+$(Test): $(TestSRC) $(SRC) $(Test).c
 	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $^
 
-$(Example): $(SRC) $(Example).c $(StaticLib)
-	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(Example).c -lhashmapstatic
+$(Example): $(TestSRC) $(Example).c $(StaticLib)
+	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
+
+$(Benchmark): $(TestSRC) $(StaticLib) $(Benchmark).c
+	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
 lib: $(SharedLib) $(StaticLib)
 .PHONY: lib
 
-$(SharedLib): $(SRC)
+$(SharedLib): hashmap.c hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi
 	$(CC) $(CFLAGS) -fPIC -shared -o $@ $(SRC) -lc
 
-$(StaticLib): hashmap.c
+$(StaticLib): hashmap.c hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi
 	$(CC) -c $(CFLAGS) -o hashmap.o hashmap.c
 	ar rcs $@ hashmap.o
 	@rm hashmap.o
 
-clean: all
+clean:
+	@for file in $(Test) $(Example) $(Benchmark); do\
+		if [ -f $$file ]; then\
+			rm $$file;\
+		fi;\
+	done
 	@if [ -d lib ]; then rm -rf lib; fi
-	rm $(Test) $(Example)
 
 proc:
 	gcc -I. -E hashmap.c $(Test).c > preproc.i
