@@ -83,8 +83,6 @@ void Map_put(Map* m, char* key, MapValue val) {
 
 	add_node(m, _new_node(key, val, key_hash), index);
 	m->item_count++;
-	// if (m->item_count >= m->__size)
-	// 	Map_resize(&m, m->__size*2);
 }
 
 MapValue Map_get(Map* m, char* key) {
