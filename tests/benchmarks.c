@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <time.h>
 
+#define MapValue int
 #include <hashmap.h>
 #include "tests/test_common.h"
 
@@ -16,18 +17,49 @@ void millipause(double sec) {
 
 void test()
 {
-	millipause(0.001);
+	// millipause(0.001);
 }
 
-void rand_keys_bench()
+// #define N_KEYS 2000000
+#define N_KEYS 10000
+
+static Map* map;
+static char** mapkeys;
+
+void init_globals()
 {
-	int n = 100000;
-	char** keys = rand_keys(n);
-	free_string_arr(keys, n);
+	map = New_Map();
+	Map_resize(&map, N_KEYS);
+	mapkeys = rand_keys(N_KEYS);
 }
 
-#define N_KEYS 2000000
-// #define N_KEYS 10000
+void teardown_globals()
+{
+	for (int i = 0; i < N_KEYS; i++)
+		assert(map->__data[i] == NULL);
+	assert(map->item_count == 0);
+
+	Map_close(map);
+	free_string_arr(mapkeys, N_KEYS);
+}
+
+void put_benchmark()
+{
+	for (int i = 0; i < N_KEYS; i++)
+		Map_put(map, mapkeys[i], 10);
+}
+
+void get_benchmark()
+{
+	for (int i = 0; i < N_KEYS; i++)
+		assert(10 == Map_get(map, mapkeys[i]));
+}
+
+void delete_benchmark()
+{
+	for (int i = 0; i < N_KEYS; i++)
+		Map_delete(map, mapkeys[i]);
+}
 
 void putget_benchmark()
 {
@@ -40,12 +72,12 @@ void putget_benchmark()
 
 	for (int i = 0; i < N_KEYS; i++)
 	{
-		data[i] = 20;
-		Map_put(m, keys[i], &data[i]);
+		data[i] = i + 1;
+		Map_put(m, keys[i], data[i]);
 	}
 
 	for (int i = 0; i < N_KEYS; i++)
-		assert(data[i] == *(int*)Map_get(m, keys[i]));
+		assert(data[i] == Map_get(m, keys[i]));
 
 	assert(m->item_count == N_KEYS);
 	Map_close(m);
@@ -63,12 +95,13 @@ void putdelete_benchmark()
 	for (int i = 0; i < N_KEYS; i++)
 	{
 		data[i] = i + 1;
-		Map_put(m, keys[i], &data[i]);
+		Map_put(m, keys[i], data[i]);
 	}
 	for (int i = 0; i < N_KEYS; i++)
 		Map_delete(m, keys[i]);
 	for (size_t i = 0; i < m->__size; i++)
 		assert(m->__data[i] == NULL);
+	
 	assert(m->item_count == 0);
 	Map_close(m);
 	free_string_arr(keys, N_KEYS);
@@ -77,10 +110,20 @@ void putdelete_benchmark()
 int main()
 {
 	printf("\nStart Benchmarks\n");
+	init_globals();
 
-	Benchmark("main_test", test);
+	// Benchmark("main_test", test);
+	
+	Benchmark("put", put_benchmark);
+	Benchmark("get", get_benchmark);
+	Benchmark("delete", delete_benchmark);
+	
 	Benchmark("put/get", putget_benchmark);
 	Benchmark("put/delete", putdelete_benchmark);
+
+	// AverageBenchmark("put/get", putget_benchmark, 10);
+	// AverageBenchmark("put/delete", putdelete_benchmark, 10);
 	
+	teardown_globals();
 	printf("End Benchmarks\n");
 }

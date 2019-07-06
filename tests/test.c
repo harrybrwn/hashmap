@@ -242,6 +242,157 @@ static struct node* newnode(hash_t val) {
     return n;
 }
 
+struct node* pop_min(struct node** root);
+struct node* pop_max(struct node** root);
+
+void test_minmax() {
+	struct node* root = newnode(10);
+	size_t nodes[8] = {5, 15, 6, 4, 14, 16,
+					   13, 17};
+
+	for (int i = 0; i < 8; i++)
+		insert_node(&root, newnode(nodes[i]));
+
+	struct node* max = pop_max(&root);
+	assert(max != NULL);
+	assert(max->left == NULL);
+	assert(max->right == NULL);
+	assert(max->_hash_val == 17);
+	assert(root->right->right->right == NULL);
+	free(max);
+
+	max = pop_min(&root->right);
+	assert(max != NULL);
+	assert(max->left == NULL);
+	assert(max->right == NULL);
+	assert(max->_hash_val == 13);
+	assert(root->right->left->left == NULL);
+	free(max);
+
+	struct node* min = pop_min(&root);
+	assert(min->left == NULL);
+	assert(min->right == NULL);
+	assert(min->_hash_val == 4);
+	assert(root->left->left == NULL);
+
+	free(min);
+	delete_tree(root);
+
+	root = newnode(10);
+	max = pop_max(&root);
+	assert(max->_hash_val == 10);
+	free(root);
+}
+
+void delete_node(struct node** leaf, hash_t key_hash);
+
+void test_delete_node0()
+{
+	// struct node* root = newnode(10);
+	// insert_node(&root, newnode(5));
+	// insert_node(&root, newnode(15));
+	// delete_node(&root, 15);
+	// assert(root->right == NULL);
+
+	struct node* root = newnode(0);
+	for (int i = 1; i <= 30; i++)
+		insert_node(&root, newnode(i));
+
+	delete_node(&root, 23);
+	assert(root->right->_hash_val == 22);
+	
+	// delete_node(&root, 22);
+	// assert(root->right->_hash_val == 21);
+	// assert(root->right->left->right != NULL);
+
+
+	// delete_node(&root, 17); // broken
+	// assert(root->right->left->left->_hash_val == 16);
+	
+	// print_avl(root);
+}
+
+void test_delete_node()
+{
+	struct node* root = newnode(25);
+	int nodes[] = {12, 27, 5, 20, 26, 4, 7};
+	for (int i = 0; i < 7; i++)
+		insert_node(&root, newnode(nodes[i]));
+
+	// delete nodes with no children
+	insert_node(&root, newnode(28));
+	assert(root->right->right->_hash_val == 28);
+	delete_node(&root, 28);
+	assert(root->right->right == NULL);
+	insert_node(&root, newnode(19));
+	assert(root->left->right->left->_hash_val == 19);
+
+	// delete node with uneven child heights
+	/*
+	   delete(12)...
+	   				 25
+				   /   \
+			----> 12   (...)
+				/    \
+			   5     20
+			  / \   /
+			 4  7  19
+
+		becomes...
+					25
+				   /  \
+				  7   (...)
+				/  \
+			   5    20
+			  /    /
+			 4    19
+	*/
+	assert(root->left->_hash_val == 12);
+	assert(root->left->right->_hash_val == 20);
+	assert(root->left->left->_hash_val == 5);
+	delete_node(&root, 12);
+	assert(root->left->_hash_val == 7);
+	assert(root->left->right->_hash_val == 20);
+	assert(root->left->left->_hash_val == 5);
+	
+	// delete node with only two children on each side
+	/*
+		delete(5)...
+	               25
+				 /   \
+				7     (...)
+			  /  \
+	   ----> 5   20
+			/ \
+		   4   6
+
+        becomes...
+				  25
+				 /  \
+				7   (...)
+			  /  \
+			 4   20
+			  \
+			   6
+	*/
+	insert_node(&root, newnode(6));
+	assert(root->left->left->right->_hash_val == 6);
+	print_avl(root);
+	delete_node(&root, 5);
+  	
+	assert(root->left->left->left == NULL); // 4's left child should be null
+  	assert(root->left->left->right->left == NULL);
+
+	assert(root->left->left->right->right == NULL);
+	assert(root->left->left->_hash_val == 4);
+	assert(root->left->left->right->_hash_val == 6);
+	assert(root->left->left->right->left == NULL);
+	// assert(root->left->left->left == NULL);
+	// printf("%lu\n", root->left->left->left->_hash_val);
+
+	// delete_tree(root);
+}
+
 void test_avl_insert() {
     int vals[] = {3, 7, 4, 2};
     struct node* root = newnode(5);
@@ -296,21 +447,26 @@ void test_avl_balence() {
 }
 
 void test() {
-
+	Map* m = New_Map();
+	assert(m->__size == DEFAULT_MAP_SIZE);
+	Map_close(m);
 }
 
 int main() {
-	test_collitions();
-    test_prehash();
+	// test_collitions();
+    // test_prehash();
+	test_minmax();
+	test_delete_node0();
+	// test_delete_node();
  
-    TestMap();
-    test_Map_delete();
-	test_Map_resize();
-	test_Map_keys();
+    // TestMap();
+    // test_Map_delete();
+	// test_Map_resize();
+	// test_Map_keys();
 
-	test_avl_insert();
-    test_avl_balence();
-    test();
+	// test_avl_insert();
+    // test_avl_balence();
+    // test();
 
     printf("OK %s\n", __FILE__);
 }
