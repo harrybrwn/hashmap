@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <locale.h>
 #include <assert.h>
 #include <time.h>
 
@@ -21,7 +22,8 @@ void test()
 }
 
 // #define N_KEYS 2000000
-#define N_KEYS 10000
+#define N_KEYS 1000000
+// #define N_KEYS 100000
 
 static Map* map;
 static char** mapkeys;
@@ -97,11 +99,17 @@ void putdelete_benchmark()
 		data[i] = i + 1;
 		Map_put(m, keys[i], data[i]);
 	}
+
 	for (int i = 0; i < N_KEYS; i++)
+	{
+		// printf("%d\n", i);
 		Map_delete(m, keys[i]);
+	}
+	printf("all keys deleted\n");
+
 	for (size_t i = 0; i < m->__size; i++)
 		assert(m->__data[i] == NULL);
-	
+
 	assert(m->item_count == 0);
 	Map_close(m);
 	free_string_arr(keys, N_KEYS);
@@ -109,21 +117,20 @@ void putdelete_benchmark()
 
 int main()
 {
-	printf("\nStart Benchmarks\n");
+	setlocale(LC_NUMERIC, "");
+	printf("\nStart Benchmarks with %'d items\n", N_KEYS);
 	init_globals();
 
-	// Benchmark("main_test", test);
-	
 	Benchmark("put", put_benchmark);
 	Benchmark("get", get_benchmark);
 	Benchmark("delete", delete_benchmark);
-	
-	Benchmark("put/get", putget_benchmark);
-	Benchmark("put/delete", putdelete_benchmark);
+
+	// Benchmark("put/get", putget_benchmark);
+	// Benchmark("put/delete", putdelete_benchmark);
 
 	// AverageBenchmark("put/get", putget_benchmark, 10);
 	// AverageBenchmark("put/delete", putdelete_benchmark, 10);
-	
+
 	teardown_globals();
 	printf("End Benchmarks\n");
 }

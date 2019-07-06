@@ -274,42 +274,132 @@ void test_minmax() {
 	assert(min->right == NULL);
 	assert(min->_hash_val == 4);
 	assert(root->left->left == NULL);
-
 	free(min);
 	delete_tree(root);
 
 	root = newnode(10);
 	max = pop_max(&root);
 	assert(max->_hash_val == 10);
+	free(max);
 	free(root);
+
+	root = newnode(99);
+	max = pop_min(&root);
+	assert(max->_hash_val == 99);
+	assert(root == NULL);
+	free(max);
+}
+
+static struct node* search(struct node* root, hash_t key_hash)
+{
+	if (!root)
+		return NULL;
+	if (root->_hash_val == key_hash)
+		return root;
+
+	if (key_hash < root->_hash_val)
+		return search(root->left, key_hash);
+	else if (key_hash > root->_hash_val)
+		return search(root->right, key_hash);
+	return NULL;
 }
 
 void delete_node(struct node** leaf, hash_t key_hash);
 
 void test_delete_node0()
 {
-	// struct node* root = newnode(10);
-	// insert_node(&root, newnode(5));
-	// insert_node(&root, newnode(15));
-	// delete_node(&root, 15);
-	// assert(root->right == NULL);
-
-	struct node* root = newnode(0);
+	struct node* root;
+	root = newnode(0);
 	for (int i = 1; i <= 30; i++)
 		insert_node(&root, newnode(i));
 
 	delete_node(&root, 23);
 	assert(root->right->_hash_val == 22);
-	
-	// delete_node(&root, 22);
-	// assert(root->right->_hash_val == 21);
-	// assert(root->right->left->right != NULL);
+	delete_node(&root, 22);
+	assert(search(root, 20) != NULL);
 
+	assert(root->right->_hash_val == 21);
+	assert(root->right->left->right != NULL);
 
-	// delete_node(&root, 17); // broken
-	// assert(root->right->left->left->_hash_val == 16);
-	
-	// print_avl(root);
+	delete_node(&root, 17);
+	assert(root->right->left->left->_hash_val == 16);
+	delete_node(&root, 16);
+	assert(root->right->left->left->_hash_val == 18);
+	delete_tree(root);
+
+	/**
+	 * tests for deleting the root node
+	 */
+	root = newnode(5);
+	insert_node(&root, newnode(3));
+	delete_node(&root, 5);
+	assert(root != NULL);
+	assert(root->_hash_val == 3);
+	assert(root->left == NULL);
+	assert(root->right == NULL);
+	insert_node(&root, newnode(7));
+	assert(root->right->_hash_val == 7);
+	assert(root->left == NULL);
+	delete_node(&root, 3);
+	assert(root->_hash_val == 7);
+	assert(root->left == NULL);
+	assert(root->right == NULL);
+	delete_tree(root);
+
+	root = newnode(0);
+	int n = 100000;
+	for (int i = 1; i <= n; i++)
+		insert_node(&root, newnode(i));
+
+	for (int i = 1; i <= n; i++)
+	{
+		delete_node(&root, i);
+		assert(search(root, 0) != NULL);
+	}
+	assert(root->_hash_val == 0);
+	assert(root->left == NULL);
+	assert(root->right == NULL);
+	free(root);
+}
+
+/**
+ * This test will fail if data is lost when deleting the root
+ * node of a bst.
+ */
+void test_delete_root()
+{
+	/*
+		delete(50)...
+			   ---> 50
+				  /   \
+				25	   75
+			   /  \   /  \
+    		 20   30 70  80
+
+		result...
+					30
+				  /    \
+				25     75
+			   /      /  \
+			  20     70  80
+	 */
+	struct node* root = newnode(50);
+	insert_node(&root, newnode(25));
+	insert_node(&root, newnode(75));
+	insert_node(&root, newnode(20));
+	insert_node(&root, newnode(30));
+	insert_node(&root, newnode(70));
+	insert_node(&root, newnode(80));
+
+	delete_node(&root, 50);
+	assert(root->_hash_val == 30);
+	assert(root->right->_hash_val == 75);
+	assert(root->left->_hash_val == 25);
+	assert(root->left->right == NULL);
+	delete_node(&root, 30);
+	assert(root->_hash_val == 25);
+	assert(root->left->_hash_val == 20);
+	delete_tree(root);
 }
 
 void test_delete_node()
@@ -326,6 +416,7 @@ void test_delete_node()
 	assert(root->right->right == NULL);
 	insert_node(&root, newnode(19));
 	assert(root->left->right->left->_hash_val == 19);
+	assert(search(root, 19) != NULL);
 
 	// delete node with uneven child heights
 	/*
@@ -377,20 +468,25 @@ void test_delete_node()
 	*/
 	insert_node(&root, newnode(6));
 	assert(root->left->left->right->_hash_val == 6);
-	print_avl(root);
 	delete_node(&root, 5);
   	
 	assert(root->left->left->left == NULL); // 4's left child should be null
   	assert(root->left->left->right->left == NULL);
-
 	assert(root->left->left->right->right == NULL);
 	assert(root->left->left->_hash_val == 4);
 	assert(root->left->left->right->_hash_val == 6);
-	assert(root->left->left->right->left == NULL);
-	// assert(root->left->left->left == NULL);
-	// printf("%lu\n", root->left->left->left->_hash_val);
+	delete_tree(root);
+}
 
-	// delete_tree(root);
+/**
+ * this test will assure that the delete infrastructure still works when the
+ * nodes are stored in a Map.
+ */
+void test_single_bucket_Map()
+{
+	// Map* m = New_Map();
+	// Map_resize(&m, 1);
+	// assert(m->__size == 1);
 }
 
 void test_avl_insert() {
@@ -453,20 +549,23 @@ void test() {
 }
 
 int main() {
-	// test_collitions();
-    // test_prehash();
+	test_collitions();
+    test_prehash();
 	test_minmax();
 	test_delete_node0();
-	// test_delete_node();
- 
-    // TestMap();
-    // test_Map_delete();
-	// test_Map_resize();
-	// test_Map_keys();
+	test_delete_root();
+	test_delete_node();
+	test_single_bucket_Map();
 
-	// test_avl_insert();
-    // test_avl_balence();
-    // test();
+ 
+    TestMap();
+    test_Map_delete();
+	test_Map_resize();
+	test_Map_keys();
+
+	test_avl_insert();
+    test_avl_balence();
+    test();
 
     printf("OK %s\n", __FILE__);
 }

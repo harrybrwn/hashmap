@@ -110,13 +110,21 @@ void Map_delete(Map* m, char* key) {
 
 	struct node* root = m->__data[index];
 	if (root == NULL) {
-		m->item_count--;
+		m->item_count--; // ok wait, why??
 		return;
 	}
 
+	/**
+	 * This NEEDS to be fixed!
+	 * 
+	 * It should just work with a single call to delete_node
+	 * but i keep getting seg-faults when i do that.
+	 */
 	if (k_hash != root->_hash_val) {
 		delete_node(&root, k_hash);
 	} else {
+		// if (root->left != NULL || root->right != NULL)
+		// 	printf("possible mem leak at %s:%d\n", __FILE__, __LINE__);
 		free(m->__data[index]);
 		m->__data[index] = NULL;
 	}
@@ -324,14 +332,14 @@ struct node* pop_min(struct node** node) {
 		*node = NULL;
 		return tmp;
 	}
-	
+
 	while (1)
 	{
 		if (tmp->left) {
 			if (!tmp->left->left) {
 				struct node* min = tmp->left;
 				min->right = tmp->left->right;
-				tmp->left = NULL;
+				tmp->left = min->right;
 				return min;
 			}
 			else {
@@ -345,6 +353,9 @@ struct node* pop_min(struct node** node) {
 	return tmp;
 }
 
+/**
+ * pop max finds the max value in the tree, pops off the node and returns it.
+ */
 struct node* pop_max(struct node** node) {
 	struct node* tmp = *node;
 	if (!tmp->right && !tmp->left)
@@ -359,7 +370,7 @@ struct node* pop_max(struct node** node) {
 			if (!tmp->right->right) {
 				struct node* max = tmp->right;
 				max->left = tmp->right->left;
-				tmp->right = NULL;
+				tmp->right = max->left;
 				return max;
 			}
 			else {
@@ -375,9 +386,15 @@ struct node* pop_max(struct node** node) {
 
 static void delete_right(struct node* node)
 {
+	/**
+	 * node->right is the node that is going to be deleted.
+	 * 
+	 * Im calling delete_right on the parent so that i don't have to start
+	 * storing the parent of each child in every node.
+	 */
 	if (!node->right->left)
 	{
-		struct node* tmp = node->left->right;
+		struct node* tmp = node->right->right;
 		free(node->right);
 		node->right = tmp;
 	}
@@ -389,20 +406,25 @@ static void delete_right(struct node* node)
 	}
 	else
 	{
-		printf("deleting a parent of two (%lu)\n", node->right->_hash_val);
 		if (node->right->left->height >= node->right->right->height)
 		{
 			struct node* max = pop_max(&node->right->left);
-			max->left = node->right->left;
+			if (node->right->left != max)
+			{
+				max->left = node->right->left;
+			}
 			max->right = node->right->right;
 			free(node->right);
 			node->right = max;
 		}
 		else
 		{
-			struct node* min = pop_min(&node->right->right); // what if node->right->right is at height 0?
+			struct node* min = pop_min(&node->right->right);
+			if (node->right->right != min)
+			{
+				min->right = node->right->right;
+			}
 			min->left = node->right->left;
-			min->left = node->right->right;
 			free(node->right);
 			node->right = min;
 		}
@@ -413,7 +435,12 @@ static void delete_right(struct node* node)
 
 static void delete_left(struct node* node)
 {
-	// printf("deleting node: (%lu)\n", node->left->_hash_val);
+	/**
+	 * node->left is the node that is going to be deleted.
+	 * 
+	 * Im calling delete_left on the parent so that i don't have to start
+	 * storing the parent of each child in every node.
+	 */
 	if (!node->left->left)
 	{
 		struct node* tmp = node->left->right;
@@ -428,12 +455,13 @@ static void delete_left(struct node* node)
 	}
 	else
 	{
-		printf("deleting a parent of two\n");
 		if (node->left->left->height >= node->left->right->height)
 		{
 			struct node* max = pop_max(&node->left->left);
-
-			max->left = node->left->left;
+			if (node->left->left != max)
+			{
+				max->left = node->left->left;
+			}
 			max->right = node->left->right;
 			free(node->left);
 			node->left = max;
@@ -441,8 +469,11 @@ static void delete_left(struct node* node)
 		else
 		{
 			struct node* min = pop_min(&node->left->right);
+			if (node->left->right != min)
+			{
+				min->right = node->left->right;
+			}
 			min->left = node->left->left;
-			min->right = node->left->right;
 			free(node->left);
 			node->left = min;
 		}
@@ -451,30 +482,53 @@ static void delete_left(struct node* node)
 	// recalculate heights
 }
 
-void delete_node(struct node** leaf, hash_t key_hash) {
-	// if ((*leaf) == NULL) {
-	// 	return;
-	// }
-	if ((*leaf)->_hash_val == key_hash)
-	{
-		printf("dont have a way to delete the root node!\n");
-		// struct node* tmp = *leaf;
+#include <assert.h>
 
-		// free(*leaf);
-		// return;
+void delete_node(struct node** leaf, hash_t key_hash) {
+	if ((*leaf)->_hash_val == key_hash) {
+		if ((*leaf)->left)
+		{
+			struct node* max = pop_max(&(*leaf)->left);
+
+			if (max != (*leaf)->left)
+				max->left = (*leaf)->left;
+			max->right = (*leaf)->right;
+			free(*leaf);
+			*leaf = max;
+		}
+		else if ((*leaf)->right)
+		{
+			struct node* tmp = (*leaf)->right;
+			free(*leaf);
+			*leaf = tmp;
+		}
+		else // this is the last node in the tree.
+		{
+			free(*leaf);
+			*leaf = NULL;
+		}
+		return;
 	}
 
-	else if (key_hash < (*leaf)->_hash_val) {
+	if (key_hash < (*leaf)->_hash_val) {
+		// if (!(*leaf)->left)
+		// {
+		// 	printf("wat??\n");
+		// 	return;
+		// }
 		if (key_hash == (*leaf)->left->_hash_val) {
-			printf("deleting left from (%lu)\n", (*leaf)->_hash_val);
 			delete_left(*leaf);
 		} else {
 			return delete_node(&(*leaf)->left, key_hash);
 		}
 	} else if (key_hash > (*leaf)->_hash_val) {
+		// if (!(*leaf)->right)
+		// {
+		// 	printf("wat??\n");
+		// 	return;
+		// }
 		if (key_hash == (*leaf)->right->_hash_val) {
-			printf("deleting right from (%lu)\n", (*leaf)->_hash_val);
-			delete_right(*leaf);
+			return delete_right(*leaf);
 		} else {
 			return delete_node(&(*leaf)->right, key_hash);
 		}
