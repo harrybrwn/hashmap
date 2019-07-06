@@ -14,3 +14,6 @@ benchmarks
 preproc.i
 prof_out
 gmon.out
+
+# Tooling
+/.vscode/
