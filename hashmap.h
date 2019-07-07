@@ -11,6 +11,8 @@ extern "C" {
 
 #pragma pack(1)
 
+#define DEFAULT_MAP_SIZE 32
+
 typedef struct hashmap {
 	struct node** __data;
     size_t __size;

@@ -63,10 +63,10 @@ static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
 static struct node* search(struct node*, hash_t);
-static void delete_leaf(struct node**, hash_t);
+static struct node* _delete_node(struct node* root, hash_t k_hash);
 
 Map* New_Map() {
-	return create_map(32);
+	return create_map(DEFAULT_MAP_SIZE);
 }
 
 void Map_close(Map* m) {
@@ -76,6 +76,8 @@ void Map_close(Map* m) {
 	free(m->__data);
 	free(m);
 }
+
+static void copy_nodes(Map*, struct node*);
 
 void Map_put(Map* m, char* key, MapValue val) {
 	hash_t key_hash = prehash(key);
@@ -108,20 +110,13 @@ void Map_delete(Map* m, char* key) {
 
 	struct node* root = m->__data[index];
 	if (root == NULL) {
-		m->item_count--;
+		m->item_count--; // ok wait, why??
 		return;
 	}
 
-	if (k_hash != root->_hash_val) {
-		delete_leaf(&root, k_hash);
-	} else {
-		free(m->__data[index]);
-		m->__data[index] = NULL;
-	}
+	m->__data[index] = _delete_node(root, k_hash);
 	m->item_count--;
 }
-
-static void copy_nodes(Map*, struct node*);
 
 void Map_resize(Map** old_m, size_t size) {
 	Map* new_m = create_map(size);
@@ -210,7 +205,9 @@ balance_right_side(struct node** root, hash_t new_hash) {
 }
 
 #define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
+#define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
+// insert_node is exposed as a non-static function for testing purposes only.
 void insert_node(struct node** root, struct node* new) {
 	if (new->_hash_val < (*root)->_hash_val) {
 		/* insert left */
@@ -273,7 +270,7 @@ _new_node(char* key, MapValue val, hash_t key_hash) {
 
 static void add_node(Map* m, struct node* node, int index) {
 	struct node* head_node = m->__data[index];
-	/*
+	/**
 	 *  If the node at the index is empty, put the node there. If there is a
 	 *  node at that index but the raw hash value is the same then the key was
 	 *  the same and we are going to free the old node and remplace it. If the
@@ -283,7 +280,7 @@ static void add_node(Map* m, struct node* node, int index) {
 	if (head_node == NULL) {
 		m->__data[index] = node;
 	} else if (head_node->_hash_val == node->_hash_val) {
-		/*
+		/**
 		 *  Getting two hash values that are the same is extremly unlikly given
 		 *  different inputs. This is different that getting a hash collition
 		 *  which is after you take the modulus of the hash.
@@ -297,21 +294,135 @@ static void add_node(Map* m, struct node* node, int index) {
 	}
 }
 
-static void delete_leaf(struct node** leaf, hash_t key_hash) {
-	if ((*leaf) == NULL) {
-		return;
-	}
-	if ((*leaf)->_hash_val == key_hash) {
-		free(*leaf);
-		(*leaf) = NULL;
-		return;
+/**
+ * SA (side A) is the primary node if it is left then the loop
+ * will get the furthest left node.
+ *
+ * SB (side B) should be the opposite side.
+ *
+ * mm is short for min/max.
+ */
+#define POP_MINMAX_LOOP(SA, SB)           \
+	if (!tmp->right && !tmp->left)        \
+	{                                     \
+	        *node = NULL;                 \
+	        return tmp;                   \
+	}                                     \
+	while (1)                             \
+	{                                     \
+		if (tmp->SA) {                    \
+			if (!tmp->SA->SA) {           \
+				struct node* mm = tmp->SA;\
+				mm->SB = tmp->SA->SB;     \
+				tmp->SA = mm->SB;         \
+				return mm;                \
+    		}                             \
+			else {                        \
+        		tmp = tmp->SA;            \
+        	}                             \
+    	}                                 \
+		else {                            \
+    		break;                        \
+    	}                                 \
 	}
 
-	if (key_hash < (*leaf)->_hash_val) {
-		return delete_leaf(&(*leaf)->left, key_hash);
-	} else if (key_hash > (*leaf)->_hash_val) {
-		return delete_leaf(&(*leaf)->left, key_hash);
+struct node* pop_min(struct node** node) {
+       struct node* tmp = *node;
+       POP_MINMAX_LOOP(left, right);
+       return tmp;
+}
+
+struct node* pop_max(struct node** node) {
+       struct node* tmp = *node;
+       POP_MINMAX_LOOP(right, left);
+       return tmp;
+}
+
+static struct node* min_node(struct node* node) 
+{ 
+    struct node* curr = node; 
+  
+    while (curr->left != NULL) 
+        curr = curr->left;   
+    return curr; 
+}
+
+static struct node* _delete_node(struct node* root, hash_t k_hash)
+{
+    if (root == NULL)
+        return root;
+
+    if (k_hash < root->_hash_val)
+	{
+        root->left = _delete_node(root->left, k_hash);
 	}
+    else if(k_hash > root->_hash_val)
+	{
+        root->right = _delete_node(root->right, k_hash);
+	}
+    else if (root->_hash_val == k_hash) {
+        if(!root->left || !root->right)
+        {
+            struct node *tmp;
+			if (root->left)
+				tmp = root->left;
+			else
+				tmp = root->right;
+
+			if (tmp)
+			{
+				*root = *tmp;
+			}
+			else
+			{
+				tmp = root;
+				root = NULL;
+			}
+            free(tmp);
+        }
+        else // node has two children
+        {
+            struct node* min = min_node(root->right);
+            root->_hash_val = min->_hash_val;
+			root->key = min->key;
+			root->value = min->value;
+            root->right = _delete_node(root->right, min->_hash_val);
+        }
+	}
+	if (root == NULL)
+      return root;
+
+    root->height = 1 + MAXHEIGHT(root->left, root->right);
+	int h_diff = HEIGHT_DIFF(root->left, root->right);
+
+    if (h_diff > 1 && BALENCE(root->left) >= 0)
+	{
+		return node_rotateright(root);
+	}
+	else if (h_diff > 1 && BALENCE(root->left) < 0)
+    {
+		root->left = node_rotateleft(root->left);
+		return node_rotateright(root);
+	}
+    else if (h_diff < -1 && BALENCE(root->right) <= 0)
+	{
+		return node_rotateleft(root);
+	}
+	else if (h_diff < -1 && BALENCE(root->right) > 0)
+    {
+		root->right = node_rotateright(root->right);
+		return node_rotateleft(root);
+    }
+
+    return root;
+}
+
+/**
+ * delete_node is a convienience function for testing puposes only.
+ */
+void delete_node(struct node** root, hash_t k_hash)
+{
+	*root = _delete_node(*root, k_hash);
 }
 
 static void copy_nodes(Map* m, struct node* n) {

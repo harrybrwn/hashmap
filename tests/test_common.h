@@ -11,7 +11,8 @@ extern void free_string_arr(char** arr, int len);
 extern double benchmark(testfunc);
 extern double nbenchmark(testfunc, int);
 extern void Benchmark(const char*, testfunc);
+extern void AverageBenchmark(const char*, testfunc, size_t);
 void Benchmarkf(const char*, testfunc, const char*);
-extern void nBenchmark(const char*, testfunc, int);
+extern void nBenchmark(const char*, testfunc, size_t);
 
 #endif

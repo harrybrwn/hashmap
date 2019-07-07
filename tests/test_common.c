@@ -95,8 +95,14 @@ void Benchmarkf(const char* name, testfunc testfn, const char* msg)
 	printf("  %s: %s %.3f\n", name, msg, result);
 }
 
-void nBenchmark(const char* name, testfunc testfn, int n)
+void AverageBenchmark(const char* name, testfunc testfn, size_t n)
+{
+	double result = nbenchmark(testfn, n);
+	printf("  %s:\n    total: %.3f\n    average: %.3f\n", name, result, result/(double)n);
+}
+
+void nBenchmark(const char* name, testfunc testfn, size_t n)
 {
 	float result = nbenchmark(testfn, n);
-	printf("  %s x %d: %.3f\n", name, n, result);
+	printf("  %s x %lu: %.3f\n", name, n, result);
 }
