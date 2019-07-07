@@ -21,9 +21,9 @@ void test()
 	// millipause(0.001);
 }
 
-// #define N_KEYS 2000000
+#define N_KEYS 2000000
 // #define N_KEYS 1000000
-#define N_KEYS 10000
+// #define N_KEYS 10000
 
 static Map* map;
 static char** mapkeys;
@@ -101,11 +101,7 @@ void putdelete_benchmark()
 	}
 
 	for (int i = 0; i < N_KEYS; i++)
-	{
-		// printf("%d\n", i);
 		Map_delete(m, keys[i]);
-	}
-	printf("all keys deleted\n");
 
 	for (size_t i = 0; i < m->__size; i++)
 		assert(m->__data[i] == NULL);
@@ -125,11 +121,8 @@ int main()
 	Benchmark("get", get_benchmark);
 	Benchmark("delete", delete_benchmark);
 
-	// Benchmark("put/get", putget_benchmark);
-	// Benchmark("put/delete", putdelete_benchmark);
-
-	// AverageBenchmark("put/get", putget_benchmark, 10);
-	// AverageBenchmark("put/delete", putdelete_benchmark, 10);
+	Benchmark("put/get", putget_benchmark);
+	Benchmark("put/delete", putdelete_benchmark);
 
 	teardown_globals();
 	printf("End Benchmarks\n");

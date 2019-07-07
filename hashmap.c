@@ -63,7 +63,7 @@ static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
 static struct node* search(struct node*, hash_t);
-void delete_node(struct node**, hash_t);
+static struct node* _delete_node(struct node* root, hash_t k_hash);
 
 Map* New_Map() {
 	return create_map(DEFAULT_MAP_SIZE);
@@ -114,20 +114,7 @@ void Map_delete(Map* m, char* key) {
 		return;
 	}
 
-	/**
-	 * This NEEDS to be fixed!
-	 * 
-	 * It should just work with a single call to delete_node
-	 * but i keep getting seg-faults when i do that.
-	 */
-	if (k_hash != root->_hash_val) {
-		delete_node(&root, k_hash);
-	} else {
-		// if (root->left != NULL || root->right != NULL)
-		// 	printf("possible mem leak at %s:%d\n", __FILE__, __LINE__);
-		free(m->__data[index]);
-		m->__data[index] = NULL;
-	}
+	m->__data[index] = _delete_node(root, k_hash);
 	m->item_count--;
 }
 
@@ -218,6 +205,7 @@ balance_right_side(struct node** root, hash_t new_hash) {
 }
 
 #define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
+#define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
 // insert_node is exposed as a non-static function for testing purposes only.
 void insert_node(struct node** root, struct node* new) {
@@ -311,14 +299,14 @@ static void add_node(Map* m, struct node* node, int index) {
  * will get the furthest left node.
  *
  * SB (side B) should be the opposite side.
- * 
+ *
  * mm is short for min/max.
  */
 #define POP_MINMAX_LOOP(SA, SB)           \
 	if (!tmp->right && !tmp->left)        \
 	{                                     \
-		*node = NULL;                     \
-		return tmp;                       \
+	        *node = NULL;                 \
+	        return tmp;                   \
 	}                                     \
 	while (1)                             \
 	{                                     \
@@ -328,209 +316,109 @@ static void add_node(Map* m, struct node* node, int index) {
 				mm->SB = tmp->SA->SB;     \
 				tmp->SA = mm->SB;         \
 				return mm;                \
-			}                             \
+    		}                             \
 			else {                        \
-				tmp = tmp->SA;            \
-			}                             \
-		}                                 \
+        		tmp = tmp->SA;            \
+        	}                             \
+    	}                                 \
 		else {                            \
-			break;                        \
-		}                                 \
+    		break;                        \
+    	}                                 \
 	}
 
 struct node* pop_min(struct node** node) {
-	struct node* tmp = *node;
-	POP_MINMAX_LOOP(left, right);
-	return tmp;
+       struct node* tmp = *node;
+       POP_MINMAX_LOOP(left, right);
+       return tmp;
 }
 
-/**
- * pop max finds the max value in the tree, pops off the node and returns it.
- */
 struct node* pop_max(struct node** node) {
-	struct node* tmp = *node;
-	POP_MINMAX_LOOP(right, left);
-	return tmp;
+       struct node* tmp = *node;
+       POP_MINMAX_LOOP(right, left);
+       return tmp;
 }
 
-/**
- * DELETE_PARENT_MIN will take the parent, pop the minimum value node off the
- * end then free the parent and replace it with the popped node.
- *
- * P (parent) is the node being deleted.
- */
-#define DELETE_PARENT_MIN(P)                \
-	struct node* min = pop_min(&(P)->right);\
-	if ((P)->right != min)                  \
-		min->right = (P)->right;            \
-	min->left = (P)->left;                  \
-	free(P);                                \
-	P = min;                                \
+static struct node* min_node(struct node* node) 
+{ 
+    struct node* curr = node; 
+  
+    while (curr->left != NULL) 
+        curr = curr->left;   
+    return curr; 
+}
 
-/**
- * DELETE_PARENT_MAX will take the parent, pop the maximum value node off the
- * end then free the parent and replace it with the popped node.
- *
- * P (parent) is the node being deleted.
- * DIR (direction) is either left or right and is the direction that 
- */
-#define DELETE_PARENT_MAX(P, DIR)               \
-	struct node* max = pop_max(&(P)->left);\
-	if ((P)->left != max)\
-		max->left = node->right->left;\
-	max->right = node->right->right;\
-	free(node->right);\
-	node->right = max;\
-
-static void delete_right(struct node* node)
+static struct node* _delete_node(struct node* root, hash_t k_hash)
 {
-	/**
-	 * node->right is the node that is going to be deleted.
-	 * 
-	 * Im calling delete_right on the parent so that i don't have to start
-	 * storing the parent of each child in every node.
-	 */
-	if (!node->right->left)
-	{
-		struct node* tmp = node->right->right;
-		free(node->right);
-		node->right = tmp;
-	}
-	else if (!node->right->right)
-	{
-		struct node* tmp = node->right->left;
-		free(node->right);
-		node->right = tmp;
-	}
-	else
-	{
-		if (node->right->left->height >= node->right->right->height)
-		{
-			struct node* max = pop_max(&node->right->left);
-			if (node->right->left != max)
+    if (root == NULL)
+        return root;
+
+    if (k_hash < root->_hash_val)
+        root->left = _delete_node(root->left, k_hash);
+    else if(k_hash > root->_hash_val)
+        root->right = _delete_node(root->right, k_hash);
+    else if (root->_hash_val == k_hash) {
+        if(!root->left || !root->right)
+        {
+            struct node *tmp;
+			if (root->left)
+				tmp = root->left;
+			else
+				tmp = root->right;
+
+			if (tmp)
 			{
-				max->left = node->right->left;
+				*root = *tmp;
 			}
-			max->right = node->right->right;
-			free(node->right);
-			node->right = max;
-		}
-		else
-		{
-			struct node* min = pop_min(&node->right->right);
-			if (node->right->right != min)
+			else
 			{
-				min->right = node->right->right;
+				tmp = root;
+				root = NULL;
 			}
-			min->left = node->right->left;
-			free(node->right);
-			node->right = min;
-		}
+            free(tmp);
+        }
+        else // node has two children
+        {
+            struct node* min = min_node(root->right);
+            root->_hash_val = min->_hash_val;
+			root->key = min->key;
+			root->value = min->value;
+            root->right = _delete_node(root->right, min->_hash_val);
+        }
+	}
+	if (root == NULL)
+      return root;
 
-		// recalculate heights
-	}
-}
+    root->height = 1 + MAXHEIGHT(root->left, root->right);
+	int h_diff = HEIGHT_DIFF(root->left, root->right);
 
-static void delete_left(struct node* node)
-{
-	/**
-	 * node->left is the node that is going to be deleted.
-	 * 
-	 * Im calling delete_left on the parent so that i don't have to start
-	 * storing the parent of each child in every node.
-	 */
-	if (!node->left->left)
+    if (h_diff > 1 && BALENCE(root->left) >= 0)
 	{
-		struct node* tmp = node->left->right;
-		free(node->left);
-		node->left = tmp;
+		return node_rotateright(root);
 	}
-	else if (!node->left->right)
+	else if (h_diff > 1 && BALENCE(root->left) < 0)
+    {
+		root->left = node_rotateleft(root->left);
+		return node_rotateright(root);
+	}
+    else if (h_diff < -1 && BALENCE(root->right) <= 0)
 	{
-		struct node* tmp = node->left->left;
-		free(node->left);
-		node->left = tmp;
+		return node_rotateleft(root);
 	}
-	else
-	{
-		if (node->left->left->height >= node->left->right->height)
-		{
-			struct node* max = pop_max(&node->left->left);
-			if (node->left->left != max)
-				max->left = node->left->left;
-			max->right = node->left->right;
-			free(node->left);
-			node->left = max;
-		}
-		else
-		{
-			struct node* min = pop_min(&node->left->right);
-			if (node->left->right != min)
-				min->right = node->left->right;
-			min->left = node->left->left;
-			free(node->left);
-			node->left = min;
-		}
-	}
+	else if (h_diff < -1 && BALENCE(root->right) > 0)
+    {
+		root->right = node_rotateright(root->right);
+		return node_rotateleft(root);
+    }
 
-	// recalculate heights
+    return root;
 }
 
 /**
- * Deleting a node has three cases...
- *
- * case 1:
- * 		The node being deleted has no children and can just be poped off.
- *
- * case 2:
- * 		The node being deleted has one child.
- * 
- * case 3:
- * 		The node being deleted has two children.
+ * delete_node is a convienience function for testing puposes only.
  */
-void delete_node(struct node** leaf, hash_t key_hash) {
-	/**
-	 * This first check is to cover the edge case where the node being deleted
-	 * is the root node.
-	 */
-	if ((*leaf)->_hash_val == key_hash) {
-		if ((*leaf)->left)
-		{
-			struct node* max = pop_max(&(*leaf)->left);
-			if (max != (*leaf)->left)
-				max->left = (*leaf)->left;
-			max->right = (*leaf)->right;
-			free(*leaf);
-			*leaf = max;
-			// DELETE_PARENT_MAX(*leaf);
-		}
-		else if ((*leaf)->right)
-		{
-			struct node* tmp = (*leaf)->right;
-			free(*leaf);
-			*leaf = tmp;
-		}
-		else // this is the last node in the tree.
-		{
-			free(*leaf);
-			*leaf = NULL;
-		}
-		return;
-	}
-
-	if (key_hash < (*leaf)->_hash_val) {
-		if (key_hash == (*leaf)->left->_hash_val) {
-			return delete_left(*leaf);
-		} else {
-			return delete_node(&(*leaf)->left, key_hash);
-		}
-	} else if (key_hash > (*leaf)->_hash_val) {
-		if (key_hash == (*leaf)->right->_hash_val) {
-			return delete_right(*leaf);
-		} else {
-			return delete_node(&(*leaf)->right, key_hash);
-		}
-	}
+void delete_node(struct node** root, hash_t k_hash)
+{
+	*root = _delete_node(*root, k_hash);
 }
 
 static void copy_nodes(Map* m, struct node* n) {

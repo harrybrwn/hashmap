@@ -50,12 +50,6 @@ static char** collition_keys(size_t str_len,
     return arr;
 }
 
-// void free_string_arr(char** arr, int len) {
-//     for (int i = 0; i < len; i++)
-//         free(arr[i]);
-//     free(arr);
-// }
-
 void test_prehash() {
     hash_t a = _prehash("abc");
     hash_t b = _prehash("cba");
@@ -213,14 +207,6 @@ void test_Map_resize() {
     assert(m->__size == 3);
     free_string_arr(keys, n);
     Map_close(m);
-
-	// m = New_Map();
-	// n = 500;
-	// Map_resize(&m, n);
-	// assert(m->__size == n);
-	// for (int i = 0; i < m->__size; i++)
-	// 	assert(m->__data[i] == NULL);
-	// Map_close(m);
 }
 
 void insert_node(struct node** root, struct node* new);
@@ -305,6 +291,7 @@ static struct node* search(struct node* root, hash_t key_hash)
 }
 
 void delete_node(struct node** leaf, hash_t key_hash);
+// struct node* delete_node(struct node**, hash_t);
 
 void test_delete_node0()
 {
@@ -314,17 +301,16 @@ void test_delete_node0()
 		insert_node(&root, newnode(i));
 
 	delete_node(&root, 23);
-	assert(root->right->_hash_val == 22);
+	assert(root->right->_hash_val == 24);
 	delete_node(&root, 22);
 	assert(search(root, 20) != NULL);
 
-	assert(root->right->_hash_val == 21);
-	assert(root->right->left->right != NULL);
-
 	delete_node(&root, 17);
-	assert(root->right->left->left->_hash_val == 16);
+	assert(root->right->left->left->_hash_val == 18);
 	delete_node(&root, 16);
 	assert(root->right->left->left->_hash_val == 18);
+	assert(root->right->left->left->left == NULL);
+	assert(root->right->left->left->right == NULL);
 	delete_tree(root);
 
 	/**
@@ -377,18 +363,18 @@ void test_delete_root()
     		 20   30 70  80
 
 		result...
-					30
+					70
 				  /    \
 				25     75
-			   /      /  \
-			  20     70  80
+			   /  \      \
+			 20   30     80
 		delete(30)...
 
-					25
+					70
 				   /  \
-				 20    75
-				      /  \
-					 70  80
+				 25    75
+				/        \
+			   20	     80
 	 */
 	struct node* root = newnode(50);
 	insert_node(&root, newnode(25));
@@ -399,22 +385,26 @@ void test_delete_root()
 	insert_node(&root, newnode(80));
 
 	delete_node(&root, 50);
-	// printf("height of root.left: %d\n", root->left->height);
-	// assert(root->left->height == 1);
-	assert(root->_hash_val == 30);
+	assert(root->_hash_val == 70);
 	assert(root->right->_hash_val == 75);
 	assert(root->left->_hash_val == 25);
-	assert(root->left->right == NULL);
+	
 	delete_node(&root, 30);
+	assert(root->left->right == NULL);
+	assert(root->height == 2);
+	assert(root->left->_hash_val == 25);
+	assert(root->_hash_val == 70);
 
-	// printf("%d\n", root->height);
-	// assert(root->height == 2);
-
-	assert(root->left->_hash_val == 20);
-	// assert(root->left->height == 0);
+	delete_node(&root, 70);
+	assert(root->_hash_val == 75);
+	delete_node(&root, 75);
 	assert(root->_hash_val == 25);
-	assert(root->left->_hash_val == 20);
-	delete_tree(root);
+	delete_node(&root, 25);
+	assert(root->_hash_val == 80);
+	delete_node(&root, 80);
+	assert(root->_hash_val == 20);
+	delete_node(&root, 20);
+	assert(root == NULL);
 }
 
 void test_delete_node()
@@ -434,74 +424,26 @@ void test_delete_node()
 	assert(search(root, 19) != NULL);
 
 	// delete node with uneven child heights
-	/*
-	   delete(12)...
-	   				 25
-				   /   \
-			----> 12   (...)
-				/    \
-			   5     20
-			  / \   /
-			 4  7  19
-
-		becomes...
-					25
-				   /  \
-				  7   (...)
-				/  \
-			   5    20
-			  /    /
-			 4    19
-	*/
 	assert(root->left->_hash_val == 12);
 	assert(root->left->right->_hash_val == 20);
 	assert(root->left->left->_hash_val == 5);
 	delete_node(&root, 12);
-	assert(root->left->_hash_val == 7);
+
+	assert(root->left->_hash_val == 19);
 	assert(root->left->right->_hash_val == 20);
 	assert(root->left->left->_hash_val == 5);
-	
-	// delete node with only two children on each side
-	/*
-		delete(5)...
-	               25
-				 /   \
-				7     (...)
-			  /  \
-	   ----> 5   20
-			/ \
-		   4   6
 
-        becomes...
-				  25
-				 /  \
-				7   (...)
-			  /  \
-			 4   20
-			  \
-			   6
-	*/
 	insert_node(&root, newnode(6));
 	assert(root->left->left->right->_hash_val == 6);
 	delete_node(&root, 5);
-  	
-	assert(root->left->left->left == NULL); // 4's left child should be null
-  	assert(root->left->left->right->left == NULL);
-	assert(root->left->left->right->right == NULL);
-	assert(root->left->left->_hash_val == 4);
-	assert(root->left->left->right->_hash_val == 6);
-	delete_tree(root);
-}
 
-/**
- * this test will assure that the delete infrastructure still works when the
- * nodes are stored in a Map.
- */
-void test_single_bucket_Map()
-{
-	// Map* m = New_Map();
-	// Map_resize(&m, 1);
-	// assert(m->__size == 1);
+	assert(root->left->left->_hash_val == 6);
+	assert(root->left->left->left->_hash_val == 4);
+	delete_node(&root, 7);
+	assert(root->left->_hash_val == 19);
+	delete_node(&root, 20);
+	assert(root->left->_hash_val == 6);
+	delete_tree(root);
 }
 
 void test_avl_insert() {
@@ -528,7 +470,6 @@ void test_avl_balence() {
     assert(root->right->right->_hash_val == 65);
     assert(root->right->left->_hash_val == 50);
     delete_tree(root);
-    root = NULL;
 
     root = newnode(41);
     int newvals[] = {65, 20, 50, 29, 11, 26};
@@ -565,12 +506,9 @@ int main() {
     test();
 	test_collitions();
     test_prehash();
-	test_minmax();
 	test_delete_node0();
 	test_delete_root();
 	test_delete_node();
-	test_single_bucket_Map();
-
  
     TestMap();
     test_Map_delete();
