@@ -282,7 +282,7 @@ _new_node(char* key, MapValue val, hash_t key_hash) {
 
 static void add_node(Map* m, struct node* node, int index) {
 	struct node* head_node = m->__data[index];
-	/*
+	/**
 	 *  If the node at the index is empty, put the node there. If there is a
 	 *  node at that index but the raw hash value is the same then the key was
 	 *  the same and we are going to free the old node and remplace it. If the
@@ -292,7 +292,7 @@ static void add_node(Map* m, struct node* node, int index) {
 	if (head_node == NULL) {
 		m->__data[index] = node;
 	} else if (head_node->_hash_val == node->_hash_val) {
-		/*
+		/**
 		 *  Getting two hash values that are the same is extremly unlikly given
 		 *  different inputs. This is different that getting a hash collition
 		 *  which is after you take the modulus of the hash.
@@ -306,50 +306,41 @@ static void add_node(Map* m, struct node* node, int index) {
 	}
 }
 
-#define POP_MINMAX(SIDE_A, SIDE_B)                    \
-	while (1)                                         \
-	{                                                 \
-		if (tmp->SIDE) {                              \
-			if (!tmp->SIDE->SIDE) {                   \
-				struct node* min_max = tmp->SIDE;     \
-				min_max->SIDE_B = tmp->SIDE_A->SIDE_B;\
-				tmp->SIDE = NULL;                     \
-				return min_max;                       \
-			}                                         \
-			else {                                    \
-				tmp = tmp->SIDE;                      \
-			}                                         \
-		}                                             \
-		else {                                        \
-			break;                                    \
-		}                                             \
+/**
+ * SA (side A) is the primary node if it is left then the loop
+ * will get the furthest left node.
+ *
+ * SB (side B) should be the opposite side.
+ * 
+ * mm is short for min/max.
+ */
+#define POP_MINMAX_LOOP(SA, SB)           \
+	if (!tmp->right && !tmp->left)        \
+	{                                     \
+		*node = NULL;                     \
+		return tmp;                       \
+	}                                     \
+	while (1)                             \
+	{                                     \
+		if (tmp->SA) {                    \
+			if (!tmp->SA->SA) {           \
+				struct node* mm = tmp->SA;\
+				mm->SB = tmp->SA->SB;     \
+				tmp->SA = mm->SB;         \
+				return mm;                \
+			}                             \
+			else {                        \
+				tmp = tmp->SA;            \
+			}                             \
+		}                                 \
+		else {                            \
+			break;                        \
+		}                                 \
 	}
 
 struct node* pop_min(struct node** node) {
 	struct node* tmp = *node;
-	if (!tmp->right && !tmp->left)
-	{
-		*node = NULL;
-		return tmp;
-	}
-
-	while (1)
-	{
-		if (tmp->left) {
-			if (!tmp->left->left) {
-				struct node* min = tmp->left;
-				min->right = tmp->left->right;
-				tmp->left = min->right;
-				return min;
-			}
-			else {
-				tmp = tmp->left;
-			}
-		}
-		else {
-			break;
-		}
-	}
+	POP_MINMAX_LOOP(left, right);
 	return tmp;
 }
 
@@ -358,31 +349,38 @@ struct node* pop_min(struct node** node) {
  */
 struct node* pop_max(struct node** node) {
 	struct node* tmp = *node;
-	if (!tmp->right && !tmp->left)
-	{
-		*node = NULL;
-		return tmp;
-	}
-
-	while (1)
-	{
-		if (tmp->right) {
-			if (!tmp->right->right) {
-				struct node* max = tmp->right;
-				max->left = tmp->right->left;
-				tmp->right = max->left;
-				return max;
-			}
-			else {
-				tmp = tmp->right;
-			}
-		}
-		else {
-			break;
-		}
-	}
+	POP_MINMAX_LOOP(right, left);
 	return tmp;
 }
+
+/**
+ * DELETE_PARENT_MIN will take the parent, pop the minimum value node off the
+ * end then free the parent and replace it with the popped node.
+ *
+ * P (parent) is the node being deleted.
+ */
+#define DELETE_PARENT_MIN(P)                \
+	struct node* min = pop_min(&(P)->right);\
+	if ((P)->right != min)                  \
+		min->right = (P)->right;            \
+	min->left = (P)->left;                  \
+	free(P);                                \
+	P = min;                                \
+
+/**
+ * DELETE_PARENT_MAX will take the parent, pop the maximum value node off the
+ * end then free the parent and replace it with the popped node.
+ *
+ * P (parent) is the node being deleted.
+ * DIR (direction) is either left or right and is the direction that 
+ */
+#define DELETE_PARENT_MAX(P, DIR)               \
+	struct node* max = pop_max(&(P)->left);\
+	if ((P)->left != max)\
+		max->left = node->right->left;\
+	max->right = node->right->right;\
+	free(node->right);\
+	node->right = max;\
 
 static void delete_right(struct node* node)
 {
@@ -459,9 +457,7 @@ static void delete_left(struct node* node)
 		{
 			struct node* max = pop_max(&node->left->left);
 			if (node->left->left != max)
-			{
 				max->left = node->left->left;
-			}
 			max->right = node->left->right;
 			free(node->left);
 			node->left = max;
@@ -470,9 +466,7 @@ static void delete_left(struct node* node)
 		{
 			struct node* min = pop_min(&node->left->right);
 			if (node->left->right != min)
-			{
 				min->right = node->left->right;
-			}
 			min->left = node->left->left;
 			free(node->left);
 			node->left = min;
@@ -482,19 +476,33 @@ static void delete_left(struct node* node)
 	// recalculate heights
 }
 
-#include <assert.h>
-
+/**
+ * Deleting a node has three cases...
+ *
+ * case 1:
+ * 		The node being deleted has no children and can just be poped off.
+ *
+ * case 2:
+ * 		The node being deleted has one child.
+ * 
+ * case 3:
+ * 		The node being deleted has two children.
+ */
 void delete_node(struct node** leaf, hash_t key_hash) {
+	/**
+	 * This first check is to cover the edge case where the node being deleted
+	 * is the root node.
+	 */
 	if ((*leaf)->_hash_val == key_hash) {
 		if ((*leaf)->left)
 		{
 			struct node* max = pop_max(&(*leaf)->left);
-
 			if (max != (*leaf)->left)
 				max->left = (*leaf)->left;
 			max->right = (*leaf)->right;
 			free(*leaf);
 			*leaf = max;
+			// DELETE_PARENT_MAX(*leaf);
 		}
 		else if ((*leaf)->right)
 		{
@@ -511,22 +519,12 @@ void delete_node(struct node** leaf, hash_t key_hash) {
 	}
 
 	if (key_hash < (*leaf)->_hash_val) {
-		// if (!(*leaf)->left)
-		// {
-		// 	printf("wat??\n");
-		// 	return;
-		// }
 		if (key_hash == (*leaf)->left->_hash_val) {
-			delete_left(*leaf);
+			return delete_left(*leaf);
 		} else {
 			return delete_node(&(*leaf)->left, key_hash);
 		}
 	} else if (key_hash > (*leaf)->_hash_val) {
-		// if (!(*leaf)->right)
-		// {
-		// 	printf("wat??\n");
-		// 	return;
-		// }
 		if (key_hash == (*leaf)->right->_hash_val) {
 			return delete_right(*leaf);
 		} else {

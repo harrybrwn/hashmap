@@ -382,6 +382,13 @@ void test_delete_root()
 				25     75
 			   /      /  \
 			  20     70  80
+		delete(30)...
+
+					25
+				   /  \
+				 20    75
+				      /  \
+					 70  80
 	 */
 	struct node* root = newnode(50);
 	insert_node(&root, newnode(25));
@@ -392,11 +399,19 @@ void test_delete_root()
 	insert_node(&root, newnode(80));
 
 	delete_node(&root, 50);
+	// printf("height of root.left: %d\n", root->left->height);
+	// assert(root->left->height == 1);
 	assert(root->_hash_val == 30);
 	assert(root->right->_hash_val == 75);
 	assert(root->left->_hash_val == 25);
 	assert(root->left->right == NULL);
 	delete_node(&root, 30);
+
+	// printf("%d\n", root->height);
+	// assert(root->height == 2);
+
+	assert(root->left->_hash_val == 20);
+	// assert(root->left->height == 0);
 	assert(root->_hash_val == 25);
 	assert(root->left->_hash_val == 20);
 	delete_tree(root);
@@ -543,12 +558,11 @@ void test_avl_balence() {
 }
 
 void test() {
-	Map* m = New_Map();
-	assert(m->__size == DEFAULT_MAP_SIZE);
-	Map_close(m);
+
 }
 
 int main() {
+    test();
 	test_collitions();
     test_prehash();
 	test_minmax();
@@ -565,7 +579,6 @@ int main() {
 
 	test_avl_insert();
     test_avl_balence();
-    test();
 
     printf("OK %s\n", __FILE__);
 }
