@@ -10,8 +10,8 @@
 typedef void (*testfunc)(void);
 
 #define N_KEYS 2000000
-// #define N_KEYS 1000000
-// #define N_KEYS 1000
+/* #define N_KEYS 1000000 */
+/* #define N_KEYS 1000 */
 
 static Map* map;
 static char** mapkeys;
@@ -25,7 +25,8 @@ void init_globals()
 
 void teardown_globals()
 {
-	for (int i = 0; i < N_KEYS; i++)
+	int i;
+	for (i = 0; i < N_KEYS; i++)
 		assert(map->__data[i] == NULL);
 	assert(map->item_count == 0);
 
@@ -35,19 +36,22 @@ void teardown_globals()
 
 void put_benchmark()
 {
-	for (int i = 0; i < N_KEYS; i++)
+	int i;
+	for (i = 0; i < N_KEYS; i++)
 		Map_put(map, mapkeys[i], 10);
 }
 
 void get_benchmark()
 {
-	for (int i = 0; i < N_KEYS; i++)
+	int i;
+	for (i = 0; i < N_KEYS; i++)
 		assert(10 == Map_get(map, mapkeys[i]));
 }
 
 void delete_benchmark()
 {
-	for (int i = 0; i < N_KEYS; i++)
+	int i;
+	for (i = 0; i < N_KEYS; i++)
 		Map_delete(map, mapkeys[i]);
 }
 
@@ -82,16 +86,17 @@ void putdelete_benchmark()
 	char** keys = rand_keys(N_KEYS);
 	int data[N_KEYS];
 
-	for (int i = 0; i < N_KEYS; i++)
+	int i;
+	for (i = 0; i < N_KEYS; i++)
 	{
 		data[i] = i + 1;
 		Map_put(m, keys[i], data[i]);
 	}
 
-	for (int i = 0; i < N_KEYS; i++)
+	for (i = 0; i < N_KEYS; i++)
 		Map_delete(m, keys[i]);
-
-	for (size_t i = 0; i < m->__size; i++)
+	size_t i;
+	for (i = 0; i < m->__size; i++)
 		assert(m->__data[i] == NULL);
 
 	assert(m->item_count == 0);

@@ -14,11 +14,12 @@ char* randstring(size_t length)
 {
     static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     char *str = NULL;
+	int key;
     if (length) {
         str = malloc(sizeof(char) * (length + 1));
         if (str) {
             for (int n = 0;n < length;n++) {
-                int key = rand() % (int)(sizeof(charset) - 1);
+                key = rand() % (int)(sizeof(charset) - 1);
                 str[n] = charset[key];
             }
             str[length] = '\0';
@@ -30,7 +31,8 @@ char* randstring(size_t length)
 char** rand_keys(size_t n)
 {
 	char** keys = malloc(sizeof(char*)*n);
-    for (size_t i = 0; i < n; i++) {
+	size_t i;
+    for (i = 0; i < n; i++) {
         keys[i] = randstring(10);
     }
     return keys;
@@ -38,13 +40,14 @@ char** rand_keys(size_t n)
 
 void free_string_arr(char** arr, int len)
 {
-    for (int i = 0; i < len; i++)
+	int i;
+    for (i = 0; i < len; i++)
         free(arr[i]);
     free(arr);
 }
 
 #ifndef _WIN32
-// this struct is nowhere to be found in the standard library
+/* this struct is nowhere to be found in the standard library */
 struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;

@@ -14,8 +14,8 @@ struct node {
 	char*    key;
 	MapValue value;
 
-	// I'm making some assumtions about the size of each tree here.
-	// It should be fine if the heights stay under 255.
+	/* I'm making some assumtions about the size of each tree here.
+	   It should be fine if the heights stay under 255. */
 	unsigned char height;
 
 	struct
@@ -110,7 +110,7 @@ void Map_delete(Map* m, char* key) {
 
 	struct node* root = m->__data[index];
 	if (root == NULL) {
-		m->item_count--; // ok wait, why??
+		m->item_count--; /* ok wait, why?? */
 		return;
 	}
 
@@ -183,10 +183,10 @@ static struct node* node_rotateright(struct node* n) {
 static inline void
 balance_left_side(struct node** root, hash_t new_hash) {
 	if (new_hash < (*root)->left->_hash_val) {
-		// single rotate right
+		/* single rotate right */
 		*root = node_rotateright(*root);
 	} else {
-		// double rotate right
+		/* double rotate right */
 		(*root)->left = node_rotateleft((*root)->left);
 		(*root) = node_rotateright(*root);
 	}
@@ -195,10 +195,10 @@ balance_left_side(struct node** root, hash_t new_hash) {
 static inline void
 balance_right_side(struct node** root, hash_t new_hash) {
 	if (new_hash > (*root)->right->_hash_val) {
-		// single rotate left
+		/* single rotate left */
 		*root = node_rotateleft(*root);
 	} else {
-		// double rotate left
+		/* double rotate left */
 		(*root)->right = node_rotateright((*root)->right);
 		*root = node_rotateleft(*root);
 	}
@@ -207,14 +207,14 @@ balance_right_side(struct node** root, hash_t new_hash) {
 #define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
 #define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
-// insert_node is exposed as a non-static function for testing purposes only.
+/* insert_node is exposed as a non-static function for testing purposes only. */
 void insert_node(struct node** root, struct node* new) {
 	if (new->_hash_val < (*root)->_hash_val) {
 		/* insert left */
 		if ((*root)->left != NULL) {
 			insert_node(&(*root)->left, new);
 
-			// if left side is double-unbalenced... rotate right
+			/* if left side is double-unbalenced... rotate right */
 			if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2)
 				balance_left_side(root, new->_hash_val);
 		} else
@@ -224,7 +224,7 @@ void insert_node(struct node** root, struct node* new) {
 		if ((*root)->right != NULL) {
 			insert_node(&(*root)->right, new);
 
-			// if right side is double-unbalenced... rotate left
+			/* if right side is double-unbalenced... rotate left */
 			if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2)
 				balance_right_side(root, new->_hash_val);
 		} else
@@ -380,7 +380,7 @@ static struct node* _delete_node(struct node* root, hash_t k_hash)
 			}
             free(tmp);
         }
-        else // node has two children
+        else /* node has two children */
         {
             struct node* min = min_node(root->right);
             root->_hash_val = min->_hash_val;

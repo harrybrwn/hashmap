@@ -145,7 +145,7 @@ void print_avl(struct node* n) {
 void test_collitions() {
 	Map* m = New_Map();
 	int n = 20;
-    // these keys all collide is a hash table of length 'm->__size' using 'prehash'
+    /* these keys all collide is a hash table of length 'm->__size' using 'prehash' */
     char** keys = collition_keys(6, m->__size, _prehash, n);
 
 	int x[n];
@@ -291,7 +291,6 @@ static struct node* search(struct node* root, hash_t key_hash)
 }
 
 void delete_node(struct node** leaf, hash_t key_hash);
-// struct node* delete_node(struct node**, hash_t);
 
 void test_delete_node0()
 {
@@ -426,7 +425,7 @@ void test_delete_node()
 	for (int i = 0; i < 7; i++)
 		insert_node(&root, newnode(nodes[i]));
 
-	// delete nodes with no children
+	/* delete nodes with no children */
 	insert_node(&root, newnode(28));
 	assert(root->right->right->_hash_val == 28);
 	delete_node(&root, 28);
@@ -435,7 +434,7 @@ void test_delete_node()
 	assert(root->left->right->left->_hash_val == 19);
 	assert(search(root, 19) != NULL);
 
-	// delete node with uneven child heights
+	/* delete node with uneven child heights */
 	assert(root->left->_hash_val == 12);
 	assert(root->left->right->_hash_val == 20);
 	assert(root->left->left->_hash_val == 5);
