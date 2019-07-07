@@ -348,6 +348,18 @@ void test_delete_node0()
 	free(root);
 }
 
+void test_delete_node1()
+{
+	struct node* root;
+	root = newnode(0);
+	int n = 10;
+	for (int i = 1; i < n; i++)
+		insert_node(&root, newnode(i));
+	for (int i = 1; i < n; i++)
+		delete_node(&root, i);
+	delete_tree(root);
+}
+
 /**
  * This test will fail if data is lost when deleting the root
  * node of a bst.
@@ -507,6 +519,7 @@ int main() {
 	test_collitions();
     test_prehash();
 	test_delete_node0();
+	test_delete_node1();
 	test_delete_root();
 	test_delete_node();
  

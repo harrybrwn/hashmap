@@ -353,9 +353,13 @@ static struct node* _delete_node(struct node* root, hash_t k_hash)
         return root;
 
     if (k_hash < root->_hash_val)
+	{
         root->left = _delete_node(root->left, k_hash);
+	}
     else if(k_hash > root->_hash_val)
+	{
         root->right = _delete_node(root->right, k_hash);
+	}
     else if (root->_hash_val == k_hash) {
         if(!root->left || !root->right)
         {
