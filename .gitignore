@@ -5,14 +5,17 @@
 /lib/
 
 # Testing binaries
+*.exe
 test.exe
 test
 doc_example
 benchmarks
+profile.bin
 
 # Other files
 preproc.i
 prof_out
+*_prof
 gmon.out
 
 # Tooling

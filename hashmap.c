@@ -338,7 +338,7 @@ struct node* pop_max(struct node** node) {
        return tmp;
 }
 
-static struct node* min_node(struct node* node) 
+static inline struct node* min_node(struct node* node) 
 { 
     struct node* curr = node; 
   

@@ -23,7 +23,7 @@ void test()
 
 #define N_KEYS 2000000
 // #define N_KEYS 1000000
-// #define N_KEYS 10000
+// #define N_KEYS 1000
 
 static Map* map;
 static char** mapkeys;

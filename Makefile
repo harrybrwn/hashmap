@@ -1,5 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -std=c99 -g
+AR=ar
 
 SRC=hashmap.c
 
@@ -47,22 +48,39 @@ $(SharedLib): hashmap.c hashmap.h
 $(StaticLib): hashmap.c hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi
 	$(CC) -c $(CFLAGS) -o hashmap.o hashmap.c
-	ar rcs $@ hashmap.o
+	$(AR) rcs $@ hashmap.o
 	@rm hashmap.o
 
+Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin)
+
 clean:
-	@for file in $(Test) $(Example) $(Benchmark); do\
+	@for file in $(Binaries) preproc.i $(ProfileFiles); do\
 		if [ -f $$file ]; then\
 			rm $$file;\
 		fi;\
 	done
 	@if [ -d lib ]; then rm -rf lib; fi
+	@for f in `find . -name '*.o'`; do rm $$f; done
 
 proc:
 	gcc -I. -E hashmap.c $(Test).c > preproc.i
 
-profile: $(TestBin)
-	$(CC) -o test -std=c99 -pg $(SRC) test.c
-	gprof ./test gmon.out > prof_out
+ProfileFlags=-Wall -I. -std=c99 -pg
+ProfileBin=profile.bin
+Profiles=$(Benchmark)_prof $(Test)_prof
+TestProfile=test
+ProfileFiles=$(ProfileBin) gmon.out $(Profiles)
+
+profile: hashmap.c tests/benchmarks.c tests/test.c tests/test_common.c
+	@for f in hashmap tests/test_common; do\
+		$(CC) $(ProfileFlags) -c -o $$f.o $$f.c; done
+
+	@for file in $(Benchmark) $(Test); do\
+		$(CC) $(ProfileFlags) -o "$$file".bin hashmap.o tests/test_common.o "$$file".c;\
+		./"$$file".bin;\
+		gprof -b ./"$$file".bin gmon.out > "$$file"_prof;\
+		rm "$$file".bin gmon.out;\
+	done
+	@for f in `find . -name '*.o'`; do rm $$f; done
 
 .PHONY: clean proc profile
