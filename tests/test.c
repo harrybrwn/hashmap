@@ -6,14 +6,14 @@
 #include "hashmap.h"
 #include "tests/test_common.h"
 
-#define ARR_CMP(ARR1, LEN1, ARR2, LEN2) \
-    for (int i = 0; i < LEN1; i++) { \
-        for (int k = 0; k < LEN2; k++) { \
+#define ARR_CMP(ARR1, LEN1, ARR2, LEN2)        \
+    for (i = 0; i < LEN1; i++) {               \
+        for (k = 0; k < LEN2; k++) {           \
             if (strcmp(ARR1[i], ARR2[k]) == 0) \
-                goto Same_Arr_val; \
-        } \
-        assert(0); \
-    Same_Arr_val:; \
+                goto Same_Arr_val;             \
+        }                                      \
+        assert(0);                             \
+    Same_Arr_val:;                             \
     }
 
 typedef unsigned long hash_t;
@@ -100,7 +100,8 @@ struct node {
 
 void print_tree(struct node* root, int level, int type) {
     if (root != NULL) {
-        for (int i = 0; i < (level*4); i++) printf("%c", ' ');
+		int i;
+        for (i = 0; i < (level*4); i++) printf("%c", ' ');
 
         if (type < 0)
             printf("left: {");
@@ -128,7 +129,8 @@ static void _print_avl(struct node* n, int space, char side) {
     _print_avl(n->right, space, 'R');
 
     printf("\n");
-    for (int i = SPACE_INCR; i < space; i++)
+	int i;
+    for (i = SPACE_INCR; i < space; i++)
         printf(" ");
 
     printf("(%lu)\n", n->_hash_val);
@@ -149,16 +151,17 @@ void test_collitions() {
     char** keys = collition_keys(6, m->__size, _prehash, n);
 
 	int x[n];
-	for (int i = 0; i < n; i++) {
+	int i;
+	for (i = 0; i < n; i++) {
 		x[i] = i;
 		Map_put(m, keys[i], &x[i]);
 	}
 
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));
 
     int nonNullKeys = 0;
-    for (int i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++) {
         if (m->__data[i] != NULL)
             nonNullKeys++;
     }
@@ -174,7 +177,8 @@ void test_Map_keys()
 	int n = 39;
 	char** keys = rand_keys(n);
 	int data[n];
-	for (int i = 0; i < n; i++)
+	int i;
+	for (i = 0; i < n; i++)
 	{
 		data[i] = i;
 		Map_put(m, keys[i], &data[i]);
@@ -183,6 +187,7 @@ void test_Map_keys()
 	
 	char* mapkeys[m->item_count];
 	Map_keys(m, mapkeys);
+	int k;
 	ARR_CMP(mapkeys, m->item_count, keys, n);
 	Map_close(m);
 	free_string_arr(keys, n);
@@ -194,7 +199,8 @@ void test_Map_resize() {
     char** keys = rand_keys(n);
 
     int x[n];
-    for (int i = 0; i < n; i++) {
+	int i;
+    for (i = 0; i < n; i++) {
         x[i] = i;
         Map_put(m, keys[i], &x[i]);
     }
@@ -202,7 +208,7 @@ void test_Map_resize() {
     assert(m->__size == n + 1);
 
     Map_resize(&m, 3);
-    for (int i = 0; i < n; i++)
+    for (i = 0; i < n; i++)
         assert(i == *(int*)Map_get(m, keys[i]));
     assert(m->__size == 3);
     free_string_arr(keys, n);
@@ -235,8 +241,8 @@ void test_minmax() {
 	struct node* root = newnode(10);
 	size_t nodes[8] = {5, 15, 6, 4, 14, 16,
 					   13, 17};
-
-	for (int i = 0; i < 8; i++)
+	int i;
+	for (i = 0; i < 8; i++)
 		insert_node(&root, newnode(nodes[i]));
 
 	struct node* max = pop_max(&root);
@@ -296,7 +302,8 @@ void test_delete_node0()
 {
 	struct node* root;
 	root = newnode(0);
-	for (int i = 1; i <= 30; i++)
+	int i;
+	for (i = 1; i <= 30; i++)
 		insert_node(&root, newnode(i));
 
 	delete_node(&root, 23);
@@ -333,10 +340,10 @@ void test_delete_node0()
 
 	root = newnode(0);
 	int n = 100000;
-	for (int i = 1; i <= n; i++)
+	for (i = 1; i <= n; i++)
 		insert_node(&root, newnode(i));
 
-	for (int i = 1; i <= n; i++)
+	for (i = 1; i <= n; i++)
 	{
 		delete_node(&root, i);
 		assert(search(root, 0) != NULL);
@@ -352,9 +359,10 @@ void test_delete_node1()
 	struct node* root;
 	root = newnode(0);
 	int n = 10;
-	for (int i = 1; i < n; i++)
+	int i;
+	for (i = 1; i < n; i++)
 		insert_node(&root, newnode(i));
-	for (int i = 1; i < n; i++)
+	for (i = 1; i < n; i++)
 		delete_node(&root, i);
 	delete_tree(root);
 }
@@ -422,7 +430,8 @@ void test_delete_node()
 {
 	struct node* root = newnode(25);
 	int nodes[] = {12, 27, 5, 20, 26, 4, 7};
-	for (int i = 0; i < 7; i++)
+	int i;
+	for (i = 0; i < 7; i++)
 		insert_node(&root, newnode(nodes[i]));
 
 	/* delete nodes with no children */
@@ -460,8 +469,8 @@ void test_delete_node()
 void test_avl_insert() {
     int vals[] = {3, 7, 4, 2};
     struct node* root = newnode(5);
-
-    for (int i = 0; i < 4; i++) insert_node(&root, newnode(vals[i]));
+	int i;
+    for (i = 0; i < 4; i++) insert_node(&root, newnode(vals[i]));
     assert(root->height == 2);
 
     assert(root->_hash_val == 5);
@@ -472,8 +481,8 @@ void test_avl_insert() {
 void test_avl_balence() {
     struct node* root = newnode(41);
     int vals[] = {65, 20, 50, 26, 11, 29, 23};
-
-    for (int i = 0; i < 7; i++)
+	int i;
+    for (i = 0; i < 7; i++)
         insert_node(&root, newnode(vals[i]));
 
     insert_node(&root, newnode(55));
@@ -484,7 +493,7 @@ void test_avl_balence() {
 
     root = newnode(41);
     int newvals[] = {65, 20, 50, 29, 11, 26};
-    for (int i = 0; i < 6; i++)
+    for (i = 0; i < 6; i++)
         insert_node(&root, newnode(newvals[i]));
     assert(root->left->right->_hash_val == 29);
 
@@ -531,4 +540,8 @@ int main() {
     test_avl_balence();
 
     printf("OK %s\n", __FILE__);
+	#ifdef C_99
+		printf("yeeeet\n");
+	#endif
+	return 0;
 }

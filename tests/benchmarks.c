@@ -63,14 +63,15 @@ void putget_benchmark()
 
 	char** keys = rand_keys(N_KEYS);
 	int data[N_KEYS];
+	int i;
 
-	for (int i = 0; i < N_KEYS; i++)
+	for (i = 0; i < N_KEYS; i++)
 	{
 		data[i] = i + 1;
 		Map_put(m, keys[i], data[i]);
 	}
 
-	for (int i = 0; i < N_KEYS; i++)
+	for (i = 0; i < N_KEYS; i++)
 		assert(data[i] == Map_get(m, keys[i]));
 
 	assert(m->item_count == N_KEYS);
@@ -95,7 +96,6 @@ void putdelete_benchmark()
 
 	for (i = 0; i < N_KEYS; i++)
 		Map_delete(m, keys[i]);
-	size_t i;
 	for (i = 0; i < m->__size; i++)
 		assert(m->__data[i] == NULL);
 
@@ -119,4 +119,5 @@ int main()
 
 	teardown_globals();
 	printf("End Benchmarks\n");
+	return 0;
 }

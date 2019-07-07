@@ -14,11 +14,11 @@ char* randstring(size_t length)
 {
     static char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.-#'?!";
     char *str = NULL;
-	int key;
     if (length) {
         str = malloc(sizeof(char) * (length + 1));
         if (str) {
-            for (int n = 0;n < length;n++) {
+			int n, key;
+            for (n = 0;n < length;n++) {
                 key = rand() % (int)(sizeof(charset) - 1);
                 str[n] = charset[key];
             }
@@ -80,8 +80,8 @@ double nbenchmark(testfunc testfn, int n)
 {
 	struct timeb start, end;
 	ftime(&start);
-
-	for (int i = 0; i < n; i++)
+	int i;
+	for (i = 0; i < n; i++)
 		testfn();
 
 	ftime(&end);

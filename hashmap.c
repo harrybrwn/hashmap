@@ -6,6 +6,31 @@
 extern "C" {
 #endif
 
+#ifdef __STDC__
+# define C_89
+# ifdef __STDC_VERSION__
+#  define C_90
+#  if (__STDC_VERSION__ >= 199409L)
+#   define C_94
+#  endif
+#  if (__STDC_VERSION__ >= 199901L)
+#   define C_99
+#  endif
+#  if (__STDC_VERSION__ >= 201112L)
+#   define C_11
+#  endif
+#  if (__STDC_VERSION__ >= 201710L)
+#   define C_18
+#  endif
+# endif
+#endif
+
+#ifdef C_99
+# define _inline inline
+#else
+# define _inline
+#endif
+
 #pragma pack(1)
 
 typedef unsigned long hash_t;
@@ -23,7 +48,7 @@ struct node {
 	hash_t _hash_val;
 };
 
-static inline hash_t djb2(char* str) {
+static _inline hash_t djb2(char* str) {
 	hash_t hash = 5381;
 	int    c;
 
@@ -33,7 +58,7 @@ static inline hash_t djb2(char* str) {
 	return hash;
 }
 
-static inline hash_t sdbm(char *str) {
+hash_t sdbm(char *str) {
     hash_t hash = 0;
     int c;
 
@@ -54,7 +79,7 @@ hash_t rshash(char *str) {
   	return (hash & 0x7FFFFFFF);
 }
 
-hash_t prehash(char* str) {
+static _inline hash_t prehash(char* str) {
 	return djb2(str);
 }
 
@@ -70,7 +95,8 @@ Map* New_Map() {
 }
 
 void Map_close(Map* m) {
-	for (int i = 0; i < m->__size; i++) {
+	int i;
+	for (i = 0; i < m->__size; i++) {
 		delete_tree(m->__data[i]);
 	}
 	free(m->__data);
@@ -123,7 +149,8 @@ void Map_resize(Map** old_m, size_t size) {
 	new_m->item_count = (*old_m)->item_count;
 
 	struct node* tmp;
-	for (int i = 0; i < (*old_m)->__size; i++) {
+	int i;
+	for (i = 0; i < (*old_m)->__size; i++) {
 		tmp = (*old_m)->__data[i];
 		if (tmp != NULL)
 			copy_nodes(new_m, tmp);
@@ -138,7 +165,8 @@ void Map_keys(Map* m, char** keys) {
 	int pos = 0;
 	struct node* node;
 
-	for (int i = 0; i < m->__size; i++) {
+	int i;
+	for (i = 0; i < m->__size; i++) {
 		node = m->__data[i];
 		if (node != NULL)
 			pos = node_keys(node, keys, pos);
@@ -147,7 +175,7 @@ void Map_keys(Map* m, char** keys) {
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
-static inline int height(struct node* n) {
+static _inline int height(struct node* n) {
 	if (n == NULL)
 		return -1;
 	else
@@ -180,7 +208,7 @@ static struct node* node_rotateright(struct node* n) {
 	return head;
 }
 
-static inline void
+static _inline void
 balance_left_side(struct node** root, hash_t new_hash) {
 	if (new_hash < (*root)->left->_hash_val) {
 		/* single rotate right */
@@ -192,7 +220,7 @@ balance_left_side(struct node** root, hash_t new_hash) {
 	}
 }
 
-static inline void
+static _inline void
 balance_right_side(struct node** root, hash_t new_hash) {
 	if (new_hash > (*root)->right->_hash_val) {
 		/* single rotate left */
@@ -338,7 +366,7 @@ struct node* pop_max(struct node** node) {
        return tmp;
 }
 
-static inline struct node* min_node(struct node* node) 
+static _inline struct node* min_node(struct node* node) 
 { 
     struct node* curr = node; 
   
@@ -448,7 +476,8 @@ static Map* create_map(size_t size) {
 		perror("Error: ran out of memory allocating a node array");
 		return m;
 	}
-	for (int i = 0; i < size; i++)
+	int i;
+	for (i = 0; i < size; i++)
 		m->__data[i] = NULL;
 	m->item_count = 0;
 	return m;
