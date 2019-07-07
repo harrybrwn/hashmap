@@ -22,7 +22,6 @@ all: $(Test) $(Example) $(Benchmark) lib
 test: $(Test) $(Example) $(Benchmark)
 	@./$(Test)
 	@./$(Example) > /dev/null
-	@./$(Benchmark)
 
 bench: $(Benchmark)
 	@./$(Benchmark)
@@ -43,7 +42,7 @@ lib: $(SharedLib) $(StaticLib)
 
 $(SharedLib): hashmap.c hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) $(CFLAGS) -fPIC -shared -o $@ $(SRC) -lc
+	$(CC) $(CFLAGS) -fPIC -shared -o $@ $(SRC)
 
 $(StaticLib): hashmap.c hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi

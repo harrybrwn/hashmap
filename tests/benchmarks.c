@@ -9,18 +9,6 @@
 
 typedef void (*testfunc)(void);
 
-int usleep(__useconds_t usec);
-
-void millipause(double sec) {
-	int milliseconds = sec * 1000;
-    usleep(milliseconds * 1000);
-}
-
-void test()
-{
-	// millipause(0.001);
-}
-
 #define N_KEYS 2000000
 // #define N_KEYS 1000000
 // #define N_KEYS 1000
@@ -114,7 +102,7 @@ void putdelete_benchmark()
 int main()
 {
 	setlocale(LC_NUMERIC, "");
-	printf("\nStart Benchmarks with %'d items\n", N_KEYS);
+	printf("Start Benchmarks with %'d items\n", N_KEYS);
 	init_globals();
 
 	Benchmark("put", put_benchmark);

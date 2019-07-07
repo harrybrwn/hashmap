@@ -3,7 +3,10 @@
 
 #include <sys/timeb.h>
 #include <sys/time.h>
+
+#ifndef _WIN32
 #include <sys/resource.h>
+#endif
 
 #include "tests/test_common.h"
 
@@ -40,11 +43,13 @@ void free_string_arr(char** arr, int len)
     free(arr);
 }
 
+#ifndef _WIN32
 // this struct is nowhere to be found in the standard library
 struct timezone {
 	int tz_minuteswest;
 	int tz_dsttime;
 };
+#endif
 
 double get_time()
 {
