@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 CFLAGS=-Wall -std=c89 -g
 AR=ar
 

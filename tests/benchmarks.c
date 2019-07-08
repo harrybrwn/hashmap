@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <locale.h>
 #include <assert.h>
 #include <time.h>
@@ -6,8 +7,6 @@
 #define MapValue int
 #include <hashmap.h>
 #include "tests/test_common.h"
-
-typedef void (*testfunc)(void);
 
 #define N_KEYS 2000000
 /* #define N_KEYS 1000000 */
@@ -18,15 +17,16 @@ static char** mapkeys;
 
 void init_globals()
 {
+	srand(time(0));
 	map = New_Map();
-	Map_resize(&map, N_KEYS);
+	Map_resize(&map, N_KEYS + 293);
 	mapkeys = rand_keys(N_KEYS);
 }
 
 void teardown_globals()
 {
 	int i;
-	for (i = 0; i < N_KEYS; i++)
+	for (i = 0; i < map->__size; i++)
 		assert(map->__data[i] == NULL);
 	assert(map->item_count == 0);
 
@@ -38,14 +38,14 @@ void put_benchmark()
 {
 	int i;
 	for (i = 0; i < N_KEYS; i++)
-		Map_put(map, mapkeys[i], 10);
+		Map_put(map, mapkeys[i], 33);
 }
 
 void get_benchmark()
 {
 	int i;
 	for (i = 0; i < N_KEYS; i++)
-		assert(10 == Map_get(map, mapkeys[i]));
+		assert(33 == Map_get(map, mapkeys[i]));
 }
 
 void delete_benchmark()

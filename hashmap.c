@@ -48,7 +48,8 @@ struct node {
 	hash_t _hash_val;
 };
 
-static _inline hash_t djb2(char* str) {
+/*
+hash_t djb2(char* str) {
 	hash_t hash = 5381;
 	int    c;
 
@@ -79,8 +80,27 @@ hash_t rshash(char *str) {
   	return (hash & 0x7FFFFFFF);
 }
 
+hash_t fnv_1(char *str) {
+	hash_t prime = 16777619;
+	hash_t hash = 2166136261;
+	
+	int c;
+	while ((c = *str++))
+		hash = (hash ^ c) * prime;
+	
+	return hash;
+}
+*/
+
 static _inline hash_t prehash(char* str) {
-	return djb2(str);
+	hash_t prime = 16777619;
+	hash_t hash = 2166136261;
+	
+	int c;
+	while ((c = *str++))
+		hash = (hash ^ c) * prime;
+	
+	return hash;
 }
 
 static Map* create_map(size_t);
@@ -272,7 +292,7 @@ static struct node* search(struct node* root, hash_t key_hash) {
 	return NULL;
 }
 
-static void delete_tree(struct node* leaf) {
+static _inline void delete_tree(struct node* leaf) {
 	if (leaf != NULL) {
 		delete_tree(leaf->right);
 		delete_tree(leaf->left);

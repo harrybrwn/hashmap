@@ -15,7 +15,7 @@ extern "C" {
 
 typedef struct hashmap {
 	struct node** __data;
-    size_t __size;
+	size_t __size;
 
 	size_t item_count;
 } Map;
