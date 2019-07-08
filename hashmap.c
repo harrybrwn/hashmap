@@ -256,6 +256,9 @@ balance_right_side(struct node** root, hash_t new_hash) {
 #define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
 /* insert_node is exposed as a non-static function for testing purposes only. */
+#ifndef HASHMAP_TESTING
+static
+#endif
 void insert_node(struct node** root, struct node* new) {
 	if (new->_hash_val < (*root)->_hash_val) {
 		/* insert left */
@@ -342,6 +345,7 @@ static void add_node(Map* m, struct node* node, int index) {
 	}
 }
 
+#ifdef HASHMAP_TESTING
 /**
  * SA (side A) is the primary node if it is left then the loop
  * will get the furthest left node.
@@ -385,6 +389,7 @@ struct node* pop_max(struct node** node) {
        POP_MINMAX_LOOP(right, left);
        return tmp;
 }
+#endif
 
 static _inline struct node* min_node(struct node* node) 
 { 
@@ -465,6 +470,7 @@ static struct node* _delete_node(struct node* root, hash_t k_hash)
     return root;
 }
 
+#ifdef HASHMAP_TESTING
 /**
  * delete_node is a convienience function for testing puposes only.
  */
@@ -472,6 +478,8 @@ void delete_node(struct node** root, hash_t k_hash)
 {
 	*root = _delete_node(*root, k_hash);
 }
+
+#endif
 
 static void copy_nodes(Map* m, struct node* n) {
 	if (n->left != NULL)

@@ -1,5 +1,5 @@
-CC=clang
-CFLAGS=-Wall -std=c89 -g
+CC=gcc
+CFLAGS=-Wall -L$(LibDir) -I. -std=c89 -g
 AR=ar
 
 SRC=hashmap.c
@@ -29,13 +29,13 @@ bench: $(Benchmark)
 .PHONY: all test bench
 
 $(Test): $(TestSRC) $(SRC) $(Test).c
-	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $^
+	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $^
 
 $(Example): $(TestSRC) $(Example).c $(StaticLib)
-	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
+	$(CC) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
 $(Benchmark): $(TestSRC) $(StaticLib) $(Benchmark).c
-	$(CC) -I. -L$(LibDir) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
+	$(CC) -DHASHMAP_TESTING -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
 lib: $(SharedLib) $(StaticLib)
 .PHONY: lib
