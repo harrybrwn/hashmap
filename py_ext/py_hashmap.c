@@ -120,11 +120,10 @@ static PyModuleDef hashmap = {
 
 PyMODINIT_FUNC PyInit_hashmap(void)
 {
-	PyObject* mod;
 	if (PyType_Ready(&HashMapType) < 0)
 		return NULL;
 
-	mod = PyModule_Create(&hashmap);
+	PyObject* mod = PyModule_Create(&hashmap);
 	if (mod == NULL)
 		return NULL;
 
