@@ -17,9 +17,9 @@ TestSRC=tests/test_common.c
 StaticLib=$(LibDir)/libhashmapstatic.a
 SharedLib=$(LibDir)/libhashmap.so
 
-all: $(Test) $(Example) $(Benchmark) lib
+all: $(Test) $(Example) $(Benchmark) lib 
 
-test: $(Test) $(Example) $(Benchmark)
+test: py-test $(Test) $(Example) $(Benchmark)
 	@./$(Test)
 	@./$(Example) > /dev/null
 
@@ -52,7 +52,7 @@ $(StaticLib): hashmap.c hashmap.h
 
 Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin)
 
-clean:
+clean: py-clean
 	@for file in $(Binaries) preproc.i $(ProfileFiles); do\
 		if [ -f $$file ]; then\
 			rm $$file;\
@@ -83,3 +83,6 @@ profile: hashmap.c tests/benchmarks.c tests/test.c tests/test_common.c
 	@for f in `find . -name '*.o'`; do rm $$f; done
 
 .PHONY: clean proc profile
+
+PyTestDir=tests/python
+include $(PyTestDir)/Makefile.in

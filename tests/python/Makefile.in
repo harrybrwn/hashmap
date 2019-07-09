@@ -1,0 +1,12 @@
+PY=python
+
+py-test: $(PyTestDir)/hashmap.%.so
+	$(PY) $(PyTestDir)/test.py
+
+$(PyTestDir)/hashmap.%.so:
+	$(PY) ./$(PyTestDir)/setup.py build --build-lib $(PyTestDir)
+
+py-clean:
+	@rm $(PyTestDir)/hashmap.*.so
+
+.PHONY: py-test
