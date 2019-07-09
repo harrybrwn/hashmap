@@ -3,7 +3,7 @@
 #include "structmember.h"
 
 #define MapValue PyObject*
-#include "../hashmap.h"
+#include "hashmap.h"
 
 
 typedef struct {

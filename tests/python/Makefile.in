@@ -7,6 +7,6 @@ $(PyTestDir)/hashmap.%.so:
 	$(PY) ./$(PyTestDir)/setup.py build --build-lib $(PyTestDir)
 
 py-clean:
-	@rm $(PyTestDir)/hashmap.*.so
+	@for f in `find $(PyTestDir) -name '*.so'`; do rm $$f; done
 
 .PHONY: py-test

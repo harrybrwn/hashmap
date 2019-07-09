@@ -64,7 +64,7 @@ clean: py-clean
 proc:
 	gcc -I. -E hashmap.c $(Test).c > preproc.i
 
-ProfileFlags=-Wall -I. -std=c99 -pg
+ProfileFlags=-Wall -I. -std=c99 -pg -DHASHMAP_TESTING
 ProfileBin=profile.bin
 Profiles=$(Benchmark)_prof $(Test)_prof
 TestProfile=test

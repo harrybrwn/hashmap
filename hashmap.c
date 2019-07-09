@@ -98,7 +98,7 @@ static _inline
 hash_t prehash(char* str) {
 	hash_t prime = 16777619;
 	hash_t hash = 2166136261;
-	
+
 	int c;
 	while ((c = *str++))
 		hash = (hash ^ c) * prime;
