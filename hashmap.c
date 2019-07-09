@@ -115,7 +115,7 @@ Map* New_Map() {
 }
 
 void Map_close(Map* m) {
-	int i;
+	size_t i;
 	for (i = 0; i < m->__size; i++) {
 		delete_tree(m->__data[i]);
 	}
@@ -169,7 +169,7 @@ void Map_resize(Map** old_m, size_t size) {
 	new_m->item_count = (*old_m)->item_count;
 
 	struct node* tmp;
-	int i;
+	size_t i;
 	for (i = 0; i < (*old_m)->__size; i++) {
 		tmp = (*old_m)->__data[i];
 		if (tmp != NULL)
@@ -185,7 +185,7 @@ void Map_keys(Map* m, char** keys) {
 	int pos = 0;
 	struct node* node;
 
-	int i;
+	size_t i;
 	for (i = 0; i < m->__size; i++) {
 		node = m->__data[i];
 		if (node != NULL)
@@ -504,7 +504,7 @@ static Map* create_map(size_t size) {
 		perror("Error: ran out of memory allocating a node array");
 		return m;
 	}
-	int i;
+	size_t i;
 	for (i = 0; i < size; i++)
 		m->__data[i] = NULL;
 	m->item_count = 0;
