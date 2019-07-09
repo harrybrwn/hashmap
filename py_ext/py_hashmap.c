@@ -79,10 +79,38 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 	return Py_None;
 }
 
+static PyObject*
+HashMap_keys(HashMap* self, PyObject *args)
+{
+	/* yup, dynamic stack allocation in c89 */
+	char **keys = alloca(sizeof(char*) * self->_map->item_count);
+	Map_keys(self->_map, keys);
+	
+	PyObject* str_list = PyList_New(self->_map->item_count);
+	size_t i;
+	for (i = 0; i < self->_map->item_count; i++)
+		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
+	
+	free(keys);
+	return str_list;
+}
+
+static PyObject*
+HashMap_resize(HashMap* self, PyObject *args)
+{
+	int size;
+	if (!PyArg_ParseTuple(args, "i", &size))
+		return NULL;
+	Map_resize(&self->_map, (size_t)size);
+	return Py_None;
+}
+
 static PyMethodDef HashMap_methods[] = {
 	{"put",    (PyCFunction) HashMap_put,    METH_VARARGS | METH_KEYWORDS, "put data into the HashMap"},
 	{"get",    (PyCFunction) HashMap_get,    METH_VARARGS | METH_KEYWORDS, "get data from the HashMap"},
 	{"delete", (PyCFunction) HashMap_delete, METH_VARARGS | METH_KEYWORDS, "delete data from the HashMap"},
+	{"keys",   (PyCFunction) HashMap_keys,   METH_NOARGS,                  "get all keys stored in the Hashmap"},
+	{"resize", (PyCFunction) HashMap_resize, METH_VARARGS,                 "resize the map internals"},
 	{NULL},
 };
 
