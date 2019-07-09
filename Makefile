@@ -7,19 +7,23 @@ SRC=hashmap.c
 # Directories
 TestDir=tests
 LibDir=lib
+ExtDir=extentions
+PyTestDir=$(TestDir)/python
+CTestDir=$(TestDir)/c
+CppTestDir=$(TestDir)/cpp
 
 # Binaries
-Test=$(TestDir)/test
-Example=$(TestDir)/doc_example
-Benchmark=$(TestDir)/benchmarks
-TestSRC=tests/test_common.c
+Test=$(CTestDir)/test
+Example=$(CTestDir)/doc_example
+Benchmark=$(CTestDir)/benchmarks
+TestSRC=$(TestDir)/test_common.c
 
 StaticLib=$(LibDir)/libhashmapstatic.a
 SharedLib=$(LibDir)/libhashmap.so
 
-all: $(Test) $(Example) $(Benchmark) lib 
+all: $(Test) $(Example) $(Benchmark) lib
 
-test: py-test $(Test) $(Example) $(Benchmark)
+test: py-test cpp-test $(Test) $(Example) $(Benchmark)
 	@./$(Test)
 	@./$(Example) > /dev/null
 
@@ -27,6 +31,9 @@ bench: $(Benchmark)
 	@./$(Benchmark)
 
 .PHONY: all test bench
+
+hashmap.o: hashmap.c hashmap.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(Test): $(TestSRC) $(SRC) $(Test).c
 	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $^
@@ -40,15 +47,13 @@ $(Benchmark): $(TestSRC) $(StaticLib) $(Benchmark).c
 lib: $(SharedLib) $(StaticLib)
 .PHONY: lib
 
-$(SharedLib): hashmap.c hashmap.h
+$(SharedLib): $(SRC) hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) $(CFLAGS) -fPIC -shared -o $@ $(SRC)
+	$(CC) $(CFLAGS) -fPIC -shared -o $@ $<
 
-$(StaticLib): hashmap.c hashmap.h
+$(StaticLib): hashmap.o
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) -c $(CFLAGS) -o hashmap.o hashmap.c
 	$(AR) rcs $@ hashmap.o
-	@rm hashmap.o
 
 Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin)
 
@@ -60,6 +65,7 @@ clean: py-clean
 	done
 	@if [ -d lib ]; then rm -rf lib; fi
 	@for f in `find . -name '*.o'`; do rm $$f; done
+	@if [ -f hashmap.o ]; then rm hashmap.o; fi
 
 proc:
 	gcc -I. -E hashmap.c $(Test).c > preproc.i
@@ -70,7 +76,7 @@ Profiles=$(Benchmark)_prof $(Test)_prof
 TestProfile=test
 ProfileFiles=$(ProfileBin) gmon.out $(Profiles)
 
-profile: hashmap.c tests/benchmarks.c tests/test.c tests/test_common.c
+profile: hashmap.c hashmap.h tests/benchmarks.c tests/test.c tests/test_common.c
 	@for f in hashmap tests/test_common; do\
 		$(CC) $(ProfileFlags) -c -o $$f.o $$f.c; done
 
@@ -84,5 +90,5 @@ profile: hashmap.c tests/benchmarks.c tests/test.c tests/test_common.c
 
 .PHONY: clean proc profile
 
-PyTestDir=tests/python
 include $(PyTestDir)/Makefile.in
+include $(CppTestDir)/Makefile.in

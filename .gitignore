@@ -9,6 +9,7 @@
 *.exe
 test.exe
 test
+cpp-test
 doc_example
 benchmarks
 profile.bin
@@ -21,4 +22,5 @@ gmon.out
 
 # Tooling
 /.vscode/
+*.vscode/
 TODO

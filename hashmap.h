@@ -1,6 +1,8 @@
 #ifndef HASHMAP_H
 #define HASHMAP_H
 
+#include <stddef.h>
+
 #if !defined(MapValue)
   #define MapValue void*
 #endif

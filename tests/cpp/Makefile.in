@@ -1,0 +1,15 @@
+CPPFLAGS=-Wall -Wextra -Werror -L$(LibDir) -I. -g
+CPP_FILE=$(ExtDir)/cpp/HashMap
+CPP_SRC=$(CPP_FILE).cpp $(CPP_FILE).hpp
+
+cpp-test: $(TestDir)/cpp/cpp-test
+	@./$<
+
+$(TestDir)/cpp/cpp-test: $(CPP_FILE).o $(ExtDir)/cpp/chashmap.o $(TestDir)/cpp/tests.cpp
+	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++
+
+$(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp
+	$(CC) $(CPPFLAGS) -c $< -o $@ -lstdc++
+
+$(ExtDir)/cpp/chashmap.o: hashmap.c hashmap.h
+	$(CC) $(CPPFLAGS) -c $< -o $@ -lstdc++
