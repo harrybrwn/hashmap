@@ -92,10 +92,13 @@ hash_t fnv_1(char *str) {
 }
 */
 
-static _inline hash_t prehash(char* str) {
+#ifndef HASHMAP_TESTING
+static _inline
+#endif
+hash_t prehash(char* str) {
 	hash_t prime = 16777619;
 	hash_t hash = 2166136261;
-	
+
 	int c;
 	while ((c = *str++))
 		hash = (hash ^ c) * prime;
@@ -260,8 +263,8 @@ balance_right_side(struct node** root, hash_t new_hash) {
 static
 #endif
 void insert_node(struct node** root, struct node* new) {
+	/* insert left */
 	if (new->_hash_val < (*root)->_hash_val) {
-		/* insert left */
 		if ((*root)->left != NULL) {
 			insert_node(&(*root)->left, new);
 
@@ -270,8 +273,8 @@ void insert_node(struct node** root, struct node* new) {
 				balance_left_side(root, new->_hash_val);
 		} else
 			(*root)->left = new;
+	/* insert right */
 	} else if (new->_hash_val > (*root)->_hash_val) {
-		/* insert right */
 		if ((*root)->right != NULL) {
 			insert_node(&(*root)->right, new);
 

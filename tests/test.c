@@ -18,15 +18,7 @@
 
 typedef unsigned long hash_t;
 
-hash_t _prehash(char* str) {
-    hash_t hash = 5381;
-	int    c;
-
-	while ((c = *str++))
-		hash = ((hash << 5) + hash) + c;
-
-	return hash;
-}
+hash_t prehash(char*);
 
 static char** collition_keys(size_t str_len,
                              size_t mapsize,
@@ -51,9 +43,9 @@ static char** collition_keys(size_t str_len,
 }
 
 void test_prehash() {
-    hash_t a = _prehash("abc");
-    hash_t b = _prehash("cba");
-    hash_t c = _prehash("bca");
+    hash_t a = prehash("abc");
+    hash_t b = prehash("cba");
+    hash_t c = prehash("bca");
 
     assert(a != b);
     assert(c != a);
@@ -148,10 +140,11 @@ void test_collitions() {
 	Map* m = New_Map();
 	int n = 20;
     /* these keys all collide is a hash table of length 'm->__size' using 'prehash' */
-    char** keys = collition_keys(6, m->__size, _prehash, n);
+    char** keys = collition_keys(6, m->__size, prehash, n);
 
 	int x[n];
 	int i;
+
 	for (i = 0; i < n; i++) {
 		x[i] = i;
 		Map_put(m, keys[i], &x[i]);

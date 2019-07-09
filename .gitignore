@@ -3,6 +3,7 @@
 *.o
 *.a
 /lib/
+/build/
 
 # Testing binaries
 *.exe
@@ -20,3 +21,4 @@ gmon.out
 
 # Tooling
 /.vscode/
+TODO
