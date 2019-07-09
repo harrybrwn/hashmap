@@ -17,20 +17,23 @@ static void HashMap_dealloc(HashMap* self)
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyObject* HashMap_new(PyTypeObject* type, PyObject *args, PyObject* kwgs)
+static PyObject*
+HashMap_new(PyTypeObject* type, PyObject *args, PyObject* kwgs)
 {
 	HashMap* self;
 	self = (HashMap*) type->tp_alloc(type, 0);
 	if (self != NULL)
 	{
-		self->_map = Map_new();
+		self->_map = New_Map();
 	}
+
 	return (PyObject*) self;
 }
 
-static int HashMap_init(HashMap *self, PyObject *args, PyObject *kwgs)
+static int
+HashMap_init(HashMap *self, PyObject *args, PyObject *kwgs)
 {
-	self->_map = Map_new();
+	self->_map = New_Map();
 	if (self->_map == NULL)
 		return -1;
 	return 0;
@@ -40,7 +43,8 @@ static PyMemberDef HashMap_members[] = {
 	{NULL}
 };
 
-static PyObject* HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
+static PyObject*
+HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 {
 	char* key;
 	PyObject* val;
@@ -52,7 +56,8 @@ static PyObject* HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 	return Py_None;
 }
 
-static PyObject* HashMap_get(HashMap* self, PyObject *args, PyObject* kw)
+static PyObject*
+HashMap_get(HashMap* self, PyObject *args, PyObject* kw)
 {
 	char* key;
 	static char* kwlist[] = {"key", NULL};
@@ -62,7 +67,8 @@ static PyObject* HashMap_get(HashMap* self, PyObject *args, PyObject* kw)
 	return Map_get(self->_map, key);
 }
 
-static PyObject* HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
+static PyObject*
+HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 {
 	char* key;
 	static char* kwlist[] = {"key", NULL};
@@ -94,19 +100,7 @@ static PyTypeObject HashMapType = {
 	.tp_methods = HashMap_methods,
 };
 
-static PyObject* module_add(PyObject* module, PyObject *args)
-{
-	int a, b;
-	if (!PyArg_ParseTuple(args, "ii", &a, &b))
-	{
-		return NULL;
-	}
-
-	return Py_BuildValue("i", a + b);
-}
-
 PyMethodDef hashmap_methods[] = {
-	{"add",  (PyCFunction) module_add,  METH_VARARGS, "add two integers"},
 	{NULL, NULL, 0, NULL}
 };
 
