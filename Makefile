@@ -19,9 +19,9 @@ TestCommon=$(TestDir)/test_common.o
 
 all: lib build-test
 
-include $(CTestDir)/Makefile.in
-include $(PyTestDir)/Makefile.in
-include $(CppTestDir)/Makefile.in
+include $(CTestDir)/Makefile
+include $(PyTestDir)/Makefile
+include $(CppTestDir)/Makefile
 
 test: c-test cpp-test py-test
 
@@ -71,7 +71,7 @@ Profiles=$(Benchmark)_prof $(Test)_prof
 TestProfile=test
 ProfileFiles=$(ProfileBin) gmon.out $(Profiles)
 
-profile: hashmap.c hashmap.h tests/benchmarks.c tests/test.c tests/test_common.c
+profile: hashmap.c hashmap.h $(Benchmark).c $(Test).c $(TestCommon:%.o=%.c)
 	@for f in hashmap tests/test_common; do\
 		$(CC) $(ProfileFlags) -c -o $$f.o $$f.c; done
 
@@ -81,6 +81,6 @@ profile: hashmap.c hashmap.h tests/benchmarks.c tests/test.c tests/test_common.c
 		gprof -b ./"$$file".bin gmon.out > "$$file"_prof;\
 		rm "$$file".bin gmon.out;\
 	done
-	@for f in `find . -name '*.o'`; do rm $$f; done
+	@# for f in `find . -name '*.o'`; do rm $$f; done
 
 .PHONY: clean proc profile
