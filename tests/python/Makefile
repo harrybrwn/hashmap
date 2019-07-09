@@ -1,13 +1,13 @@
 PY=python
-PyLib=$(TestDir)/python/hashmap.cpython-37m-x86_64-linux-gnu.so
+PyLib=$(PyTestDir)/hashmap.cpython-37m-x86_64-linux-gnu.so
 
 py-test: $(PyLib)
-	@$(PY) $(TestDir)/python/test.py
+	@$(PY) $(PyTestDir)/test.py
 
 $(PyLib):
-	$(PY) ./$(TestDir)/python/setup.py build --build-lib $(TestDir)/python
+	$(PY) ./$(PyTestDir)/setup.py build --build-lib $(PyTestDir) -b $(PyTestDir)
 
 py-clean:
-	@for f in `find $(TestDir)/python -name '*.so'`; do rm $$f; done
+	@for f in `find $(PyTestDir) -name '*.so'`; do rm $$f; done
 
 .PHONY: py-test

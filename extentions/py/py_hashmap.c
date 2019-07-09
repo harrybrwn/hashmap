@@ -2,6 +2,8 @@
 #include <Python.h>
 #include "structmember.h"
 
+#pragma pack(1)
+
 #define MapValue PyObject*
 #include "hashmap.h"
 
@@ -62,7 +64,7 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 }
 
 
-#define KEY_ERR_IF(expr) ({if(expr){PyErr_SetString(PyExc_KeyError, "Unknown key"); return NULL;}})
+#define KEY_ERR_IF(expr) {if(expr){PyErr_SetString(PyExc_KeyError, "Unknown key"); return NULL;}}
 
 
 static PyObject*

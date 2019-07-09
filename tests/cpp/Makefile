@@ -13,7 +13,7 @@ cpp-test: $(CppTest)
 cpp-clean:
 	@if [ -f $(CppTest) ]; then rm $(CppTest); fi
 
-$(CppTest): $(CPP_FILE).o $(ExtDir)/cpp/chashmap.o $(CppTest).cpp $(TestCommon)
+$(CppTest): $(CPP_FILE).o hashmap.o $(CppTest).cpp $(TestCommon)
 	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++
 
 $(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp
