@@ -515,24 +515,36 @@ void test() {
 
 }
 
-int main() {
-    test();
-	test_collitions();
-    test_prehash();
-	test_delete_node0();
-	test_delete_node1();
-	test_delete_root();
-	test_delete_node();
+static testfunc tests[] = {
+	test,
+	test_collitions,
+    test_prehash,
+	test_delete_node0,
+	test_delete_node1,
+	test_delete_root,
+	test_delete_node,
  
-    TestMap();
-    test_Map_delete();
-	test_Map_resize();
-	test_Map_keys();
+    TestMap,
+    test_Map_delete,
+	test_Map_resize,
+	test_Map_keys,
 
-	test_avl_insert();
-    test_avl_balence();
+	test_avl_insert,
+    test_avl_balence,
+};
 
-    printf("OK %s\n", __FILE__);
+int main() {
+    int i;
+	int n = sizeof(tests)/sizeof(testfunc);
+	for (i = 0; i < n; i++)
+	{
+		tests[i]();
+		printf(".");
+	}
+
+	printf("\n----------------------------------------------------------------------\n");
+	printf("Ran %d tests\n", n);
+    printf("OK %s\n\n", __FILE__);
 	#ifdef C_99
 		printf("yeeeet\n");
 	#endif

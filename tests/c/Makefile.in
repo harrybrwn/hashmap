@@ -1,0 +1,22 @@
+AllCTests=$(Test) $(Example) $(Benchmark)
+
+
+Test=$(CTestDir)/test
+Example=$(CTestDir)/doc_example
+Benchmark=$(CTestDir)/benchmarks
+
+.PHONY: c-test
+c-test: $(Test) $(Example)
+	@./$(Test)
+	@./$(Example) > /dev/null
+
+TestSRC=$(TestDir)/test_common.c
+
+$(Test): $(TestSRC) $(SRC) $(Test).c
+	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $^
+
+$(Example): $(TestSRC) $(Example).c $(StaticLib)
+	$(CC) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
+
+$(Benchmark): $(TestSRC) $(StaticLib) $(Benchmark).c
+	$(CC) -DHASHMAP_TESTING -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
