@@ -9,5 +9,6 @@ $(PyLib):
 
 py-clean:
 	@for f in `find $(PyTestDir) -name '*.so'`; do rm $$f; done
+	@if [ -d $(PyTestDir)/temp.* ]; then rm -rf $(PyTestDir)/temp.*; fi
 
 .PHONY: py-test
