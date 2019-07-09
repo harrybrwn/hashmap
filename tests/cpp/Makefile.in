@@ -1,15 +1,19 @@
-CPPFLAGS=-Wall -Wextra -Werror -L$(LibDir) -I. -g
+CPPFLAGS=-Wall -Wextra -Werror -L$(LibDir) -I. -g -DHASHMAP_TESTING
 CPP_FILE=$(ExtDir)/cpp/HashMap
 CPP_SRC=$(CPP_FILE).cpp $(CPP_FILE).hpp
 
+AllCppTests=$(CppTest)
+
+CppTest=$(TestDir)/cpp/test
+
 .PHONY: cpp-test cpp-clean
-cpp-test: $(TestDir)/cpp/cpp-test
-	@./$<
+cpp-test: $(CppTest)
+	@./$(CppTest)
 
 cpp-clean:
-	@rm $(TestDir)/cpp/cpp-test
+	@if [ -f $(CppTest) ]; then rm $(CppTest); fi
 
-$(TestDir)/cpp/cpp-test: $(CPP_FILE).o $(ExtDir)/cpp/chashmap.o $(TestDir)/cpp/tests.cpp
+$(CppTest): $(CPP_FILE).o $(ExtDir)/cpp/chashmap.o $(CppTest).cpp $(TestCommon)
 	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++
 
 $(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp
@@ -17,3 +21,6 @@ $(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp
 
 $(ExtDir)/cpp/chashmap.o: hashmap.c hashmap.h
 	$(CC) $(CPPFLAGS) -c $< -o $@ -lstdc++
+
+$(ExtDir)/cpp/test_common.o: $(TestDir)/test_common.c $(TestDir)/test_common.h
+	$(CC) $(CPPFLAGS) -c $< -o $@

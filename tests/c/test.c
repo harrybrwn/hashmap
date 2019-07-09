@@ -534,19 +534,18 @@ static testfunc tests[] = {
 };
 
 int main() {
-    int i;
-	int n = sizeof(tests)/sizeof(testfunc);
-	for (i = 0; i < n; i++)
-	{
-		tests[i]();
-		printf(".");
-	}
+	int n = sizeof(tests) / sizeof(testfunc);
+	Run(tests, n);
+ 
+    /* int i;
+	// for (i = 0; i < n; i++)
+	// {
+	// 	tests[i]();
+	// 	printf(".");
+	// }
 
-	printf("\n----------------------------------------------------------------------\n");
-	printf("Ran %d tests\n", n);
-    printf("OK %s\n\n", __FILE__);
-	#ifdef C_99
-		printf("yeeeet\n");
-	#endif
+	// printf("\n----------------------------------------------------------------------\n");
+	// printf("Ran %d tests\n", n);
+    // printf("OK %s\n\n", __FILE__); */
 	return 0;
 }

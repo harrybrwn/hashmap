@@ -8,6 +8,10 @@
 #include <sys/resource.h>
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "tests/test_common.h"
 
 char* randstring(size_t length)
@@ -114,3 +118,20 @@ void nBenchmark(const char* name, testfunc testfn, size_t n)
 	float result = nbenchmark(testfn, n);
 	printf("  %s x %lu: %.3f\n", name, n, result);
 }
+
+void Run(testfunc* tests, int n)
+{
+	int i;
+	for (i = 0; i < n; i++)
+	{
+		tests[i]();
+		printf(".");
+	}
+	printf("\n----------------------------------------------------------------------\n");
+	printf("Ran %d tests\n", n);
+    printf("\nOK\n\n");
+}
+
+#ifdef __cplusplus
+}
+#endif

@@ -1,7 +1,10 @@
 #include "extentions/cpp/HashMap.hpp"
 
+#include "tests/test_common.h"
 #include <iostream>
 #include <assert.h>
+
+typedef void (*testfunc)();
 
 void test()
 {
@@ -12,8 +15,12 @@ void test()
 	assert(res == one);
 }
 
+static testfunc tests[] = {
+	test,
+};
+
 int main()
 {
-	test();
-	std::cout << "OK " << __FILE__ << std::endl;
+	int n = sizeof(tests) / sizeof(testfunc);
+	Run(tests, n);
 }

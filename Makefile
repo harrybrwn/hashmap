@@ -15,13 +15,17 @@ CppTestDir=$(TestDir)/cpp
 StaticLib=$(LibDir)/libhashmapstatic.a
 SharedLib=$(LibDir)/libhashmap.so
 
+TestCommon=$(TestDir)/test_common.o
+
+all: lib build-test
+
 include $(CTestDir)/Makefile.in
 include $(PyTestDir)/Makefile.in
 include $(CppTestDir)/Makefile.in
 
-all: lib
-
 test: c-test cpp-test py-test
+
+build-test: $(AllCTests) $(PyLib) $(AllCppTests)
 
 bench: $(Benchmark)
 	@./$(Benchmark)
@@ -42,6 +46,9 @@ $(StaticLib): hashmap.o
 	@if [ ! -d lib ]; then mkdir lib; fi
 	$(AR) rcs $@ hashmap.o
 
+$(TestCommon): $(TestDir)/test_common.c $(TestDir)/test_common.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin)
 
 clean: py-clean cpp-clean
@@ -51,6 +58,7 @@ clean: py-clean cpp-clean
 		fi;\
 	done
 	@if [ -d lib ]; then rm -rf lib; fi
+	@if [ -d build ]; then rm -rf build; fi
 	@for f in `find . -name '*.o'`; do rm $$f; done
 	@if [ -f hashmap.o ]; then rm hashmap.o; fi
 
