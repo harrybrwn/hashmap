@@ -10,7 +10,7 @@
 
 #define N_KEYS 2000000
 /* #define N_KEYS 1000000 */
-/* #define N_KEYS 1000 */
+/* #define N_KEYS 500000 */
 
 static Map* map;
 static char** mapkeys;
@@ -58,9 +58,10 @@ void delete_benchmark()
 void putget_benchmark()
 {
 	Map* m = New_Map();	
-	Map_resize(&m, N_KEYS);
+	Map_resize(&m, N_KEYS + 293);
 	assert(m != NULL);
 
+	srand(time(0));
 	char** keys = rand_keys(N_KEYS);
 	int data[N_KEYS];
 	int i;
@@ -82,8 +83,9 @@ void putget_benchmark()
 void putdelete_benchmark()
 {
 	Map* m = New_Map();
-	Map_resize(&m, N_KEYS);
+	Map_resize(&m, N_KEYS + 293);
 
+	srand(time(0));
 	char** keys = rand_keys(N_KEYS);
 	int data[N_KEYS];
 

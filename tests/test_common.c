@@ -3,6 +3,7 @@
 
 #include <sys/timeb.h>
 #include <sys/time.h>
+#include <time.h>
 
 #ifndef _WIN32
 #include <sys/resource.h>
@@ -50,7 +51,7 @@ void free_string_arr(char** arr, int len)
     free(arr);
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__GNUC__)
 /* this struct is nowhere to be found in the standard library */
 struct timezone {
 	int tz_minuteswest;
@@ -119,7 +120,7 @@ void nBenchmark(const char* name, testfunc testfn, size_t n)
 	printf("  %s x %lu: %.3f\n", name, n, result);
 }
 
-void Run(testfunc* tests, int n)
+int Run(testfunc* tests, int n)
 {
 	int i;
 	for (i = 0; i < n; i++)
@@ -130,6 +131,7 @@ void Run(testfunc* tests, int n)
 	printf("\n----------------------------------------------------------------------\n");
 	printf("Ran %d tests\n", n);
     printf("\nOK\n\n");
+	return 0;
 }
 
 #ifdef __cplusplus

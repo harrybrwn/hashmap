@@ -48,7 +48,6 @@ struct node {
 	hash_t _hash_val;
 };
 
-/*
 hash_t djb2(char* str) {
 	hash_t hash = 5381;
 	int    c;
@@ -90,7 +89,6 @@ hash_t fnv_1(char *str) {
 	
 	return hash;
 }
-*/
 
 #ifndef HASHMAP_TESTING
 static _inline
@@ -198,12 +196,7 @@ void Map_keys(Map* m, char** keys) {
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
-static _inline int height(struct node* n) {
-	if (n == NULL)
-		return -1;
-	else
-		return n->height;
-}
+#define height(N) (N == NULL ? -1 : N->height)
 
 #define MAXHEIGHT(XX, YY) MAX(height(XX), height(YY))
 
@@ -231,29 +224,21 @@ static struct node* node_rotateright(struct node* n) {
 	return head;
 }
 
-static _inline void
-balance_left_side(struct node** root, hash_t new_hash) {
-	if (new_hash < (*root)->left->_hash_val) {
-		/* single rotate right */
-		*root = node_rotateright(*root);
-	} else {
-		/* double rotate right */
-		(*root)->left = node_rotateleft((*root)->left);
-		(*root) = node_rotateright(*root);
-	}
-}
+#define balance_left_side(root, new_hash)              \
+	if (new_hash < (*root)->left->_hash_val) {         \
+		*root = node_rotateright(*root);               \
+	} else {                                           \
+		(*root)->left = node_rotateleft((*root)->left);\
+		(*root) = node_rotateright(*root);             \
+	}                                                  \
 
-static _inline void
-balance_right_side(struct node** root, hash_t new_hash) {
-	if (new_hash > (*root)->right->_hash_val) {
-		/* single rotate left */
-		*root = node_rotateleft(*root);
-	} else {
-		/* double rotate left */
-		(*root)->right = node_rotateright((*root)->right);
-		*root = node_rotateleft(*root);
-	}
-}
+#define balance_right_side(root, new_hash)                \
+	if (new_hash > (*root)->right->_hash_val) {           \
+		*root = node_rotateleft(*root);                   \
+	} else {											  \
+		(*root)->right = node_rotateright((*root)->right);\
+		*root = node_rotateleft(*root);                   \
+	}													  \
 
 #define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
 #define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
@@ -269,8 +254,9 @@ void insert_node(struct node** root, struct node* new) {
 			insert_node(&(*root)->left, new);
 
 			/* if left side is double-unbalenced... rotate right */
-			if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2)
+			if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2) {
 				balance_left_side(root, new->_hash_val);
+			}
 		} else
 			(*root)->left = new;
 	/* insert right */
@@ -279,8 +265,9 @@ void insert_node(struct node** root, struct node* new) {
 			insert_node(&(*root)->right, new);
 
 			/* if right side is double-unbalenced... rotate left */
-			if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2)
+			if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2) {
 				balance_right_side(root, new->_hash_val);
+			}
 		} else
 			(*root)->right = new;
 	}
@@ -416,6 +403,7 @@ static struct node* _delete_node(struct node* root, hash_t k_hash)
 	{
         root->right = _delete_node(root->right, k_hash);
 	}
+
     else if (root->_hash_val == k_hash) {
         if(!root->left || !root->right)
         {
@@ -449,6 +437,7 @@ static struct node* _delete_node(struct node* root, hash_t k_hash)
       return root;
 
     root->height = 1 + MAXHEIGHT(root->left, root->right);
+
 	int h_diff = HEIGHT_DIFF(root->left, root->right);
 
     if (h_diff > 1 && BALENCE(root->left) >= 0)

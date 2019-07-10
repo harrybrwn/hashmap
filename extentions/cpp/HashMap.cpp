@@ -53,5 +53,6 @@ void* HashMap::get(std::string key)
 
 void HashMap::resize(size_t size)
 {
+	this->size = size;
 	Map_resize(&_map, size);
 }

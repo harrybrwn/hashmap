@@ -511,7 +511,14 @@ void test_avl_balence() {
     delete_tree(root);
 }
 
-void test() {
+void test()
+{
+	/*
+
+	*/
+	printf("node size: %lu\n", sizeof(struct node));
+	printf("Map size: %lu\n", sizeof(Map));
+	printf("hash_t size: %lu\n", sizeof(hash_t));
 
 }
 
@@ -535,17 +542,5 @@ static testfunc tests[] = {
 
 int main() {
 	int n = sizeof(tests) / sizeof(testfunc);
-	Run(tests, n);
- 
-    /* int i;
-	// for (i = 0; i < n; i++)
-	// {
-	// 	tests[i]();
-	// 	printf(".");
-	// }
-
-	// printf("\n----------------------------------------------------------------------\n");
-	// printf("Ran %d tests\n", n);
-    // printf("OK %s\n\n", __FILE__); */
-	return 0;
+	return Run(tests, n);
 }

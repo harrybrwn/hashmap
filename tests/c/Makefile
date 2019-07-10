@@ -15,5 +15,5 @@ $(Test): $(TestCommon) $(SRC) $(Test).c
 $(Example): $(TestCommon) $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
-$(Benchmark): $(TestCommon) $(StaticLib) $(Benchmark).c
-	$(CC) -o $@ $(CFLAGS) $(TestCommon) $@.c -lhashmapstatic
+$(Benchmark): $(TestCommon) hashmap.o $(Benchmark).c
+	$(CC) -o $@ $(CFLAGS) $^

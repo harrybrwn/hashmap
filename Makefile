@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -L$(LibDir) -I. -std=c89 -g
+CFLAGS=-Wall -L$(LibDir) -I. -Ofast
 AR=ar
 
 SRC=hashmap.c
@@ -65,7 +65,7 @@ clean: py-clean cpp-clean
 proc:
 	gcc -I. -E hashmap.c $(Test).c > preproc.i
 
-ProfileFlags=-Wall -I. -std=c99 -pg -DHASHMAP_TESTING
+ProfileFlags=-Wall -I. -pg -DHASHMAP_TESTING
 ProfileBin=profile.bin
 Profiles=$(Benchmark)_prof $(Test)_prof
 TestProfile=test

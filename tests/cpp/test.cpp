@@ -2,7 +2,7 @@
 
 #include "tests/test_common.h"
 #include <iostream>
-#include <assert.h>
+#include <cassert>
 
 typedef void (*testfunc)();
 

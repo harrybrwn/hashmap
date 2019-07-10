@@ -18,7 +18,7 @@ extern void Benchmark(const char*, testfunc);
 extern void AverageBenchmark(const char*, testfunc, size_t);
 void Benchmarkf(const char*, testfunc, const char*);
 extern void nBenchmark(const char*, testfunc, size_t);
-extern void Run(testfunc*, int);
+extern int Run(testfunc*, int);
 
 #ifdef __cplusplus
 }
