@@ -104,7 +104,6 @@ hash_t prehash(char* str) {
 	return hash;
 }
 
-// static Map* create_map(size_t);
 static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
