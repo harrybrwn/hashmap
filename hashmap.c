@@ -115,6 +115,11 @@ Map* New_Map() {
 	return create_map(DEFAULT_MAP_SIZE);
 }
 
+Map* Create_Map(size_t size)
+{
+	return create_map(size);
+}
+
 void Map_close(Map* m) {
 	size_t i;
 	for (i = 0; i < m->__size; i++) {

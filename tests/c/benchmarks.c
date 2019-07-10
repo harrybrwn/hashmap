@@ -18,8 +18,7 @@ static char** mapkeys;
 void init_globals()
 {
 	srand(time(0));
-	map = New_Map();
-	Map_resize(&map, N_KEYS + 293);
+	map = Create_Map(N_KEYS + 293);
 	mapkeys = rand_keys(N_KEYS);
 }
 
@@ -57,8 +56,7 @@ void delete_benchmark()
 
 void putget_benchmark()
 {
-	Map* m = New_Map();	
-	Map_resize(&m, N_KEYS + 293);
+	Map* m = Create_Map(N_KEYS + 293);
 	assert(m != NULL);
 
 	srand(time(0));
@@ -82,8 +80,7 @@ void putget_benchmark()
 
 void putdelete_benchmark()
 {
-	Map* m = New_Map();
-	Map_resize(&m, N_KEYS + 293);
+	Map* m = Create_Map(N_KEYS + 293);
 
 	srand(time(0));
 	char** keys = rand_keys(N_KEYS);

@@ -4,10 +4,8 @@
 
 HashMap::HashMap(size_t size)
 {
-	this->_map = New_Map();
+	this->_map = Create_Map(size);
 	this->size = size;
-	
-	Map_resize(&this->_map, size);
 }
 
 HashMap::HashMap()

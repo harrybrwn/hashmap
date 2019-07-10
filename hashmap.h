@@ -25,6 +25,9 @@ typedef struct hashmap {
 /* New_Map creates a new map. Allocates the Map on the heap. */
 Map* New_Map();
 
+/* Create_Map creates a new map but initializes it with a given size */
+Map* Create_Map(size_t);
+
 /* Map_close frees the memory allocated by new_map. Only needs to be called
    if the Map was allocated on the heap. */
 void Map_close(Map*);
