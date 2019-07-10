@@ -97,27 +97,44 @@ hash_t prehash(char* str) {
 	hash_t prime = 16777619;
 	hash_t hash = 2166136261;
 
-	int c;
+	char c;
 	while ((c = *str++))
 		hash = (hash ^ c) * prime;
-	
+
 	return hash;
 }
 
-static Map* create_map(size_t);
+// static Map* create_map(size_t);
 static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
 static struct node* search(struct node*, hash_t);
 static struct node* _delete_node(struct node* root, hash_t k_hash);
 
-Map* New_Map() {
-	return create_map(DEFAULT_MAP_SIZE);
-}
-
 Map* Create_Map(size_t size)
 {
-	return create_map(size);
+	size_t i;
+	Map* m = malloc(sizeof(Map));
+	if (m == NULL) {
+		perror("Error: ran out of memory allocating a Map");
+		return NULL;
+	}
+
+	m->__size = size;
+	m->__data = malloc(sizeof(struct node*) * m->__size);
+	if (m->__data == NULL) {
+		perror("Error: ran out of memory allocating a node array");
+		return m;
+	}
+
+	for (i = 0; i < size; i++)
+		m->__data[i] = NULL;
+	m->item_count = 0;
+	return m;
+}
+
+Map* New_Map() {
+	return Create_Map(DEFAULT_MAP_SIZE);
 }
 
 void Map_close(Map* m) {
@@ -171,7 +188,7 @@ void Map_delete(Map* m, char* key) {
 }
 
 void Map_resize(Map** old_m, size_t size) {
-	Map* new_m = create_map(size);
+	Map* new_m = Create_Map(size);
 	new_m->item_count = (*old_m)->item_count;
 
 	struct node* tmp;
@@ -487,25 +504,6 @@ static void copy_nodes(Map* m, struct node* n) {
 
 	int index = n->_hash_val % m->__size;
 	add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
-}
-
-static Map* create_map(size_t size) {
-	Map* m = malloc(sizeof(Map));
-	if (m == NULL) {
-		perror("Error: ran out of memory allocating a Map");
-		return NULL;
-	}
-	m->__size = size;
-	m->__data = malloc(sizeof(struct node*) * m->__size);
-	if (m->__data == NULL) {
-		perror("Error: ran out of memory allocating a node array");
-		return m;
-	}
-	size_t i;
-	for (i = 0; i < size; i++)
-		m->__data[i] = NULL;
-	m->item_count = 0;
-	return m;
 }
 
 static int node_keys(struct node* n, char** keys, int pos) {
