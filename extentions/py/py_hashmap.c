@@ -16,6 +16,10 @@ typedef struct {
 } HashMap;
 
 
+static char HashMap_doc[] =
+"Map is a hash table implimentation written in c for python.";
+
+
 static void HashMap_dealloc(HashMap* self)
 {
 	Map_close(self->_map);
@@ -41,7 +45,7 @@ HashMap_new(PyTypeObject* type, PyObject *args, PyObject* kwgs)
 static int
 HashMap_init(HashMap *self, PyObject *args, PyObject *kwgs)
 {
-	self->_map = New_Map();
+	self->_map = Create_Map(DEFAULT_MAP_SIZE);
 	if (self->_map == NULL)
 		return -1;
 	self->size = self->_map->__size;
@@ -58,15 +62,20 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "sO", kwlist, &key, &val))
 		return NULL;
-
 	Py_INCREF(val);
+
 	Map_put(self->_map, key, val);
+	
 	Py_INCREF(Py_None);
 	return Py_None;
 }
 
 
-#define KEY_ERR_IF(expr) {if(expr){PyErr_SetString(PyExc_KeyError, "Unknown key"); return NULL;}}
+#define KEY_ERR_IF(expr, KEY) 								      \
+	{if(expr){                                                    \
+		PyErr_Format(PyExc_KeyError, "Cannot find key '%s'", KEY);\
+		return NULL;                                              \
+	}}
 
 
 static PyObject*
@@ -77,7 +86,7 @@ HashMap_get(HashMap* self, PyObject *args, PyObject* kw)
         return NULL;
 
 	PyObject* val = Map_get(self->_map, key);
-	KEY_ERR_IF(val == NULL);
+	KEY_ERR_IF(val == NULL, key);
 
 	return val;
 }
@@ -93,7 +102,7 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
         return NULL;
 	
 	PyObject* val = Map_get(self->_map, key);
-	KEY_ERR_IF(val == NULL);
+	KEY_ERR_IF(val == NULL, key);
 
 	Map_delete(self->_map, key);
 	Py_INCREF(Py_None);
@@ -106,15 +115,29 @@ HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 {
 	size_t i;
 	char **keys = malloc(sizeof(char*) * self->_map->item_count);
-	
+
 	PyObject* str_list = PyList_New(self->_map->item_count);
 	Map_keys(self->_map, keys);
 
-	for (i = 0; i < self->_map->item_count; i++)
+	for (i = 0; i < self->_map->item_count; i++) {
 		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
+	}
 
 	free(keys);
 	return str_list;
+}
+
+
+static char HashMap_clear_doc[] =
+"Flush all the data from the HashMap.";
+
+static PyObject*
+HashMap_clear(HashMap* self, PyObject *Py_UNUSED(ignored))
+{
+	Map_clear(self->_map);
+
+	Py_INCREF(Py_None);
+	return Py_None;
 }
 
 
@@ -135,13 +158,12 @@ HashMap_resize(HashMap* self, PyObject *args)
 
 
 static PyMethodDef HashMap_methods[] = {
-	// {"__getitem__", (PyCFunction) HashMap_getitem__, METH_O | METH_COEXIST,        __getitem__doc},
-	// {"__setitem__", (PyCFunction) HashMap_setitem__, METH_O | METH_COEXIST,        __setitem__doc},
 	{"put",         (PyCFunction) HashMap_put,       METH_VARARGS | METH_KEYWORDS, "put data into the HashMap"},
 	{"get",         (PyCFunction) HashMap_get,       METH_VARARGS | METH_KEYWORDS, "get data from the HashMap"},
 	{"delete",      (PyCFunction) HashMap_delete,    METH_VARARGS | METH_KEYWORDS, "delete data from the HashMap"},
 	{"keys",        (PyCFunction) HashMap_keys,      METH_NOARGS,                  "get all keys stored in the Hashmap"},
 	{"resize",      (PyCFunction) HashMap_resize,    METH_VARARGS,                 "resize the map internals"},
+	{"clear",       (PyCFunction) HashMap_clear,     METH_NOARGS,                  HashMap_clear_doc},
 	{NULL},
 };
 
@@ -183,7 +205,16 @@ static PyGetSetDef HashMap_getsetters[] = {
 };
 
 
-static PyObject* HashMap_getitem__(HashMap* self, PyObject *key)
+#define STR_CONV(OBJ, STR) 													  \
+	PyObject *_temp_bytes = PyUnicode_AsEncodedString(OBJ, "UTF-8", "strict");\
+	if (_temp_bytes != NULL) 												  \
+	{   																	  \
+		STR = PyBytes_AS_STRING(_temp_bytes);                                 \
+		Py_DECREF(_temp_bytes);                                               \
+	}
+
+
+static PyObject* HashMap__getitem__(HashMap* self, PyObject *key)
 {
 	char* key_str = NULL;
 	if (!PyUnicode_CheckExact(key)) {
@@ -191,23 +222,16 @@ static PyObject* HashMap_getitem__(HashMap* self, PyObject *key)
                         "HashMap key must be a string");
 		return NULL;
 	}
+	STR_CONV(key, key_str);
 
-	PyObject *temp_bytes = PyUnicode_AsEncodedString(key, "UTF-8", "strict"); // Owned reference
-	if (temp_bytes != NULL)
-	{
-		key_str = PyBytes_AS_STRING(temp_bytes);
-		Py_DECREF(temp_bytes);
-	}
-	else
-	{
-		return NULL;
-	}
+	PyObject *val = Map_get(self->_map, key_str);
+	KEY_ERR_IF(val == NULL, key_str);
 
-	return Map_get(self->_map, key_str);
+	return val;
 }
 
 
-static int HashMap_setitem__(HashMap* self, PyObject *key, PyObject *val)
+static int HashMap__setitem__(HashMap* self, PyObject *key, PyObject *val)
 {
 	char* key_str = NULL;
 	if (!PyUnicode_CheckExact(key)) {
@@ -215,39 +239,29 @@ static int HashMap_setitem__(HashMap* self, PyObject *key, PyObject *val)
                         "HashMap key must be a string");
 		return 1;
 	}
-
-	PyObject *temp_bytes = PyUnicode_AsEncodedString(key, "UTF-8", "strict"); // Owned reference
-	if (temp_bytes != NULL)
-	{
-		key_str = PyBytes_AS_STRING(temp_bytes);
-		Py_DECREF(temp_bytes);
-	}
-	else
-	{
-		return 1;
-	}
+	STR_CONV(key, key_str);
 
 	Map_put(self->_map, key_str, val);
 	return 0;
 }
 
-static Py_ssize_t HashMap_len__(HashMap *self)
+static Py_ssize_t HashMap__len__(HashMap *self)
 {
 	return self->_map->item_count;
 }
 
 
 static PyMappingMethods HashMap_as_mappings = {
-	(lenfunc) HashMap_len__,           /*mp_length*/
-	(binaryfunc) HashMap_getitem__,    /*mp_subscript*/
-	(objobjargproc) HashMap_setitem__, /*mp_ass_subscript*/
+	(lenfunc) HashMap__len__,           /*mp_length*/
+	(binaryfunc) HashMap__getitem__,    /*mp_subscript*/
+	(objobjargproc) HashMap__setitem__, /*mp_ass_subscript*/
 };
 
 
 static PyTypeObject HashMapType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name = "hashmap.HashMap",
-	.tp_doc = "Map is a hashmap.",
+	.tp_name       = "hashmap.HashMap",
+	.tp_doc        = HashMap_doc,
 	.tp_basicsize  = sizeof(HashMap),
 	.tp_itemsize   = 0,
 	.tp_flags      = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
