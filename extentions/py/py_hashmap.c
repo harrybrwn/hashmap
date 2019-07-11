@@ -57,9 +57,11 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 	static char* kwlist[] = {"key", "val", NULL};
 
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "sO", kwlist, &key, &val))
-        return NULL;
+		return NULL;
+
 	Py_INCREF(val);
 	Map_put(self->_map, key, val);
+	Py_INCREF(Py_None);
 	return Py_None;
 }
 
@@ -71,19 +73,12 @@ static PyObject*
 HashMap_get(HashMap* self, PyObject *args, PyObject* kw)
 {
 	char* key;
-	// if (!PyUnicode_Check(args))
-	// {
-	// 	PyErr_SetString(PyExc_TypeError, "Cannot access HashMap without string key");
-	// 	return NULL;
-	// }
-
 	if (!PyArg_ParseTuple(args, "s", &key))
         return NULL;
 
 	PyObject* val = Map_get(self->_map, key);
 	KEY_ERR_IF(val == NULL);
 
-	Py_INCREF(val);
 	return val;
 }
 
@@ -96,23 +91,13 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "s", kwlist, &key))
         return NULL;
+	
 	PyObject* val = Map_get(self->_map, key);
 	KEY_ERR_IF(val == NULL);
-	Py_DECREF(val);
 
 	Map_delete(self->_map, key);
+	Py_INCREF(Py_None);
 	return Py_None;
-}
-
-
-static PyObject* HashMap_getitem__(HashMap* self, PyObject *key_o)
-{
-	char* key;
-
-	if (!PyArg_ParseTuple(key_o, "s", &key))
-		return NULL;
-
-	return Map_get(self->_map, key);
 }
 
 
@@ -124,7 +109,7 @@ HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 	
 	PyObject* str_list = PyList_New(self->_map->item_count);
 	Map_keys(self->_map, keys);
-	
+
 	for (i = 0; i < self->_map->item_count; i++)
 		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
 
@@ -140,19 +125,21 @@ HashMap_resize(HashMap* self, PyObject *args)
 	
 	if (!PyArg_ParseTuple(args, "i", &size))
 		return NULL;
-	
+
 	Map_resize(&self->_map, size);
 	self->size = size;
 	
+	Py_INCREF(Py_None);
 	return Py_None;
 }
 
 
 static PyMethodDef HashMap_methods[] = {
+	// {"__getitem__", (PyCFunction) HashMap_getitem__, METH_O | METH_COEXIST,        __getitem__doc},
+	// {"__setitem__", (PyCFunction) HashMap_setitem__, METH_O | METH_COEXIST,        __setitem__doc},
 	{"put",         (PyCFunction) HashMap_put,       METH_VARARGS | METH_KEYWORDS, "put data into the HashMap"},
 	{"get",         (PyCFunction) HashMap_get,       METH_VARARGS | METH_KEYWORDS, "get data from the HashMap"},
 	{"delete",      (PyCFunction) HashMap_delete,    METH_VARARGS | METH_KEYWORDS, "delete data from the HashMap"},
-	{"__getitem__", (PyCFunction) HashMap_getitem__, METH_O | METH_COEXIST,        ""},
 	{"keys",        (PyCFunction) HashMap_keys,      METH_NOARGS,                  "get all keys stored in the Hashmap"},
 	{"resize",      (PyCFunction) HashMap_resize,    METH_VARARGS,                 "resize the map internals"},
 	{NULL},
@@ -184,6 +171,7 @@ static int HashMap_setsize(HashMap* self, PyObject* value, void *closure)
     }
 
 	self->size = PyLong_AsLong(value);
+	Py_INCREF(value);
 	Map_resize(&self->_map, self->size);
 	return 0;
 }
@@ -195,23 +183,85 @@ static PyGetSetDef HashMap_getsetters[] = {
 };
 
 
+static PyObject* HashMap_getitem__(HashMap* self, PyObject *key)
+{
+	char* key_str = NULL;
+	if (!PyUnicode_CheckExact(key)) {
+		PyErr_SetString(PyExc_TypeError,
+                        "HashMap key must be a string");
+		return NULL;
+	}
+
+	PyObject *temp_bytes = PyUnicode_AsEncodedString(key, "UTF-8", "strict"); // Owned reference
+	if (temp_bytes != NULL)
+	{
+		key_str = PyBytes_AS_STRING(temp_bytes);
+		Py_DECREF(temp_bytes);
+	}
+	else
+	{
+		return NULL;
+	}
+
+	return Map_get(self->_map, key_str);
+}
+
+
+static int HashMap_setitem__(HashMap* self, PyObject *key, PyObject *val)
+{
+	char* key_str = NULL;
+	if (!PyUnicode_CheckExact(key)) {
+		PyErr_SetString(PyExc_TypeError,
+                        "HashMap key must be a string");
+		return 1;
+	}
+
+	PyObject *temp_bytes = PyUnicode_AsEncodedString(key, "UTF-8", "strict"); // Owned reference
+	if (temp_bytes != NULL)
+	{
+		key_str = PyBytes_AS_STRING(temp_bytes);
+		Py_DECREF(temp_bytes);
+	}
+	else
+	{
+		return 1;
+	}
+
+	Map_put(self->_map, key_str, val);
+	return 0;
+}
+
+static Py_ssize_t HashMap_len__(HashMap *self)
+{
+	return self->_map->item_count;
+}
+
+
+static PyMappingMethods HashMap_as_mappings = {
+	(lenfunc) HashMap_len__,           /*mp_length*/
+	(binaryfunc) HashMap_getitem__,    /*mp_subscript*/
+	(objobjargproc) HashMap_setitem__, /*mp_ass_subscript*/
+};
+
+
 static PyTypeObject HashMapType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
 	.tp_name = "hashmap.HashMap",
 	.tp_doc = "Map is a hashmap.",
-	.tp_basicsize = sizeof(HashMap),
-	.tp_itemsize  = 0,
-	.tp_flags   = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-	.tp_new     = HashMap_new,
-	.tp_init    = (initproc) HashMap_init,
-	.tp_dealloc = (destructor) HashMap_dealloc,
-	.tp_members = HashMap_members,
-	.tp_methods = HashMap_methods,
-	.tp_getset  = HashMap_getsetters,
+	.tp_basicsize  = sizeof(HashMap),
+	.tp_itemsize   = 0,
+	.tp_flags      = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+	.tp_new        = HashMap_new,
+	.tp_init       = (initproc)   HashMap_init,
+	.tp_dealloc    = (destructor) HashMap_dealloc,
+	.tp_as_mapping = &HashMap_as_mappings,
+	.tp_members    = HashMap_members,
+	.tp_methods    = HashMap_methods,
+	.tp_getset     = HashMap_getsetters,
 };
 
 
-PyMethodDef hashmap_methods[] = {
+PyMethodDef hashmap_module_methods[] = {
 	{NULL, NULL, 0, NULL}
 };
 
@@ -221,7 +271,7 @@ static PyModuleDef hashmap = {
 	.m_name = "hashmap",
 	.m_doc = "a library for a hashmap",
 	.m_size = -1, // the module state is global
-	.m_methods = hashmap_methods,
+	.m_methods = hashmap_module_methods,
 };
 
 
