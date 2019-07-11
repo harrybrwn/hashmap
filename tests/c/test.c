@@ -511,15 +511,52 @@ void test_avl_balence() {
     delete_tree(root);
 }
 
+void test_Map_clear()
+{
+	Map* m = New_Map();
+	int i;
+	int data[6];
+	char* keys[] = {"one", "two", "three", "four", "five", "six"};
+
+	for (i = 0; i < 6; i++)
+	{
+		data[i] = i;
+		Map_put(m, keys[i], &data[i]);
+	}
+	Map_clear(m);
+	size_t k;
+	for (k = 0; k < m->__size; k++)
+	{
+		assert(m->__data[k] == NULL);
+	}
+	Map_close(m);
+}
+
 void test()
 {
 	/*
-
-	*/
 	printf("node size: %lu\n", sizeof(struct node));
 	printf("Map size: %lu\n", sizeof(Map));
 	printf("hash_t size: %lu\n", sizeof(hash_t));
+	Map* m = Create_Map(33);
+	int a = 1;
+	Map_put(m, "one", &a);
+	Map_put(m, "two", &a);
+	Map_put(m, "three", &a);
+	Map_put(m, "four", &a);
+	Map_put(m, "five", &a);
+	Map_put(m, "six", &a);
+	Map_put(m, "seven", &a);
+	Map_put(m, "eight", &a);
+	char* keys[m->item_count];
+	Map_keys(m, keys);
 
+	int i;
+	for (i = 0; i < m->item_count; i++)
+		printf("%s,", keys[i]);
+	printf("\n");
+	Map_close(m);
+	*/
 }
 
 static testfunc tests[] = {
@@ -535,6 +572,7 @@ static testfunc tests[] = {
     test_Map_delete,
 	test_Map_resize,
 	test_Map_keys,
+	test_Map_clear,
 
 	test_avl_insert,
     test_avl_balence,

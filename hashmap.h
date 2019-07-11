@@ -45,6 +45,11 @@ void Map_delete(Map * m, char* key);
    to a new map that has a different size. */
 void Map_resize(Map** m, size_t size);
 
+/**
+ * Map_clear will flush out all the data stored in the map.
+ */
+void Map_clear(Map*);
+
 /* Map_keys takes a Map and an array of strings and populates the array with
    all the keys used in the Map.
 

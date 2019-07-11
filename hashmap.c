@@ -215,6 +215,16 @@ void Map_keys(Map* m, char** keys) {
 	}
 }
 
+void Map_clear(Map* m)
+{
+	size_t i;
+	for (i = 0; i < m->__size; i++)
+	{
+		delete_tree(m->__data[i]);
+		m->__data[i] = NULL;
+	}
+}
+
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 #define height(N) (N == NULL ? -1 : N->height)
