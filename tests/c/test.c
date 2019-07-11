@@ -170,7 +170,7 @@ void test_Map_keys()
 	int n = 39;
 	char** keys = rand_keys(n);
 	int data[n];
-	int i;
+	int i, k;
 	for (i = 0; i < n; i++)
 	{
 		data[i] = i;
@@ -178,12 +178,33 @@ void test_Map_keys()
 	}
 	assert(m->item_count == n);
 	
-	char* mapkeys[m->item_count];
-	Map_keys(m, mapkeys);
-	int k;
-	ARR_CMP(mapkeys, m->item_count, keys, n);
+	{
+		char* mapkeys[m->item_count];
+		Map_keys(m, mapkeys);
+		int k;
+		ARR_CMP(mapkeys, m->item_count, keys, n);
+	}	
+
 	Map_close(m);
 	free_string_arr(keys, n);
+
+	m = Create_Map(71);
+	char **mapkeys = malloc(sizeof(char*) * 71);
+	for (i = 0; i < 71; i++) mapkeys[i] = NULL;
+	for (i = 0; i < 71; i++) assert(mapkeys[i] == NULL);
+	Map_keys(m, mapkeys);
+	for (i = 0; i < 71; i++) assert(mapkeys[i] == NULL);
+
+	keys = rand_keys(71);
+	for (i = 0; i < 71; i++)
+		Map_put(m, keys[i], keys[i]);
+	
+	Map_keys(m, mapkeys);
+	ASSERT_STR_ARR_EQ(mapkeys, keys, 71);
+
+	free(mapkeys);
+	free_string_arr(keys, 71);
+	Map_close(m);
 }
 
 void test_Map_resize() {
@@ -514,6 +535,8 @@ void test_avl_balence() {
 void test_Map_clear()
 {
 	Map* m = New_Map();
+	Map_clear(m); /* shouldn't seg-fault when called on emty map */
+
 	int i;
 	int data[6];
 	char* keys[] = {"one", "two", "three", "four", "five", "six"};
@@ -529,6 +552,7 @@ void test_Map_clear()
 	{
 		assert(m->__data[k] == NULL);
 	}
+	Map_clear(m); /* shouldn't seg-fault when called on emty map */
 	Map_close(m);
 }
 

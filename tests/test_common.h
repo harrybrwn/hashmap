@@ -6,8 +6,23 @@ extern "C" {
 #endif
 
 #include <sys/types.h>
+#include <string.h>
 
 typedef void (*testfunc)(void);
+
+/**
+ * compares two string arrays that can be out of order
+ */
+#define ASSERT_STR_ARR_EQ(A1, A2, LEN)      \
+	{for (i = 0; i < LEN; i++) {            \
+		for (k = 0; k < LEN; k++) {         \
+			if (strcmp(A1[i], A2[k]) == 0) {\
+				goto Found;                 \
+			}                               \
+		}                                   \
+		assert(0);                          \
+	Found:;                                 \
+	}}                                      \
 
 extern char* randstring(size_t);
 extern char** rand_keys(size_t n);
