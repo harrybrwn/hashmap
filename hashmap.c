@@ -223,6 +223,7 @@ void Map_clear(Map* m)
 		delete_tree(m->__data[i]);
 		m->__data[i] = NULL;
 	}
+	m->item_count = 0;
 }
 
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
