@@ -3,6 +3,7 @@
 #include "hashmap.h"
 #include <cstddef>
 #include <string>
+#include <vector>
 
 class HashMap
 {
@@ -28,4 +29,5 @@ public:
 	void del(std::string);
 
 	void resize(std::size_t);
+	std::vector<std::string> keys();
 };

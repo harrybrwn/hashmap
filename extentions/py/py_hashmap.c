@@ -11,8 +11,8 @@
 typedef struct {
 	PyObject_HEAD
 
-	size_t size;
 	Map* _map;
+	size_t size;
 } HashMap;
 
 
@@ -45,7 +45,12 @@ HashMap_new(PyTypeObject* type, PyObject *args, PyObject* kwgs)
 static int
 HashMap_init(HashMap *self, PyObject *args, PyObject *kwgs)
 {
-	self->_map = Create_Map(DEFAULT_MAP_SIZE);
+	size_t msize = DEFAULT_MAP_SIZE;
+	if (!PyArg_ParseTuple(args, "|l", &msize)) {
+		return -1;
+	}
+
+	self->_map = Create_Map(msize);
 	if (self->_map == NULL)
 		return -1;
 	self->size = self->_map->__size;
@@ -64,8 +69,7 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 		return NULL;
 	Py_INCREF(val);
 
-	Map_put(self->_map, key, val);
-	
+	Map_put(self->_map, key, val);	
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -109,21 +113,22 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 	return Py_None;
 }
 
-
+#include <string.h>
 static PyObject*
 HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 {
-	size_t i;
-	char **keys = malloc(sizeof(char*) * self->_map->item_count);
+	size_t i, count = self->_map->item_count;
+	PyObject* str_list = PyList_New(count);
 
-	PyObject* str_list = PyList_New(self->_map->item_count);
+	if (count == 0)
+		return str_list;
+
+	char* keys[count];
 	Map_keys(self->_map, keys);
 
-	for (i = 0; i < self->_map->item_count; i++) {
+	for (i = 0; i < count; i++) {
 		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
 	}
-
-	free(keys);
 	return str_list;
 }
 
@@ -145,13 +150,13 @@ static PyObject*
 HashMap_resize(HashMap* self, PyObject *args)
 {
 	size_t size;
-	
+
 	if (!PyArg_ParseTuple(args, "i", &size))
 		return NULL;
 
 	Map_resize(&self->_map, size);
 	self->size = size;
-	
+
 	Py_INCREF(Py_None);
 	return Py_None;
 }
