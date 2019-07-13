@@ -16,7 +16,7 @@ def _rand_keys(n):
 class HashMapTest(unittest.TestCase):
 	def setUp(self):
 		self.map = hashmap.HashMap()
-		self.map.size = 100_000
+		self.map.size = 10_000
 		self.keys = _rand_keys(self.map.size)
 
 	def test_putgetdelete(self):
@@ -29,7 +29,7 @@ class HashMapTest(unittest.TestCase):
 		for k in self.keys:
 			self.assertRaises(KeyError, self.map.get, k)
 
-		self.assertEqual(self.map.size, 100_000)
+		self.assertEqual(self.map.size, 10_000)
 		self.map.size = 33
 
 	def test_Errors(self):
@@ -59,12 +59,17 @@ class HashMapTest(unittest.TestCase):
 				pass
 			else:
 				self.assertTrue(False, "should have raised an error here")
-	
+
+	def test_init(self):
+		m = hashmap.HashMap(99)
+		self.assertEqual(m.size, 99)
+
 	def test_keys(self):
-		keys = ['one', 'two', 'three', 'four']
+		keys = ['one', 'two', 'three', 'four', 'five', 'six']
 		for k in keys:
 			self.map[k] = k
 		self.assertEqual(keys, self.map.keys())
+		# self.map.keys()
 
 	def test_cyclic_gc(self):
 		self.map.put('self.map', self.map)

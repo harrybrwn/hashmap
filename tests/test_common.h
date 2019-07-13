@@ -31,7 +31,7 @@ extern double benchmark(testfunc);
 extern double nbenchmark(testfunc, int);
 extern void Benchmark(const char*, testfunc);
 extern void AverageBenchmark(const char*, testfunc, size_t);
-void Benchmarkf(const char*, testfunc, const char*);
+extern void Benchmarkf(const char*, testfunc, const char*);
 extern void nBenchmark(const char*, testfunc, size_t);
 extern int Run(testfunc*, int);
 
