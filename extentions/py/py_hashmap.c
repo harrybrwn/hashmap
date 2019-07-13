@@ -113,7 +113,7 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 	return Py_None;
 }
 
-#include <string.h>
+
 static PyObject*
 HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 {
@@ -154,7 +154,11 @@ HashMap_resize(HashMap* self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "i", &size))
 		return NULL;
 
-	Map_resize(&self->_map, size);
+	if (Map_resize(&self->_map, size) == -1) {
+		PyErr_SetString(PyExc_MemoryError, "Could not allocate that much memory");
+		return NULL;
+	}
+
 	self->size = size;
 
 	Py_INCREF(Py_None);
@@ -247,6 +251,7 @@ static int HashMap__setitem__(HashMap* self, PyObject *key, PyObject *val)
 	STR_CONV(key, key_str);
 
 	Map_put(self->_map, key_str, val);
+	Py_INCREF(val);
 	return 0;
 }
 

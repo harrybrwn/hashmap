@@ -1,5 +1,6 @@
 import hashmap
 import unittest
+import sys
 
 import string
 import random
@@ -38,10 +39,20 @@ class HashMapTest(unittest.TestCase):
 
 	def test_dunders(self):
 		data = 'the key should be "testing"'
+		ref = sys.getrefcount(data)
 		self.map.put('testing', data)
 		self.map['test_val'] = 'this is a test'
-
 		self.assertEqual(data, self.map['testing'])
+
+	def test_refcounting(self):
+		m = hashmap.HashMap()
+		one = 1
+		refc = sys.getrefcount(one)
+		m.put('one', one)
+		self.assertEqual(sys.getrefcount(one), refc + 1)
+
+		m.delete('one')
+		self.assertEqual(sys.getrefcount(one), refc)
 
 	def test_clear(self):
 		keys = ['one', 'two', 'three', 'four']

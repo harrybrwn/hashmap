@@ -123,7 +123,7 @@ Map* Create_Map(size_t size)
 	m->__data = malloc(sizeof(struct node*) * m->__size);
 	if (m->__data == NULL) {
 		perror("Error: ran out of memory allocating a node array");
-		return m;
+		return NULL;
 	}
 
 	for (i = 0; i < size; i++)
@@ -186,8 +186,10 @@ void Map_delete(Map* m, char* key) {
 	m->item_count--;
 }
 
-void Map_resize(Map** old_m, size_t size) {
+int Map_resize(Map** old_m, size_t size) {
 	Map* new_m = Create_Map(size);
+	if (new_m == NULL)
+		return -1;
 	new_m->item_count = (*old_m)->item_count;
 
 	struct node* tmp;
@@ -199,6 +201,7 @@ void Map_resize(Map** old_m, size_t size) {
 	}
 	Map_close(*old_m);
 	(*old_m) = new_m;
+	return 0;
 }
 
 static int node_keys(struct node*, char**, int);
