@@ -15,6 +15,7 @@ cpp-clean:
 
 $(CppTest): $(CPP_FILE).o hashmap.o $(CppTest).cpp $(TestCommon)
 	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++
+	# $(CC) -o $@ $(CPPFLAGS) $(CPP_FILE).cpp hashmap.c $(CppTest).cpp $(TestCommon) -lstdc++
 
 $(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp
 	$(CC) $(CPPFLAGS) -c $< -o $@ -lstdc++

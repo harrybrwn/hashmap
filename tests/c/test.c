@@ -205,6 +205,22 @@ void test_Map_keys()
 	free(mapkeys);
 	free_string_arr(keys, 71);
 	Map_close(m);
+
+}
+
+void tests_Map_keys2() {
+	Map* m = Create_Map(11);
+	char* ks[] = {"one", "two", "three", "four", "five"};
+	int i, k, data[5];
+	for (i = 0; i < 5; i++) {
+		data[i] = i;
+		Map_put(m, ks[i], &data[i]);
+	}
+
+	char* keys[m->item_count];
+	Map_keys(m, keys);
+	ASSERT_STR_ARR_EQ(ks, keys, 5);
+	Map_close(m);
 }
 
 void test_Map_resize() {
@@ -596,6 +612,7 @@ static testfunc tests[] = {
     test_Map_delete,
 	test_Map_resize,
 	test_Map_keys,
+	tests_Map_keys2,
 	test_Map_clear,
 
 	test_avl_insert,

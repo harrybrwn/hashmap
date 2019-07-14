@@ -1,6 +1,7 @@
 #include "HashMap.hpp"
 #include "hashmap.h"
 #include <string>
+#include <iostream>
 
 
 HashMap::HashMap(size_t size)
@@ -20,6 +21,11 @@ HashMap::HashMap()
 HashMap::~HashMap()
 {
 	Map_close(_map);
+}
+
+size_t HashMap::item_count()
+{
+	return _map->item_count;
 }
 
 
@@ -63,4 +69,22 @@ void HashMap::resize(size_t size)
 {
 	this->size = size;
 	Map_resize(&_map, size);
+}
+
+
+std::vector<std::string> HashMap::keys()
+{
+	char* skeys[_map->item_count];
+	std::vector<std::string> vkeys;
+	Map_keys(_map, skeys);
+	for (size_t i = 0; i < _map->item_count; i++)
+		vkeys.push_back(skeys[i]);
+
+	return vkeys;
+}
+
+
+void HashMap::keys(char** keys)
+{
+	Map_keys(_map, keys);
 }

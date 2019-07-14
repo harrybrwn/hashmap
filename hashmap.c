@@ -213,8 +213,9 @@ void Map_keys(Map* m, char** keys) {
 	size_t i;
 	for (i = 0; i < m->__size; i++) {
 		node = m->__data[i];
-		if (node != NULL)
+		if (node != NULL) {
 			pos = node_keys(node, keys, pos);
+		}
 	}
 }
 
@@ -416,16 +417,17 @@ struct node* pop_max(struct node** node) {
 }
 #endif
 
-static _inline struct node* min_node(struct node* node) 
-{ 
-    struct node* curr = node; 
-  
-    while (curr->left != NULL) 
-        curr = curr->left;   
-    return curr; 
+static _inline struct node* min_node(struct node* node)
+{
+    struct node* curr = node;
+
+    while (curr->left != NULL)
+        curr = curr->left;
+    return curr;
 }
 
-static struct node* _delete_node(struct node* root, hash_t k_hash)
+static struct node*
+_delete_node(struct node* root, hash_t k_hash)
 {
     if (root == NULL)
         return root;
@@ -475,21 +477,17 @@ static struct node* _delete_node(struct node* root, hash_t k_hash)
 
 	int h_diff = HEIGHT_DIFF(root->left, root->right);
 
-    if (h_diff > 1 && BALENCE(root->left) >= 0)
-	{
+    if (h_diff > 1 && BALENCE(root->left) >= 0) {
 		return node_rotateright(root);
 	}
-	else if (h_diff > 1 && BALENCE(root->left) < 0)
-    {
+	else if (h_diff > 1 && BALENCE(root->left) < 0) {
 		root->left = node_rotateleft(root->left);
 		return node_rotateright(root);
 	}
-    else if (h_diff < -1 && BALENCE(root->right) <= 0)
-	{
+    else if (h_diff < -1 && BALENCE(root->right) <= 0) {
 		return node_rotateleft(root);
 	}
-	else if (h_diff < -1 && BALENCE(root->right) > 0)
-    {
+	else if (h_diff < -1 && BALENCE(root->right) > 0) {
 		root->right = node_rotateright(root->right);
 		return node_rotateleft(root);
     }
@@ -523,6 +521,7 @@ static int node_keys(struct node* n, char** keys, int pos) {
 	if (n == NULL) {
 		return pos;
 	}
+
 	keys[pos++] = n->key;
 
 	if (n->left != NULL)

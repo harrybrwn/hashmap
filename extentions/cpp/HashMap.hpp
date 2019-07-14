@@ -16,6 +16,8 @@ public:
 	HashMap(std::size_t);
 	~HashMap();
 
+	size_t item_count();
+
 	void put(char*, void*);
 	void put(const char*, void*);
 	void put(std::string, void*);
@@ -30,4 +32,5 @@ public:
 
 	void resize(std::size_t);
 	std::vector<std::string> keys();
+	void keys(char**);
 };

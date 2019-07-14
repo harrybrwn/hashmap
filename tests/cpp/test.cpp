@@ -4,23 +4,31 @@
 #include <iostream>
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cstdlib>
 
 typedef void (*testfunc)();
 
 void test_keys()
 {
-	// HashMap m(33);
-	// int data[5];
-	// std::string ks[] = {"one", "two", "three", "four", "five"};
-	// for (int i = 0; i < 5; i++) {
-	// 	data[i] = i;
-	// 	m.put(ks[i], &data[i]);
-	// }
+	HashMap m(33);
+	int data[5];
+	const char *kys[] = {"one", "two", "three", "four", "five"};
+	
+	for (int i = 0; i < 5; i++) {
+		data[i] = i;
+		m.put(kys[i], &data[i]);
+	}
+	
+	std::vector<std::string> vkeys = m.keys();
+	for (int i = 0; i < 5; i++)
+		assert(vkeys[i].compare(kys[i]));
 
-	// std::vector<std::string> keys = m.keys();
-	// for (int i = 0; i < 5; i++)
-	// 	// std::cout << keys[i] << std::endl;
-	// 	assert(keys[i].compare(ks[i].c_str()));
+	char* skeys[m.item_count()];
+	m.keys(skeys);
+	int i, k;
+	ASSERT_STR_ARR_EQ(skeys, kys, 5);
 }
 
 void test()
@@ -34,11 +42,12 @@ void test()
 
 static testfunc tests[] = {
 	test,
-	// test_keys,
+	test_keys,
 };
 
 int main()
 {
+	test_keys();
 	int n = sizeof(tests) / sizeof(testfunc);
 	Run(tests, n);
 }
