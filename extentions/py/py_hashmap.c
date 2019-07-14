@@ -67,9 +67,10 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "sO", kwlist, &key, &val))
 		return NULL;
-	Py_INCREF(val);
 
+	Py_INCREF(val);
 	Map_put(self->_map, key, val);	
+
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -82,17 +83,23 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 	}}
 
 
+static PyObject* get_map_val(Map* m, char* key)
+{
+	PyObject* val = Map_get(m, key);
+	KEY_ERR_IF(val == NULL, key);
+
+	Py_INCREF(val);
+	return val;
+}
+
+
 static PyObject*
 HashMap_get(HashMap* self, PyObject *args, PyObject* kw)
 {
 	char* key;
 	if (!PyArg_ParseTuple(args, "s", &key))
         return NULL;
-
-	PyObject* val = Map_get(self->_map, key);
-	KEY_ERR_IF(val == NULL, key);
-
-	return val;
+	return get_map_val(self->_map, key);
 }
 
 
@@ -104,7 +111,7 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "s", kwlist, &key))
         return NULL;
-	
+
 	PyObject* val = Map_get(self->_map, key);
 	KEY_ERR_IF(val == NULL, key);
 
@@ -214,13 +221,13 @@ static PyGetSetDef HashMap_getsetters[] = {
 };
 
 
-#define STR_CONV(OBJ, STR) 													  \
-	PyObject *_temp_bytes = PyUnicode_AsEncodedString(OBJ, "UTF-8", "strict");\
-	if (_temp_bytes != NULL) 												  \
-	{   																	  \
-		STR = PyBytes_AS_STRING(_temp_bytes);                                 \
-		Py_DECREF(_temp_bytes);                                               \
-	}
+#define STR_CONV(OBJ, STR) 													   \
+	{PyObject *_temp_bytes = PyUnicode_AsEncodedString(OBJ, "UTF-8", "strict");\
+	if (_temp_bytes != NULL) 												   \
+	{   																	   \
+		STR = PyBytes_AS_STRING(_temp_bytes);                                  \
+		Py_DECREF(_temp_bytes);                                                \
+	}}
 
 
 static PyObject* HashMap__getitem__(HashMap* self, PyObject *key)
@@ -232,11 +239,7 @@ static PyObject* HashMap__getitem__(HashMap* self, PyObject *key)
 		return NULL;
 	}
 	STR_CONV(key, key_str);
-
-	PyObject *val = Map_get(self->_map, key_str);
-	KEY_ERR_IF(val == NULL, key_str);
-
-	return val;
+	return get_map_val(self->_map, key_str);
 }
 
 
