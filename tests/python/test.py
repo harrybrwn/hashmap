@@ -76,10 +76,15 @@ class HashMapTest(unittest.TestCase):
 
 	def test_keys(self):
 		keys = ['one', 'two', 'three', 'four', 'five', 'six']
-		for k in keys:
-			self.map[k] = k
+		# for k in keys:
+		# 	self.map[k] = 'what?'
+		self.map['one'] = 1
+		self.map['two'] = 2
+		self.map['three'] = 3
+		self.map['four'] = 4
+		self.map['five'] = 5
+		self.map['six'] = 6
 		self.assertEqual(keys, self.map.keys())
-		# self.map.keys()
 
 	def test_cyclic_gc(self):
 		self.map.put('self.map', self.map)

@@ -22,7 +22,7 @@ static char HashMap_doc[] =
 
 static void HashMap_dealloc(HashMap* self)
 {
-	Map_close(self->_map);
+	Map_close_free_keys(self->_map);
 	Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -68,8 +68,12 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "sO", kwlist, &key, &val))
 		return NULL;
 
+	char* mykey = malloc((strlen(key) + 1) * sizeof(char));
+	// printf("%p\n", mykey);
+	strcpy(mykey, key);
+
 	Py_INCREF(val);
-	Map_put(self->_map, key, val);	
+	Map_put(self->_map, mykey, val);	
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -83,7 +87,7 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 	}}
 
 
-static PyObject* get_map_val(Map* m, char* key)
+static inline PyObject* get_map_val(Map* m, char* key)
 {
 	PyObject* val = Map_get(m, key);
 	KEY_ERR_IF(val == NULL, key);
@@ -131,9 +135,11 @@ HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 		return str_list;
 
 	char* keys[count];
+	// char** keys = malloc(sizeof(char*) * count);
 	Map_keys(self->_map, keys);
 
 	for (i = 0; i < count; i++) {
+		// printf("%p\n", keys[i]);
 		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
 	}
 	return str_list;
@@ -253,7 +259,10 @@ static int HashMap__setitem__(HashMap* self, PyObject *key, PyObject *val)
 	}
 	STR_CONV(key, key_str);
 
-	Map_put(self->_map, key_str, val);
+	char* mykey = malloc(strlen(key_str));
+	strcpy(mykey, key_str);
+
+	Map_put(self->_map, mykey, val);
 	Py_INCREF(val);
 	return 0;
 }

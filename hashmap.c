@@ -230,6 +230,26 @@ void Map_clear(Map* m)
 	m->item_count = 0;
 }
 
+static void delete_tree_free_keys(struct node* n)
+{
+	if (n != NULL) {
+		delete_tree_free_keys(n->left);
+		delete_tree_free_keys(n->right);
+		free(n->key);
+		free(n);
+	}
+}
+
+void Map_close_free_keys(Map* m)
+{
+	size_t i;
+	for (i = 0; i < m->__size; i++) {
+		delete_tree_free_keys(m->__data[i]);
+	}
+	free(m->__data);
+	free(m);
+}
+
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 
 #define height(N) (N == NULL ? -1 : N->height)

@@ -65,6 +65,13 @@ void Map_clear(Map*);
  */
 void Map_keys(Map* m, char** keys);
 
+/**
+ * Map_close_free_keys is the same as Map_close except it assumes that every key
+ * has been allocated on the heap and frees that memory.
+ */
+void Map_close_free_keys(Map*);
+
+
 #ifdef __cplusplus
 }
 #endif
