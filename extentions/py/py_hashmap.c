@@ -57,6 +57,11 @@ HashMap_init(HashMap *self, PyObject *args, PyObject *kwgs)
 	return 0;
 }
 
+static char HashMap_put_doc[] =
+"put will stort any python object in association with a string key.\n"
+"  Args:\n"
+"    key: string, name of the object being stored\n"
+"    val: any python object to be stored\n";
 
 static PyObject*
 HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
@@ -125,17 +130,16 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 }
 
 
-static PyObject*
-HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
+static PyObject* get_keys(Map* m)
 {
-	size_t i, count = self->_map->item_count;
+	size_t i, count = m->item_count;
 	PyObject* str_list = PyList_New(count);
 
 	if (count == 0)
 		return str_list;
 
 	char* keys[count];
-	Map_keys(self->_map, keys);
+	Map_keys(m, keys);
 
 	for (i = 0; i < count; i++) {
 		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
@@ -143,6 +147,11 @@ HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 	return str_list;
 }
 
+static PyObject*
+HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
+{
+	return get_keys(self->_map);
+}
 
 static char HashMap_clear_doc[] =
 "Flush all the data from the HashMap.";
@@ -150,7 +159,8 @@ static char HashMap_clear_doc[] =
 static PyObject*
 HashMap_clear(HashMap* self, PyObject *Py_UNUSED(ignored))
 {
-	Map_clear(self->_map);
+	Map_clear_free_keys(self->_map);
+	self->size = 0;
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -178,7 +188,7 @@ HashMap_resize(HashMap* self, PyObject *args)
 
 
 static PyMethodDef HashMap_methods[] = {
-	{"put",         (PyCFunction) HashMap_put,       METH_VARARGS | METH_KEYWORDS, "put data into the HashMap"},
+	{"put",         (PyCFunction) HashMap_put,       METH_VARARGS | METH_KEYWORDS, HashMap_put_doc},
 	{"get",         (PyCFunction) HashMap_get,       METH_VARARGS | METH_KEYWORDS, "get data from the HashMap"},
 	{"delete",      (PyCFunction) HashMap_delete,    METH_VARARGS | METH_KEYWORDS, "delete data from the HashMap"},
 	{"keys",        (PyCFunction) HashMap_keys,      METH_NOARGS,                  "get all keys stored in the Hashmap"},
@@ -227,19 +237,7 @@ static PyGetSetDef HashMap_getsetters[] = {
 
 static PyObject* HashMap__iter__(HashMap* self)
 {
-	size_t i, count = self->_map->item_count;
-	PyObject* str_list = PyList_New(count);
-
-	if (count == 0)
-		return str_list;
-
-	char* keys[count];
-	Map_keys(self->_map, keys);
-
-	for (i = 0; i < count; i++) {
-		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
-	}
-	return PyObject_GetIter(str_list);
+	return PyObject_GetIter(get_keys(self->_map));
 }
 
 
@@ -283,20 +281,14 @@ static int HashMap__setitem__(HashMap* self, PyObject *key, PyObject *val)
 	return 0;
 }
 
+
 static Py_ssize_t HashMap__len__(HashMap *self)
 {
 	return self->_map->item_count;
 }
 
 
-static PyMappingMethods HashMap_as_mappings = {
-	(lenfunc) HashMap__len__,           /*mp_length*/
-	(binaryfunc) HashMap__getitem__,    /*mp_subscript*/
-	(objobjargproc) HashMap__setitem__, /*mp_ass_subscript*/
-};
-
-
-int HashMap_contains(HashMap* self, PyObject* value)
+int HashMap__contains__(HashMap* self, PyObject* value)
 {
 	char* key = NULL;
 	if (!PyUnicode_CheckExact(value)) {
@@ -313,17 +305,24 @@ int HashMap_contains(HashMap* self, PyObject* value)
 }
 
 
+static PyMappingMethods HashMap_as_mappings = {
+	(lenfunc) HashMap__len__,           /*mp_length*/
+	(binaryfunc) HashMap__getitem__,    /*mp_subscript*/
+	(objobjargproc) HashMap__setitem__, /*mp_ass_subscript*/
+};
+
+
 static PySequenceMethods HashMap_as_sequence = {
-	0,                /* sq_length */
-    0,                /* sq_concat */
-    0,                /* sq_repeat */
-    0,                /* sq_item */
-    0,                /* sq_slice */
-    0,                /* sq_ass_item */
-    0,                /* sq_ass_slice */
-    (objobjproc) HashMap_contains, /* sq_contains */
-    0,                /* sq_inplace_concat */
-    0,                /* sq_inplace_repeat */
+	0,                                /* sq_length */
+    0,                                /* sq_concat */
+    0,                                /* sq_repeat */
+    0,                                /* sq_item */
+    0,                                /* sq_slice */
+    0,                                /* sq_ass_item */
+    0,                                /* sq_ass_slice */
+    (objobjproc) HashMap__contains__, /* sq_contains */
+    0,                			      /* sq_inplace_concat */
+    0,                			      /* sq_inplace_repeat */
 };
 
 
@@ -368,6 +367,8 @@ PyMODINIT_FUNC PyInit_hashmap(void)
 	PyObject* mod = PyModule_Create(&hashmap);
 	if (mod == NULL)
 		return NULL;
+	
+	PyModule_AddIntMacro(mod, DEFAULT_MAP_SIZE);
 
 	Py_INCREF(&HashMapType);
 	PyModule_AddObject(mod, "HashMap", (PyObject*) &HashMapType);

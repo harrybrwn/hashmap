@@ -14,6 +14,15 @@ def _rand_keys(n):
 	return s
 
 
+class Map(hashmap.HashMap):
+	def items(self):
+		items = []
+		for k in self.keys():
+			items.append((k, self.get(k)))
+		return items
+
+
+
 class HashMapTest(unittest.TestCase):
 	def setUp(self):
 		self.map = hashmap.HashMap()
@@ -68,6 +77,7 @@ class HashMapTest(unittest.TestCase):
 		self.assertEqual(len(self.map), len(keys))
 
 		self.map.clear()
+		self.assertEqual(self.map.size, 0)
 		self.assertEqual(len(self.map), 0)
 		self.assertEqual(len(self.map.keys()), 0)
 		for key in keys:
@@ -81,6 +91,8 @@ class HashMapTest(unittest.TestCase):
 	def test_init(self):
 		m = hashmap.HashMap(99)
 		self.assertEqual(m.size, 99)
+		m2 = hashmap.HashMap()
+		self.assertEqual(m2.size, 32)
 
 	def test_keys(self):
 		keys = ['one', 'two', 'three', 'four', 'five', 'six']
@@ -104,6 +116,11 @@ class HashMapTest(unittest.TestCase):
 		else:
 			self.assertTrue(False, msg="should have been a type error here")
 
+	def test(self):
+		m = Map()
+		m['one'] = 1
+		m['two'] = 2
+		# print(m.items())
 
 if __name__ == '__main__':
 	unittest.main()
