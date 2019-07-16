@@ -43,6 +43,14 @@ class HashMapTest(unittest.TestCase):
 		self.map['test_val'] = 'this is a test'
 		self.assertEqual(data, self.map['testing'])
 
+	def test_iter(self):
+		keys = ['one', 'two', 'three', 'five', 'seven', 'eleven', 'thirteen']
+		for k in keys:
+			self.map.put(k, 'prime')
+		
+		for key in self.map:
+			self.assertTrue(key in keys)
+
 	def test_refcounting(self):
 		m = hashmap.HashMap()
 		one = 1
@@ -51,7 +59,7 @@ class HashMapTest(unittest.TestCase):
 		self.assertEqual(sys.getrefcount(one), refc + 1)
 
 		m.delete('one')
-		# self.assertEqual(sys.getrefcount(one), refc)
+		self.assertEqual(sys.getrefcount(one), refc)
 
 	def test_clear(self):
 		keys = ['one', 'two', 'three', 'four']
@@ -76,20 +84,25 @@ class HashMapTest(unittest.TestCase):
 
 	def test_keys(self):
 		keys = ['one', 'two', 'three', 'four', 'five', 'six']
-		# for k in keys:
-		# 	self.map[k] = 'what?'
-		self.map['one'] = 1
-		self.map['two'] = 2
-		self.map['three'] = 3
-		self.map['four'] = 4
-		self.map['five'] = 5
-		self.map['six'] = 6
-		self.assertEqual(keys, self.map.keys())
+		for k in keys:
+			self.map[k] = 'what?'
+		self.assertEqual(set(keys), set(self.map.keys()))
 
 	def test_cyclic_gc(self):
 		self.map.put('self.map', self.map)
 		m = self.map.get('self.map')
 		self.assertEqual(id(self.map), id(m))
+	
+	def test_contains(self):
+		self.map['athing'] = 'some thing'
+		self.assertTrue('athing' in self.map)
+		self.assertFalse('nothere' in self.map)
+		try:
+			5 in self.map
+		except TypeError:
+			pass
+		else:
+			self.assertTrue(False, msg="should have been a type error here")
 
 
 if __name__ == '__main__':

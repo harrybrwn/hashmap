@@ -69,7 +69,6 @@ HashMap_put(HashMap* self, PyObject *args, PyObject* kw)
 		return NULL;
 
 	char* mykey = malloc((strlen(key) + 1) * sizeof(char));
-	// printf("%p\n", mykey);
 	strcpy(mykey, key);
 
 	Py_INCREF(val);
@@ -118,6 +117,7 @@ HashMap_delete(HashMap* self, PyObject *args, PyObject* kw)
 
 	PyObject* val = Map_get(self->_map, key);
 	KEY_ERR_IF(val == NULL, key);
+	Py_DECREF(val);
 
 	Map_delete(self->_map, key);
 	Py_INCREF(Py_None);
@@ -135,11 +135,9 @@ HashMap_keys(HashMap* self, PyObject *Py_UNUSED(ignored))
 		return str_list;
 
 	char* keys[count];
-	// char** keys = malloc(sizeof(char*) * count);
 	Map_keys(self->_map, keys);
 
 	for (i = 0; i < count; i++) {
-		// printf("%p\n", keys[i]);
 		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
 	}
 	return str_list;
@@ -227,6 +225,24 @@ static PyGetSetDef HashMap_getsetters[] = {
 };
 
 
+static PyObject* HashMap__iter__(HashMap* self)
+{
+	size_t i, count = self->_map->item_count;
+	PyObject* str_list = PyList_New(count);
+
+	if (count == 0)
+		return str_list;
+
+	char* keys[count];
+	Map_keys(self->_map, keys);
+
+	for (i = 0; i < count; i++) {
+		PyList_SET_ITEM(str_list, (Py_ssize_t)i, Py_BuildValue("s", keys[i]));
+	}
+	return PyObject_GetIter(str_list);
+}
+
+
 #define STR_CONV(OBJ, STR) 													   \
 	{PyObject *_temp_bytes = PyUnicode_AsEncodedString(OBJ, "UTF-8", "strict");\
 	if (_temp_bytes != NULL) 												   \
@@ -280,20 +296,53 @@ static PyMappingMethods HashMap_as_mappings = {
 };
 
 
+int HashMap_contains(HashMap* self, PyObject* value)
+{
+	char* key = NULL;
+	if (!PyUnicode_CheckExact(value)) {
+		PyErr_SetString(PyExc_TypeError,
+                        "HashMap key must be a string");
+		return -1;
+	}
+	STR_CONV(value, key);
+	
+	PyObject* res = Map_get(self->_map, key);
+	if (res == NULL)
+		return 0;
+	return 1;
+}
+
+
+static PySequenceMethods HashMap_as_sequence = {
+	0,                /* sq_length */
+    0,                /* sq_concat */
+    0,                /* sq_repeat */
+    0,                /* sq_item */
+    0,                /* sq_slice */
+    0,                /* sq_ass_item */
+    0,                /* sq_ass_slice */
+    (objobjproc) HashMap_contains, /* sq_contains */
+    0,                /* sq_inplace_concat */
+    0,                /* sq_inplace_repeat */
+};
+
+
 static PyTypeObject HashMapType = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name       = "hashmap.HashMap",
-	.tp_doc        = HashMap_doc,
-	.tp_basicsize  = sizeof(HashMap),
-	.tp_itemsize   = 0,
-	.tp_flags      = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-	.tp_new        = HashMap_new,
-	.tp_init       = (initproc)   HashMap_init,
-	.tp_dealloc    = (destructor) HashMap_dealloc,
-	.tp_as_mapping = &HashMap_as_mappings,
-	.tp_members    = HashMap_members,
-	.tp_methods    = HashMap_methods,
-	.tp_getset     = HashMap_getsetters,
+	.tp_name        = "hashmap.HashMap",
+	.tp_doc         = HashMap_doc,
+	.tp_basicsize   = sizeof(HashMap),
+	.tp_itemsize    = 0,
+	.tp_flags       = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+	.tp_new         = HashMap_new,
+	.tp_init        = (initproc)   HashMap_init,
+	.tp_dealloc     = (destructor) HashMap_dealloc,
+	.tp_iter        = (getiterfunc) HashMap__iter__,
+	.tp_as_mapping  = &HashMap_as_mappings,
+	.tp_as_sequence = &HashMap_as_sequence,
+	.tp_members     = HashMap_members,
+	.tp_methods     = HashMap_methods,
+	.tp_getset      = HashMap_getsetters,
 };
 
 
