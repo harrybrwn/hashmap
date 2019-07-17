@@ -71,6 +71,14 @@ void Map_keys(Map* m, char** keys);
  */
 void Map_close_free_keys(Map*);
 
+/**
+ * Map_delete_free_key will delete data from the hashmap assuming that the key
+ * stored internally has been alllocated on the heap.
+ */
+void Map_delete_free_key(Map*, char*);
+
+void Map_clear_free_keys(Map*);
+
 
 #ifdef __cplusplus
 }

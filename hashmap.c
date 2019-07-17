@@ -240,6 +240,32 @@ static void delete_tree_free_keys(struct node* n)
 	}
 }
 
+static struct node* _delete_node_free_key(struct node*, hash_t);
+
+void Map_delete_free_key(Map* m, char* key) {
+	hash_t k_hash = prehash(key);
+	size_t    index = k_hash % m->__size;
+
+	struct node* root = m->__data[index];
+	if (root == NULL) {
+		m->item_count--; /* ok wait, why?? */
+		return;
+	}
+
+	m->__data[index] = _delete_node_free_key(root, k_hash);
+	m->item_count--;
+}
+
+void Map_clear_free_keys(Map* m)
+{
+	size_t i;
+	for (i = 0; i < m->__size; i++) {
+		delete_tree_free_keys(m->__data[i]);
+		m->__data[i] = NULL;
+	}
+	m->item_count = 0;
+}
+
 void Map_close_free_keys(Map* m)
 {
 	size_t i;
@@ -446,8 +472,9 @@ static _inline struct node* min_node(struct node* node)
     return curr;
 }
 
+
 static struct node*
-_delete_node(struct node* root, hash_t k_hash)
+__delete_node(struct node* root, hash_t k_hash, int free_key)
 {
     if (root == NULL)
         return root;
@@ -479,6 +506,8 @@ _delete_node(struct node* root, hash_t k_hash)
 				tmp = root;
 				root = NULL;
 			}
+			if (free_key)
+				free(tmp->key);
             free(tmp);
         }
         else /* node has two children */
@@ -513,6 +542,18 @@ _delete_node(struct node* root, hash_t k_hash)
     }
 
     return root;
+}
+
+static struct node*
+_delete_node(struct node* root, hash_t k_hash)
+{
+	return __delete_node(root, k_hash, 0);
+}
+
+static struct node*
+_delete_node_free_key(struct node* root, hash_t k_hash)
+{
+	return __delete_node(root, k_hash, 1);
 }
 
 #ifdef HASHMAP_TESTING

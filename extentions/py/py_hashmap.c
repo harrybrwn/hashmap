@@ -305,7 +305,7 @@ int HashMap__contains__(HashMap* self, PyObject* value)
 }
 
 
-static PyMappingMethods HashMap_as_mappings = {
+static PyMappingMethods HashMap_as_mapping = {
 	(lenfunc) HashMap__len__,           /*mp_length*/
 	(binaryfunc) HashMap__getitem__,    /*mp_subscript*/
 	(objobjargproc) HashMap__setitem__, /*mp_ass_subscript*/
@@ -326,23 +326,57 @@ static PySequenceMethods HashMap_as_sequence = {
 };
 
 
-static PyTypeObject HashMapType = {
+static PyTypeObject HashMap_Type = {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	.tp_name        = "hashmap.HashMap",
-	.tp_doc         = HashMap_doc,
-	.tp_basicsize   = sizeof(HashMap),
-	.tp_itemsize    = 0,
-	.tp_flags       = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-	.tp_new         = HashMap_new,
-	.tp_init        = (initproc)   HashMap_init,
-	.tp_dealloc     = (destructor) HashMap_dealloc,
-	.tp_iter        = (getiterfunc) HashMap__iter__,
-	.tp_as_mapping  = &HashMap_as_mappings,
-	.tp_as_sequence = &HashMap_as_sequence,
-	.tp_members     = HashMap_members,
-	.tp_methods     = HashMap_methods,
-	.tp_getset      = HashMap_getsetters,
+    "hashmap.HashMap",                        /* tp_name */
+    sizeof(PyDictObject),                     /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    (destructor)HashMap_dealloc,              /* tp_dealloc */
+    0,                                        /* tp_print */
+    0,                                        /* tp_getattr */
+    0,                                        /* tp_setattr */
+    0,                                        /* tp_as_async */
+    0,                                        /* tp_repr */
+    0,                                        /* tp_as_number */
+    &HashMap_as_sequence,                     /* tp_as_sequence */
+    &HashMap_as_mapping,                      /* tp_as_mapping */
+    PyObject_HashNotImplemented,              /* tp_hash */
+    0,                                        /* tp_call */
+    0,                                        /* tp_str */
+    0,                                        /* tp_getattro */
+    0,                                        /* tp_setattro */
+    0,                                        /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
+    HashMap_doc,                              /* tp_doc */
+    0,                                        /* tp_traverse */
+    0,                                        /* tp_clear */
+    0,                                        /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    (getiterfunc) HashMap__iter__,            /* tp_iter */
+    0,                                        /* tp_iternext */
+    HashMap_methods,                          /* tp_methods */
+    HashMap_members,                          /* tp_members */
+    HashMap_getsetters,                       /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    0,                                        /* tp_descr_get */
+    0,                                        /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    (initproc)HashMap_init,                   /* tp_init */
+    0,                                        /* tp_alloc */
+    HashMap_new,                              /* tp_new */
+    0, /* tp_free */
+	0, /* tp_is_gc */
+	0, /* tp_bases */
+	0, /* tp_mro */
+	0, /* tp_cache */
+	0, /* tp_subclasses */
+	0, /* tp_weaklist */
+	0, /* tp_del */
+	0, /* tp_version_tag */
+	0  /* tp_finalize */
 };
+
 
 
 PyMethodDef hashmap_module_methods[] = {
@@ -361,16 +395,16 @@ static PyModuleDef hashmap = {
 
 PyMODINIT_FUNC PyInit_hashmap(void)
 {
-	if (PyType_Ready(&HashMapType) < 0)
+	if (PyType_Ready(&HashMap_Type) < 0)
 		return NULL;
 
 	PyObject* mod = PyModule_Create(&hashmap);
 	if (mod == NULL)
 		return NULL;
-	
+
 	PyModule_AddIntMacro(mod, DEFAULT_MAP_SIZE);
 
-	Py_INCREF(&HashMapType);
-	PyModule_AddObject(mod, "HashMap", (PyObject*) &HashMapType);
+	Py_INCREF(&HashMap_Type);
+	PyModule_AddObject(mod, "HashMap", (PyObject*) &HashMap_Type);
 	return mod;
 }
