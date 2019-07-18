@@ -45,7 +45,6 @@ void get_benchmark()
 	int i;
 	for (i = 0; i < N_KEYS; i++)
 	{
-		// printf("%s\n", mapkeys[i]);
 		assert(33 == Map_get(map, mapkeys[i]));
 	}
 }

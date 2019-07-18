@@ -23,6 +23,9 @@ included then the hashmap will use that type. If it is not defined by a user, th
 default is `void*`.
 
 ### Functions
+`Map* Create_Map(size_t size)`<br>
+Create_Map creates a new map but initializes it with a given size
+
 `Map* New_Map()`<br>
 New_Map creates a new map. Allocates the Map on the heap.
 
