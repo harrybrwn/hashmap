@@ -172,15 +172,12 @@ MapValue Map_get(Map* m, char* key) {
 	return root->value;
 }
 
-// static struct node* _delete_node(struct node*, hash_t, int);
-
 void Map_delete(Map* m, char* key) {
 	hash_t k_hash = prehash(key);
-	size_t    index = k_hash % m->__size;
+	size_t index = k_hash % m->__size;
 
 	struct node* root = m->__data[index];
 	if (root == NULL) {
-		m->item_count--; /* ok wait, why?? */
 		return;
 	}
 

@@ -68,13 +68,18 @@ void TestMap() {
 
 void test_Map_delete() {
     Map* m = New_Map();
+	assert(m->item_count == 0);
     int val = 9001;
     Map_put(m, "key1", &val);
+	assert(m->item_count == 1);
     assert(*(int*)Map_get(m, "key1") == val);
 
     Map_delete(m, "key1");
+	assert(m->item_count == 0);
     int* res = (int*)Map_get(m, "key1");
     assert(res == NULL);
+	Map_delete(m, "invalid_key");
+	assert(m->item_count == 0); // for that weird line in Map_delete
     Map_close(m);
 }
 
