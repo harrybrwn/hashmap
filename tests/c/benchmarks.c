@@ -63,7 +63,7 @@ void putget_benchmark()
 
 	srand(time(0));
 	char** keys = rand_keys(N_KEYS);
-	int data[N_KEYS];
+	MapValue data[N_KEYS];
 	int i;
 
 	for (i = 0; i < N_KEYS; i++)
@@ -86,7 +86,7 @@ void putdelete_benchmark()
 
 	srand(time(0));
 	char** keys = rand_keys(N_KEYS);
-	int data[N_KEYS];
+	MapValue data[N_KEYS];
 
 	int i;
 	for (i = 0; i < N_KEYS; i++)
@@ -115,8 +115,8 @@ int main()
 	Benchmark("get", get_benchmark);
 	Benchmark("delete", delete_benchmark);
 
-	Benchmark("put/get", putget_benchmark);
-	Benchmark("put/delete", putdelete_benchmark);
+	// Benchmark("put/get", putget_benchmark);
+	// Benchmark("put/delete", putdelete_benchmark);
 
 	teardown_globals();
 	printf("End Benchmarks\n");

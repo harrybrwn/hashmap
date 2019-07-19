@@ -108,7 +108,7 @@ static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
 static struct node* search(struct node*, hash_t);
-static struct node* _delete_node(struct node* root, hash_t k_hash);
+static struct node* _delete_node(struct node*, hash_t, int);
 
 Map* Create_Map(size_t size)
 {
@@ -172,6 +172,8 @@ MapValue Map_get(Map* m, char* key) {
 	return root->value;
 }
 
+// static struct node* _delete_node(struct node*, hash_t, int);
+
 void Map_delete(Map* m, char* key) {
 	hash_t k_hash = prehash(key);
 	size_t    index = k_hash % m->__size;
@@ -182,7 +184,7 @@ void Map_delete(Map* m, char* key) {
 		return;
 	}
 
-	m->__data[index] = _delete_node(root, k_hash);
+	m->__data[index] = _delete_node(root, k_hash, 0);
 	m->item_count--;
 }
 
@@ -474,18 +476,18 @@ static _inline struct node* min_node(struct node* node)
 
 
 static struct node*
-__delete_node(struct node* root, hash_t k_hash, int free_key)
+_delete_node(struct node* root, hash_t k_hash, int free_key)
 {
     if (root == NULL)
         return root;
 
     if (k_hash < root->_hash_val)
 	{
-        root->left = _delete_node(root->left, k_hash);
+        root->left = _delete_node(root->left, k_hash, free_key);
 	}
     else if(k_hash > root->_hash_val)
 	{
-        root->right = _delete_node(root->right, k_hash);
+        root->right = _delete_node(root->right, k_hash, free_key);
 	}
 
     else if (root->_hash_val == k_hash) {
@@ -516,7 +518,7 @@ __delete_node(struct node* root, hash_t k_hash, int free_key)
             root->_hash_val = min->_hash_val;
 			root->key = min->key;
 			root->value = min->value;
-            root->right = _delete_node(root->right, min->_hash_val);
+            root->right = _delete_node(root->right, min->_hash_val, free_key);
         }
 	}
 	if (root == NULL)
@@ -545,15 +547,9 @@ __delete_node(struct node* root, hash_t k_hash, int free_key)
 }
 
 static struct node*
-_delete_node(struct node* root, hash_t k_hash)
-{
-	return __delete_node(root, k_hash, 0);
-}
-
-static struct node*
 _delete_node_free_key(struct node* root, hash_t k_hash)
 {
-	return __delete_node(root, k_hash, 1);
+	return _delete_node(root, k_hash, 1);
 }
 
 #ifdef HASHMAP_TESTING
@@ -562,7 +558,7 @@ _delete_node_free_key(struct node* root, hash_t k_hash)
  */
 void delete_node(struct node** root, hash_t k_hash)
 {
-	*root = _delete_node(*root, k_hash);
+	*root = _delete_node(*root, k_hash, 0);
 }
 
 #endif
