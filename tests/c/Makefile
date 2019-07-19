@@ -9,7 +9,7 @@ c-test: $(Test) $(Example)
 	@./$(Test)
 	@./$(Example) > /dev/null
 
-$(Test): $(TestCommon) $(SRC) $(Test).c
+$(Test): $(TestCommon) $(SRC) internal/_hashmap.c $(Test).c
 	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $^
 
 $(Example): $(TestCommon) $(StaticLib) $(Example).c

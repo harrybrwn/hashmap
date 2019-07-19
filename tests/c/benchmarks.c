@@ -115,8 +115,8 @@ int main()
 	Benchmark("get", get_benchmark);
 	Benchmark("delete", delete_benchmark);
 
-	// Benchmark("put/get", putget_benchmark);
-	// Benchmark("put/delete", putdelete_benchmark);
+	Benchmark("put/get", putget_benchmark);
+	Benchmark("put/delete", putdelete_benchmark);
 
 	teardown_globals();
 	printf("End Benchmarks\n");

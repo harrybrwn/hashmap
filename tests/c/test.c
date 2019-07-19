@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "hashmap.h"
+#include "internal/_hashmap.h"
 #include "tests/test_common.h"
 
 #define ARR_CMP(ARR1, LEN1, ARR2, LEN2)        \
@@ -82,18 +83,6 @@ void test_Map_delete() {
 	assert(m->item_count == 0); // for that weird line in Map_delete
     Map_close(m);
 }
-
-#pragma pack(1)
-
-struct node {
-	char*    key;
-	MapValue value;
-	unsigned char height;
-
-	struct
-	node*  right, * left;
-	hash_t _hash_val;
-};
 
 void print_tree(struct node* root, int level, int type) {
     if (root != NULL) {
@@ -182,7 +171,7 @@ void test_Map_keys()
 		Map_put(m, keys[i], &data[i]);
 	}
 	assert(m->item_count == n);
-	
+
 	{
 		char* mapkeys[m->item_count];
 		Map_keys(m, mapkeys);
@@ -251,7 +240,7 @@ void test_Map_resize() {
 }
 
 void insert_node(struct node** root, struct node* new);
-
+/*
 void delete_tree(struct node* leaf) {
 	if (leaf != NULL) {
 		delete_tree(leaf->right);
@@ -259,6 +248,7 @@ void delete_tree(struct node* leaf) {
 		free(leaf);
 	}
 }
+*/
 
 static struct node* newnode(hash_t val) {
     struct node* n = malloc(sizeof(struct node));
@@ -315,20 +305,6 @@ void test_minmax() {
 	assert(max->_hash_val == 99);
 	assert(root == NULL);
 	free(max);
-}
-
-static struct node* search(struct node* root, hash_t key_hash)
-{
-	if (!root)
-		return NULL;
-	if (root->_hash_val == key_hash)
-		return root;
-
-	if (key_hash < root->_hash_val)
-		return search(root->left, key_hash);
-	else if (key_hash > root->_hash_val)
-		return search(root->right, key_hash);
-	return NULL;
 }
 
 void delete_node(struct node** leaf, hash_t key_hash);
@@ -579,29 +555,20 @@ void test_Map_clear()
 
 void test()
 {
-	/*
-	printf("node size: %lu\n", sizeof(struct node));
-	printf("Map size: %lu\n", sizeof(Map));
-	printf("hash_t size: %lu\n", sizeof(hash_t));
-	Map* m = Create_Map(33);
+	char* keys[] = {"one", "two", "three", "four", "five", "six", "seven", "eight"};
+	Map* m = Create_Map(2);
 	int a = 1;
-	Map_put(m, "one", &a);
-	Map_put(m, "two", &a);
-	Map_put(m, "three", &a);
-	Map_put(m, "four", &a);
-	Map_put(m, "five", &a);
-	Map_put(m, "six", &a);
-	Map_put(m, "seven", &a);
-	Map_put(m, "eight", &a);
-	char* keys[m->item_count];
-	Map_keys(m, keys);
-
 	int i;
-	for (i = 0; i < m->item_count; i++)
-		printf("%s,", keys[i]);
-	printf("\n");
+
+	for (i = 0; i < 8; i++)
+		Map_put(m, keys[i], &a);
+
+	for (i = 0; i < m->__size; i++)
+		if (m->__data[i] != NULL) {
+			print_avl(m->__data[i]);
+			printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+		}
 	Map_close(m);
-	*/
 }
 
 static testfunc tests[] = {

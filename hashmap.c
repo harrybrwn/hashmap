@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include "internal/_hashmap.h"
 #include "hashmap.h"
 
 #ifdef __cplusplus
@@ -30,23 +31,6 @@ extern "C" {
 #else
 # define _inline
 #endif
-
-#pragma pack(1)
-
-typedef unsigned long hash_t;
-
-struct node {
-	char*    key;
-	MapValue value;
-
-	/* I'm making some assumtions about the size of each tree here.
-	   It should be fine if the heights stay under 255. */
-	unsigned char height;
-
-	struct
-	node*  right, * left;
-	hash_t _hash_val;
-};
 
 hash_t djb2(char* str) {
 	hash_t hash = 5381;
@@ -90,24 +74,9 @@ hash_t fnv_1(char *str) {
 	return hash;
 }
 
-#ifndef HASHMAP_TESTING
-static _inline
-#endif
-hash_t prehash(char* str) {
-	hash_t prime = 16777619;
-	hash_t hash = 2166136261;
-
-	char c;
-	while ((c = *str++))
-		hash = (hash ^ c) * prime;
-
-	return hash;
-}
-
-static void delete_tree(struct node*);
 static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
-static struct node* search(struct node*, hash_t);
+// static struct node* search(struct node*, hash_t);
 static struct node* _delete_node(struct node*, hash_t, int);
 
 Map* Create_Map(size_t size)
@@ -275,12 +244,6 @@ void Map_close_free_keys(Map* m)
 	free(m);
 }
 
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-
-#define height(N) (N == NULL ? -1 : N->height)
-
-#define MAXHEIGHT(XX, YY) MAX(height(XX), height(YY))
-
 static struct node* node_rotateleft(struct node* n) {
 	struct node *head;
 
@@ -305,24 +268,6 @@ static struct node* node_rotateright(struct node* n) {
 	return head;
 }
 
-#define balance_left_side(root, new_hash)              \
-	if (new_hash < (*root)->left->_hash_val) {         \
-		*root = node_rotateright(*root);               \
-	} else {                                           \
-		(*root)->left = node_rotateleft((*root)->left);\
-		(*root) = node_rotateright(*root);             \
-	}                                                  \
-
-#define balance_right_side(root, new_hash)                \
-	if (new_hash > (*root)->right->_hash_val) {           \
-		*root = node_rotateleft(*root);                   \
-	} else {											  \
-		(*root)->right = node_rotateright((*root)->right);\
-		*root = node_rotateleft(*root);                   \
-	}													  \
-
-#define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
-#define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
 /* insert_node is exposed as a non-static function for testing purposes only. */
 #ifndef HASHMAP_TESTING
@@ -353,25 +298,6 @@ void insert_node(struct node** root, struct node* new) {
 			(*root)->right = new;
 	}
 	(*root)->height = MAX(height((*root)->left), height((*root)->right)) + 1;
-}
-
-static struct node* search(struct node* root, hash_t key_hash) {
-	if (root->_hash_val == key_hash)
-		return root;
-
-	if (key_hash < root->_hash_val)
-		return search(root->left, key_hash);
-	else if (key_hash > root->_hash_val)
-		return search(root->right, key_hash);
-	return NULL;
-}
-
-static _inline void delete_tree(struct node* leaf) {
-	if (leaf != NULL) {
-		delete_tree(leaf->right);
-		delete_tree(leaf->left);
-		free(leaf);
-	}
 }
 
 static struct node*
