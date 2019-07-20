@@ -14,7 +14,9 @@ extern "C" {
 typedef unsigned long hash_t;
 
 struct node {
+#ifndef TRASH_KEY
 	char*    key;
+#endif
 	MapValue value;
 
 	/* I'm making some assumtions about the size of each tree here.
@@ -49,7 +51,6 @@ struct node {
 
 #define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
 #define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
-
 
 hash_t prehash(char*);
 void delete_tree(struct node*);

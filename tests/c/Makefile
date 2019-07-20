@@ -15,5 +15,5 @@ $(Test): $(TestCommon) $(SRC) internal/_hashmap.c $(Test).c
 $(Example): $(TestCommon) $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
-$(Benchmark): $(TestCommon) hashmap.o $(Benchmark).c
-	$(CC) -o $@ $(CFLAGS) $^
+$(Benchmark): $(TestCommon) hashmap.c internal/_hashmap.c $(Benchmark).c
+	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) $^

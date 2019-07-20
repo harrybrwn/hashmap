@@ -22,6 +22,10 @@ the datatype stored in the hashmap. If `MapValue` is defined before hashmap.h is
 included then the hashmap will use that type. If it is not defined by a user, the
 default is `void*`.
 
+By default, the internal node struct stores the key, if `TRASH_KEY` is defines then
+the key is not stored. This gives the Map a small performance boost however
+it makes some of the features like Map_keys and Map_resize unusable.
+
 ### Functions
 `Map* Create_Map(size_t size)`<br>
 Create_Map creates a new map but initializes it with a given size

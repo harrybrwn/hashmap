@@ -563,11 +563,11 @@ void test()
 	for (i = 0; i < 8; i++)
 		Map_put(m, keys[i], &a);
 
-	for (i = 0; i < m->__size; i++)
-		if (m->__data[i] != NULL) {
-			print_avl(m->__data[i]);
-			printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
-		}
+	// for (i = 0; i < m->__size; i++)
+	// 	if (m->__data[i] != NULL) {
+	// 		print_avl(m->__data[i]);
+	// 		printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
+	// 	}
 	Map_close(m);
 }
 

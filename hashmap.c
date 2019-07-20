@@ -203,7 +203,9 @@ static void delete_tree_free_keys(struct node* n)
 	if (n != NULL) {
 		delete_tree_free_keys(n->left);
 		delete_tree_free_keys(n->right);
+	#ifndef TRASH_KEY
 		free(n->key);
+	#endif
 		free(n);
 	}
 }
@@ -307,7 +309,9 @@ _new_node(char* key, MapValue val, hash_t key_hash) {
 		perror("Error: out of memory allocating nodes");
 		return NULL;
 	}
+#ifndef TRASH_KEY
 	n->key = key;
+#endif
 	n->value = val;
 	n->height = 0;
 	n->left = NULL;
@@ -431,15 +435,19 @@ _delete_node(struct node* root, hash_t k_hash, int free_key)
 				tmp = root;
 				root = NULL;
 			}
+			#ifndef TRASH_KEY
 			if (free_key)
 				free(tmp->key);
+			#endif
             free(tmp);
         }
         else /* node has two children */
         {
             struct node* min = min_node(root->right);
             root->_hash_val = min->_hash_val;
+			#ifndef TRASH_KEY
 			root->key = min->key;
+			#endif
 			root->value = min->value;
             root->right = _delete_node(root->right, min->_hash_val, free_key);
         }
@@ -494,7 +502,11 @@ static void copy_nodes(Map* m, struct node* n) {
 		copy_nodes(m, n->right);
 
 	int index = n->_hash_val % m->__size;
+#ifndef TRASH_KEY
 	add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
+#else
+	add_node(m, _new_node("", n->value, n->_hash_val), index);
+#endif
 }
 
 static int node_keys(struct node* n, char** keys, int pos) {
@@ -502,7 +514,9 @@ static int node_keys(struct node* n, char** keys, int pos) {
 		return pos;
 	}
 
+	#ifndef TRASH_KEY
 	keys[pos++] = n->key;
+	#endif
 
 	if (n->left != NULL)
 		pos = node_keys(n->left, keys, pos);
