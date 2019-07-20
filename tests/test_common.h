@@ -7,6 +7,7 @@ extern "C" {
 
 #include <sys/types.h>
 #include <string.h>
+#include <assert.h>
 
 typedef void (*testfunc)(void);
 

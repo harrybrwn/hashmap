@@ -32,6 +32,8 @@ struct node {
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #define height(N) (N == NULL ? -1 : N->height)
 #define MAXHEIGHT(XX, YY) MAX(height(XX), height(YY))
+#define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
+#define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
 #define balance_left_side(root, new_hash)              \
 	if (new_hash < (*root)->left->_hash_val) {         \
@@ -49,11 +51,12 @@ struct node {
 		*root = node_rotateleft(*root);                   \
 	}													  \
 
-#define HEIGHT_DIFF(NODE_A, NODE_B) (height(NODE_A)-height(NODE_B))
-#define BALENCE(NODE) (height((NODE)->left) - height((NODE)->right))
 
 hash_t prehash(char*);
 void delete_tree(struct node*);
+void insert_node(struct node**, struct node*);
+struct node* node_rotateleft(struct node*);
+struct node* node_rotateright(struct node*);
 struct node* search(struct node*, hash_t);
 
 

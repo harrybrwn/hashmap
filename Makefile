@@ -52,7 +52,7 @@ $(StaticLib): hashmap.o
 $(TestCommon): $(TestDir)/test_common.c $(TestDir)/test_common.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin)
+Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin) $(InternalTest)
 
 clean: py-clean cpp-clean
 	@for file in $(Binaries) preproc.i $(ProfileFiles); do\

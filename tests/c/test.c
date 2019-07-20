@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 
 #include "hashmap.h"
 #include "internal/_hashmap.h"
@@ -16,10 +15,6 @@
         assert(0);                             \
     Same_Arr_val:;                             \
     }
-
-typedef unsigned long hash_t;
-
-hash_t prehash(char*);
 
 static char** collition_keys(size_t str_len,
                              size_t mapsize,
@@ -41,16 +36,6 @@ static char** collition_keys(size_t str_len,
             free(str);
     }
     return arr;
-}
-
-void test_prehash() {
-    hash_t a = prehash("abc");
-    hash_t b = prehash("cba");
-    hash_t c = prehash("bca");
-
-    assert(a != b);
-    assert(c != a);
-    assert(c != b);
 }
 
 void TestMap() {
@@ -238,17 +223,6 @@ void test_Map_resize() {
     free_string_arr(keys, n);
     Map_close(m);
 }
-
-void insert_node(struct node** root, struct node* new);
-/*
-void delete_tree(struct node* leaf) {
-	if (leaf != NULL) {
-		delete_tree(leaf->right);
-		delete_tree(leaf->left);
-		free(leaf);
-	}
-}
-*/
 
 static struct node* newnode(hash_t val) {
     struct node* n = malloc(sizeof(struct node));
@@ -562,19 +536,12 @@ void test()
 
 	for (i = 0; i < 8; i++)
 		Map_put(m, keys[i], &a);
-
-	// for (i = 0; i < m->__size; i++)
-	// 	if (m->__data[i] != NULL) {
-	// 		print_avl(m->__data[i]);
-	// 		printf("\n\n\n\n\n\n\n\n\n\n\n\n\n");
-	// 	}
 	Map_close(m);
 }
 
 static testfunc tests[] = {
 	test,
 	test_collitions,
-    test_prehash,
 	test_delete_node0,
 	test_delete_node1,
 	test_delete_root,
