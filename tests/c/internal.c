@@ -13,7 +13,6 @@ static struct node* newnode(hash_t val) {
 
 void test()
 {
-
 }
 
 void test_macros()

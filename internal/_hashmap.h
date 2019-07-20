@@ -9,6 +9,32 @@
 extern "C" {
 #endif
 
+#ifdef __STDC__
+# define C_89
+# ifdef __STDC_VERSION__
+#  define C_90
+#  if (__STDC_VERSION__ >= 199409L)
+#   define C_94
+#  endif
+#  if (__STDC_VERSION__ >= 199901L)
+#   define C_99
+#  endif
+#  if (__STDC_VERSION__ >= 201112L)
+#   define C_11
+#  endif
+#  if (__STDC_VERSION__ >= 201710L)
+#   define C_18
+#  endif
+# endif
+#endif
+
+#ifdef C_99
+# define _inline inline
+#else
+# define _inline
+#endif
+
+
 #pragma pack(1)
 
 typedef unsigned long hash_t;
@@ -58,6 +84,12 @@ void insert_node(struct node**, struct node*);
 struct node* node_rotateleft(struct node*);
 struct node* node_rotateright(struct node*);
 struct node* search(struct node*, hash_t);
+struct node* _delete_node(struct node*, hash_t, int);
+
+hash_t djb2(char* str);
+hash_t sdbm(char *str);
+hash_t fnv_1(char *str);
+hash_t rshash(char *str);
 
 
 #ifdef __cplusplus

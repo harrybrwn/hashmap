@@ -1,83 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+
 #include "internal/_hashmap.h"
 #include "hashmap.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#ifdef __STDC__
-# define C_89
-# ifdef __STDC_VERSION__
-#  define C_90
-#  if (__STDC_VERSION__ >= 199409L)
-#   define C_94
-#  endif
-#  if (__STDC_VERSION__ >= 199901L)
-#   define C_99
-#  endif
-#  if (__STDC_VERSION__ >= 201112L)
-#   define C_11
-#  endif
-#  if (__STDC_VERSION__ >= 201710L)
-#   define C_18
-#  endif
-# endif
-#endif
-
-#ifdef C_99
-# define _inline inline
-#else
-# define _inline
-#endif
-
-hash_t djb2(char* str) {
-	hash_t hash = 5381;
-	int    c;
-
-	while ((c = *str++))
-		hash = ((hash << 5) + hash) + c;
-
-	return hash;
-}
-
-hash_t sdbm(char *str) {
-    hash_t hash = 0;
-    int c;
-
-    while ((c = *str++))
-        hash = c + (hash << 6) + (hash << 16) - hash;
-
-    return hash;
-}
-
-hash_t rshash(char *str) {
- 	hash_t a = 63689, b = 378551, hash = 0;
-  	int c;
-
- 	while ((c = *str++)) {
-    	hash = hash * a + c;
-    	a = a * b;
-  	}
-  	return (hash & 0x7FFFFFFF);
-}
-
-hash_t fnv_1(char *str) {
-	hash_t prime = 16777619;
-	hash_t hash = 2166136261;
-	
-	int c;
-	while ((c = *str++))
-		hash = (hash ^ c) * prime;
-	
-	return hash;
-}
-
-static void add_node(Map*, struct node*, int);
-static struct node* _new_node(char*, MapValue, hash_t);
-// static struct node* search(struct node*, hash_t);
-static struct node* _delete_node(struct node*, hash_t, int);
 
 Map* Create_Map(size_t size)
 {
@@ -105,6 +31,7 @@ Map* New_Map() {
 	return Create_Map(DEFAULT_MAP_SIZE);
 }
 
+
 void Map_close(Map* m) {
 	size_t i;
 	for (i = 0; i < m->__size; i++) {
@@ -114,6 +41,8 @@ void Map_close(Map* m) {
 	free(m);
 }
 
+static void add_node(Map*, struct node*, int);
+static struct node* _new_node(char*, MapValue, hash_t);
 static void copy_nodes(Map*, struct node*);
 
 void Map_put(Map* m, char* key, MapValue val) {
@@ -336,90 +265,6 @@ struct node* pop_max(struct node** node) {
 }
 #endif
 
-static _inline struct node* min_node(struct node* node)
-{
-    struct node* curr = node;
-
-    while (curr->left != NULL)
-        curr = curr->left;
-    return curr;
-}
-
-
-static struct node*
-_delete_node(struct node* root, hash_t k_hash, int free_key)
-{
-    if (root == NULL)
-        return root;
-
-    if (k_hash < root->_hash_val)
-	{
-        root->left = _delete_node(root->left, k_hash, free_key);
-	}
-    else if(k_hash > root->_hash_val)
-	{
-        root->right = _delete_node(root->right, k_hash, free_key);
-	}
-
-    else if (root->_hash_val == k_hash) {
-        if(!root->left || !root->right)
-        {
-            struct node *tmp;
-			if (root->left)
-				tmp = root->left;
-			else
-				tmp = root->right;
-
-			if (tmp)
-			{
-				*root = *tmp;
-			}
-			else
-			{
-				tmp = root;
-				root = NULL;
-			}
-			#ifndef TRASH_KEY
-			if (free_key)
-				free(tmp->key);
-			#endif
-            free(tmp);
-        }
-        else /* node has two children */
-        {
-            struct node* min = min_node(root->right);
-            root->_hash_val = min->_hash_val;
-			#ifndef TRASH_KEY
-			root->key = min->key;
-			#endif
-			root->value = min->value;
-            root->right = _delete_node(root->right, min->_hash_val, free_key);
-        }
-	}
-	if (root == NULL)
-      return root;
-
-    root->height = 1 + MAXHEIGHT(root->left, root->right);
-
-	int h_diff = HEIGHT_DIFF(root->left, root->right);
-
-    if (h_diff > 1 && BALENCE(root->left) >= 0) {
-		return node_rotateright(root);
-	}
-	else if (h_diff > 1 && BALENCE(root->left) < 0) {
-		root->left = node_rotateleft(root->left);
-		return node_rotateright(root);
-	}
-    else if (h_diff < -1 && BALENCE(root->right) <= 0) {
-		return node_rotateleft(root);
-	}
-	else if (h_diff < -1 && BALENCE(root->right) > 0) {
-		root->right = node_rotateright(root->right);
-		return node_rotateleft(root);
-    }
-
-    return root;
-}
 
 static struct node*
 _delete_node_free_key(struct node* root, hash_t k_hash)
@@ -468,7 +313,3 @@ static int node_keys(struct node* n, char** keys, int pos) {
 		pos = node_keys(n->right, keys, pos);
 	return pos;
 }
-
-#ifdef __cplusplus
-}
-#endif
