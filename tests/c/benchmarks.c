@@ -6,11 +6,13 @@
 
 #define MapValue int
 #include <hashmap.h>
+#include "internal/_hashmap.h"
 #include "tests/test_common.h"
 
+// #define N_KEYS 2200000
 #define N_KEYS 2000000
-/* #define N_KEYS 1000000 */
-/* #define N_KEYS 500000 */
+// #define N_KEYS 1000000
+// #define N_KEYS 10000
 
 static Map* map;
 static char** mapkeys;
@@ -54,6 +56,34 @@ void delete_benchmark()
 	int i;
 	for (i = 0; i < N_KEYS; i++)
 		Map_delete(map, mapkeys[i]);
+}
+
+void djb2_benchmark()
+{
+	int i;
+	for (i = 0; i < N_KEYS; i++)
+		djb2(mapkeys[i]);
+}
+
+void fnv_1_benchmark()
+{
+	int i;
+	for (i = 0; i < N_KEYS; i++)
+		fnv_1(mapkeys[i]);
+}
+
+void sdbm_benchmark()
+{
+	int i;
+	for (i = 0; i < N_KEYS; i++)
+		sdbm(mapkeys[i]);
+}
+
+void prehash_benchmark()
+{
+	int i;
+	for (i = 0; i < N_KEYS; i++)
+		prehash(mapkeys[i]);
 }
 
 void putget_benchmark()
@@ -111,11 +141,18 @@ int main()
 	printf("Start Benchmarks with %'d items\n", N_KEYS);
 	init_globals();
 
-	Benchmark("put", put_benchmark);
-	Benchmark("get", get_benchmark);
+	Benchmark("put",    put_benchmark);
+	Benchmark("get",    get_benchmark);
 	Benchmark("delete", delete_benchmark);
+	printf("\n");
 
-	Benchmark("put/get", putget_benchmark);
+	Benchmark("djb2",    djb2_benchmark);
+	Benchmark("fnv_1",   fnv_1_benchmark);
+	Benchmark("sdbm",    sdbm_benchmark);
+	Benchmark("prehash", prehash_benchmark);
+	printf("\n");
+
+	Benchmark("put/get",    putget_benchmark);
 	Benchmark("put/delete", putdelete_benchmark);
 
 	teardown_globals();

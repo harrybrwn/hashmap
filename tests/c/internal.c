@@ -95,6 +95,8 @@ void test_prehash()
     assert(a != b);
     assert(c != a);
     assert(c != b);
+
+	assert(prehash("abc123") == prehash("abc123"));
 }
 
 static testfunc tests[] = {
