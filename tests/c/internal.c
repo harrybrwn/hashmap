@@ -2,13 +2,14 @@
 #include "internal/_hashmap.h"
 #include "tests/test_common.h"
 
-static struct node* newnode(hash_t val) {
-    struct node* n = malloc(sizeof(struct node));
-    n->_hash_val = val;
-    n->height = 0;
-    n->left = NULL;
-    n->right = NULL;
-    return n;
+static struct node *newnode(hash_t val)
+{
+	struct node *n = malloc(sizeof(struct node));
+	n->_hash_val = val;
+	n->height = 0;
+	n->left = NULL;
+	n->right = NULL;
+	return n;
 }
 
 void test()
@@ -17,7 +18,7 @@ void test()
 
 void test_macros()
 {
-	struct node* n = NULL;
+	struct node *n = NULL;
 	assert(height(n) == -1);
 	n = newnode(1);
 	assert(height(n) == 0);
@@ -25,7 +26,7 @@ void test_macros()
 
 void test_rotations()
 {
-	struct node* n = newnode(10);
+	struct node *n = newnode(10);
 	n->left = newnode(9);
 	n->left->left = newnode(8);
 	n = node_rotateright(n);
@@ -42,7 +43,7 @@ void test_rotations()
 
 void test_insert_node()
 {
-	struct node* n = newnode(10);
+	struct node *n = newnode(10);
 	insert_node(&n, newnode(5));
 	assert(n->_hash_val == 10);
 	assert(n->left->_hash_val == 5);
@@ -72,13 +73,13 @@ void test_insert_node()
 
 void test_search()
 {
-	struct node* n = newnode(10);
+	struct node *n = newnode(10);
 	assert(search(n, 10) == n);
 	insert_node(&n, newnode(5));
 	insert_node(&n, newnode(15));
 	insert_node(&n, newnode(25));
 	insert_node(&n, newnode(1));
-	
+
 	assert(search(n, 5)->_hash_val = 5);
 	assert(search(n, 15)->_hash_val = 15);
 	assert(search(n, 25)->_hash_val = 25);
@@ -89,12 +90,12 @@ void test_search()
 void test_prehash()
 {
 	hash_t a = prehash("abc");
-    hash_t b = prehash("cba");
-    hash_t c = prehash("bca");
+	hash_t b = prehash("cba");
+	hash_t c = prehash("bca");
 
-    assert(a != b);
-    assert(c != a);
-    assert(c != b);
+	assert(a != b);
+	assert(c != a);
+	assert(c != b);
 
 	assert(prehash("abc123") == prehash("abc123"));
 }

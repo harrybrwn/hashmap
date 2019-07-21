@@ -14,8 +14,8 @@
 // #define N_KEYS 1000000
 // #define N_KEYS 10000
 
-static Map* map;
-static char** mapkeys;
+static Map *map;
+static char **mapkeys;
 
 void init_globals()
 {
@@ -88,11 +88,11 @@ void prehash_benchmark()
 
 void putget_benchmark()
 {
-	Map* m = Create_Map(N_KEYS + 293);
+	Map *m = Create_Map(N_KEYS + 293);
 	assert(m != NULL);
 
 	srand(time(0));
-	char** keys = rand_keys(N_KEYS);
+	char **keys = rand_keys(N_KEYS);
 	MapValue data[N_KEYS];
 	int i;
 
@@ -112,10 +112,10 @@ void putget_benchmark()
 
 void putdelete_benchmark()
 {
-	Map* m = Create_Map(N_KEYS + 293);
+	Map *m = Create_Map(N_KEYS + 293);
 
 	srand(time(0));
-	char** keys = rand_keys(N_KEYS);
+	char **keys = rand_keys(N_KEYS);
 	MapValue data[N_KEYS];
 
 	int i;
@@ -141,18 +141,18 @@ int main()
 	printf("Start Benchmarks with %'d items\n", N_KEYS);
 	init_globals();
 
-	Benchmark("put",    put_benchmark);
-	Benchmark("get",    get_benchmark);
+	Benchmark("put", put_benchmark);
+	Benchmark("get", get_benchmark);
 	Benchmark("delete", delete_benchmark);
 	printf("\n");
 
-	Benchmark("djb2",    djb2_benchmark);
-	Benchmark("fnv_1",   fnv_1_benchmark);
-	Benchmark("sdbm",    sdbm_benchmark);
+	Benchmark("djb2", djb2_benchmark);
+	Benchmark("fnv_1", fnv_1_benchmark);
+	Benchmark("sdbm", sdbm_benchmark);
 	Benchmark("prehash", prehash_benchmark);
 	printf("\n");
 
-	Benchmark("put/get",    putget_benchmark);
+	Benchmark("put/get", putget_benchmark);
 	Benchmark("put/delete", putdelete_benchmark);
 
 	teardown_globals();
