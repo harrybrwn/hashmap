@@ -26,3 +26,4 @@ gmon.out
 /.vscode/
 *.vscode/
 TODO
+.clang-format
