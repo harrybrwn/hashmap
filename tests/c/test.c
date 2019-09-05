@@ -6,8 +6,10 @@
 #include "tests/test_common.h"
 
 #define ARR_CMP(ARR1, LEN1, ARR2, LEN2)                                                           \
-    for (i = 0; (i) < (LEN1); i++) {                                                              \
-        for (k = 0; (k) < (LEN2); k++) {                                                          \
+    for (i = 0; (i) < (LEN1); i++)                                                                \
+    {                                                                                             \
+        for (k = 0; (k) < (LEN2); k++)                                                            \
+        {                                                                                         \
             if (strcmp(ARR1[i], ARR2[k]) == 0)                                                    \
                 goto Same_Arr_val;                                                                \
         }                                                                                         \
@@ -23,7 +25,8 @@ static char** collition_keys(size_t str_len, size_t mapsize, hash_t (*hash_fn)(c
     hash_t h, base_hash = hash_fn(arr[0]);
     char* str;
 
-    while (k != len) {
+    while (k != len)
+    {
         str = randstring(str_len);
         h = hash_fn(str);
         if ((h % mapsize) == (base_hash % mapsize))
@@ -69,7 +72,8 @@ void test_Map_delete()
 
 void print_tree(struct node* root, int level, int type)
 {
-    if (root != NULL) {
+    if (root != NULL)
+    {
         int i;
         for (i = 0; i < (level * 4); i++)
             printf("%c", ' ');
@@ -127,7 +131,8 @@ void test_collitions()
     int x[n];
     size_t i;
 
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
+    {
         x[i] = i;
         Map_put(m, keys[i], &x[i]);
     }
@@ -136,7 +141,8 @@ void test_collitions()
         assert(((int)i) == *(int*)Map_get(m, keys[i]));
 
     int nonNullKeys = 0;
-    for (i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++)
+    {
         if (m->__data[i] != NULL)
             nonNullKeys++;
     }
@@ -153,7 +159,8 @@ void test_Map_keys()
     char** keys = rand_keys(n);
     int data[n];
     size_t i, k;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
+    {
         data[i] = i;
         Map_put(m, keys[i], &data[i]);
     }
@@ -196,7 +203,8 @@ void tests_Map_keys2()
     Map* m = Create_Map(11);
     char* ks[] = { "one", "two", "three", "four", "five" };
     int i, k, data[5];
-    for (i = 0; i < 5; i++) {
+    for (i = 0; i < 5; i++)
+    {
         data[i] = i;
         Map_put(m, ks[i], &data[i]);
     }
@@ -215,7 +223,8 @@ void test_Map_resize()
 
     int x[n];
     size_t i;
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < n; i++)
+    {
         x[i] = i;
         Map_put(m, keys[i], &x[i]);
     }
@@ -335,7 +344,8 @@ void test_delete_node0()
     for (i = 1; i <= n; i++)
         insert_node(&root, newnode(i));
 
-    for (i = 1; i <= n; i++) {
+    for (i = 1; i <= n; i++)
+    {
         delete_node(&root, i);
         assert(search(root, 0) != NULL);
     }
@@ -364,28 +374,28 @@ void test_delete_node1()
  */
 void test_delete_root()
 {
-	/*
-		delete(50)...
-			   ---> 50
-				  /   \
-				25	   75
-			   /  \   /  \
-    		 20   30 70  80
+    /*
+            delete(50)...
+                       ---> 50
+                              /   \
+                            25	   75
+                       /  \   /  \
+             20   30 70  80
 
-		result...
-					70
-				  /    \
-				25     75
-			   /  \      \
-			 20   30     80
-		delete(30)...
+            result...
+                                    70
+                              /    \
+                            25     75
+                       /  \      \
+                     20   30     80
+            delete(30)...
 
-					70
-				   /  \
-				 25    75
-				/        \
-			   20	     80
-	 */
+                                    70
+                               /  \
+                             25    75
+                            /        \
+                       20	     80
+     */
     struct node* root = newnode(50);
     insert_node(&root, newnode(25));
     insert_node(&root, newnode(75));
@@ -521,13 +531,15 @@ void test_Map_clear()
     int data[6];
     char* keys[] = { "one", "two", "three", "four", "five", "six" };
 
-    for (i = 0; i < 6; i++) {
+    for (i = 0; i < 6; i++)
+    {
         data[i] = i;
         Map_put(m, keys[i], &data[i]);
     }
     Map_clear(m);
     size_t k;
-    for (k = 0; k < m->__size; k++) {
+    for (k = 0; k < m->__size; k++)
+    {
         assert(m->__data[k] == NULL);
     }
     Map_clear(m); /* shouldn't seg-fault when called on emty map */

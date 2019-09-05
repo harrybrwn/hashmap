@@ -50,7 +50,8 @@ void put_benchmark()
 void get_benchmark()
 {
     int i;
-    for (i = 0; i < N_KEYS; i++) {
+    for (i = 0; i < N_KEYS; i++)
+    {
         assert(33 == Map_get(map, mapkeys[i]));
     }
 }
@@ -100,7 +101,8 @@ void putget_benchmark()
     MapValue data[N_KEYS];
     int i;
 
-    for (i = 0; i < N_KEYS; i++) {
+    for (i = 0; i < N_KEYS; i++)
+    {
         data[i] = i + 1;
         Map_put(m, keys[i], data[i]);
     }
@@ -122,7 +124,8 @@ void putdelete_benchmark()
     MapValue data[N_KEYS];
 
     size_t i;
-    for (i = 0; i < N_KEYS; i++) {
+    for (i = 0; i < N_KEYS; i++)
+    {
         data[i] = i + 1;
         Map_put(m, keys[i], data[i]);
     }

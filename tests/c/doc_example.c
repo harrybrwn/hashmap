@@ -18,9 +18,12 @@ int main()
 
     MapValue working = Map_get(map, "working");
 
-    if (working) {
+    if (working)
+    {
         printf("everything is working great :) \n");
-    } else {
+    }
+    else
+    {
         printf("map is not working\n");
         return 1;
     }

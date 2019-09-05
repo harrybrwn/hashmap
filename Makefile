@@ -65,9 +65,6 @@ clean: py-clean cpp-clean
 proc:
 	gcc -I. -E hashmap.c $(Test).c > preproc.i
 
-fmt:
-	clang-format -i hashmap.c hashmap.h tests/test_common.c tests/test_common.h tests/c/*.c
-
 ProfileFlags=-Wall -I. -pg -DHASHMAP_TESTING
 ProfileBin=profile.bin
 Profiles=$(Benchmark)_prof $(Test)_prof

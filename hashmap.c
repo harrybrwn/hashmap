@@ -59,7 +59,8 @@ hash_t rshash(char* str)
     hash_t a = 63689, b = 378551, hash = 0;
     int c;
 
-    while ((c = *str++)) {
+    while ((c = *str++))
+    {
         hash = hash * a + c;
         a = a * b;
     }
@@ -82,14 +83,16 @@ Map* Create_Map(size_t size)
 {
     size_t i;
     Map* m = malloc(sizeof(Map));
-    if (m == NULL) {
+    if (m == NULL)
+    {
         perror("Error: ran out of memory allocating a Map");
         return NULL;
     }
 
     m->__size = size;
     m->__data = malloc(sizeof(struct node*) * m->__size);
-    if (m->__data == NULL) {
+    if (m->__data == NULL)
+    {
         perror("Error: ran out of memory allocating a node array");
         return NULL;
     }
@@ -109,7 +112,8 @@ static void delete_tree(struct node*);
 void Map_close(Map* m)
 {
     size_t i;
-    for (i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++)
+    {
         delete_tree(m->__data[i]);
     }
     free(m->__data);
@@ -139,7 +143,8 @@ MapValue Map_get(Map* m, char* key)
     if (root == NULL)
         return NULL;
 
-    if (k_hash != root->_hash_val) {
+    if (k_hash != root->_hash_val)
+    {
         struct node* n = search(root, k_hash);
         if (n == NULL)
             return NULL;
@@ -156,7 +161,8 @@ void Map_delete(Map* m, char* key)
     size_t index = k_hash % m->__size;
 
     struct node* root = m->__data[index];
-    if (root == NULL) {
+    if (root == NULL)
+    {
         return;
     }
 
@@ -173,7 +179,8 @@ int Map_resize(Map** old_m, size_t size)
 
     struct node* tmp;
     size_t i;
-    for (i = 0; i < (*old_m)->__size; i++) {
+    for (i = 0; i < (*old_m)->__size; i++)
+    {
         tmp = (*old_m)->__data[i];
         if (tmp != NULL)
             copy_nodes(new_m, tmp);
@@ -191,9 +198,11 @@ void Map_keys(Map* m, char** keys)
     struct node* node;
 
     size_t i;
-    for (i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++)
+    {
         node = m->__data[i];
-        if (node != NULL) {
+        if (node != NULL)
+        {
             pos = node_keys(node, keys, pos);
         }
     }
@@ -202,7 +211,8 @@ void Map_keys(Map* m, char** keys)
 void Map_clear(Map* m)
 {
     size_t i;
-    for (i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++)
+    {
         delete_tree(m->__data[i]);
         m->__data[i] = NULL;
     }
@@ -225,17 +235,23 @@ static struct node* node_rotateright(struct node* n);
 static struct node* node_rotateleft(struct node* n);
 
 #define balance_left_side(root, new_hash)                                                         \
-    if (new_hash < (*root)->left->_hash_val) {                                                    \
+    if (new_hash < (*root)->left->_hash_val)                                                      \
+    {                                                                                             \
         *root = (struct node*)node_rotateright(*root);                                            \
-    } else {                                                                                      \
+    }                                                                                             \
+    else                                                                                          \
+    {                                                                                             \
         (*root)->left = (struct node*)node_rotateleft((*root)->left);                             \
         (*root) = (struct node*)node_rotateright(*root);                                          \
     }
 
 #define balance_right_side(root, new_hash)                                                        \
-    if (new_hash > (*root)->right->_hash_val) {                                                   \
+    if (new_hash > (*root)->right->_hash_val)                                                     \
+    {                                                                                             \
         *root = (struct node*)node_rotateleft(*root);                                             \
-    } else {                                                                                      \
+    }                                                                                             \
+    else                                                                                          \
+    {                                                                                             \
         (*root)->right = node_rotateright((*root)->right);                                        \
         *root = (struct node*)node_rotateleft(*root);                                             \
     }
@@ -249,26 +265,35 @@ static struct node* node_rotateleft(struct node* n);
 static void insert_node(struct node** root, struct node* new)
 {
     /* insert left */
-    if (new->_hash_val < (*root)->_hash_val) {
-        if ((*root)->left != NULL) {
+    if (new->_hash_val < (*root)->_hash_val)
+    {
+        if ((*root)->left != NULL)
+        {
             insert_node(&(*root)->left, new);
 
             /* if left side is double-unbalenced... rotate right */
-            if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2) {
+            if (HEIGHT_DIFF((*root)->left, (*root)->right) == 2)
+            {
                 balance_left_side(root, new->_hash_val);
             }
-        } else
+        }
+        else
             (*root)->left = new;
         /* insert right */
-    } else if (new->_hash_val > (*root)->_hash_val) {
-        if ((*root)->right != NULL) {
+    }
+    else if (new->_hash_val > (*root)->_hash_val)
+    {
+        if ((*root)->right != NULL)
+        {
             insert_node(&(*root)->right, new);
 
             /* if right side is double-unbalenced... rotate left */
-            if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2) {
+            if (HEIGHT_DIFF((*root)->right, (*root)->left) == 2)
+            {
                 balance_right_side(root, new->_hash_val);
             }
-        } else
+        }
+        else
             (*root)->right = new;
     }
     (*root)->height = MAX(height((*root)->left), height((*root)->right)) + 1;
@@ -276,7 +301,8 @@ static void insert_node(struct node** root, struct node* new)
 
 static void delete_tree(struct node* leaf)
 {
-    if (leaf != NULL) {
+    if (leaf != NULL)
+    {
         delete_tree(leaf->right);
         delete_tree(leaf->left);
         free(leaf);
@@ -285,7 +311,8 @@ static void delete_tree(struct node* leaf)
 
 static void delete_tree_free_keys(struct node* n)
 {
-    if (n != NULL) {
+    if (n != NULL)
+    {
         delete_tree_free_keys(n->left);
         delete_tree_free_keys(n->right);
 #ifndef TRASH_KEY
@@ -303,7 +330,8 @@ void Map_delete_free_key(Map* m, char* key)
     size_t index = k_hash % m->__size;
 
     struct node* root = m->__data[index];
-    if (root == NULL) {
+    if (root == NULL)
+    {
         return;
     }
 
@@ -314,7 +342,8 @@ void Map_delete_free_key(Map* m, char* key)
 void Map_clear_free_keys(Map* m)
 {
     size_t i;
-    for (i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++)
+    {
         delete_tree_free_keys(m->__data[i]);
         m->__data[i] = NULL;
     }
@@ -324,7 +353,8 @@ void Map_clear_free_keys(Map* m)
 void Map_close_free_keys(Map* m)
 {
     size_t i;
-    for (i = 0; i < m->__size; i++) {
+    for (i = 0; i < m->__size; i++)
+    {
         delete_tree_free_keys(m->__data[i]);
     }
     free(m->__data);
@@ -334,7 +364,8 @@ void Map_close_free_keys(Map* m)
 static struct node* _new_node(char* key, MapValue val, hash_t key_hash)
 {
     struct node* n = malloc(sizeof(struct node));
-    if (n == NULL) {
+    if (n == NULL)
+    {
         perror("Error: out of memory allocating nodes");
         return NULL;
     }
@@ -359,9 +390,12 @@ static void add_node(Map* m, struct node* node, int index)
      *  raw hash is different then we have a hash collition and we are inserting
      *  a node into the binary tree rooted at the 'head_node'
      */
-    if (head_node == NULL) {
+    if (head_node == NULL)
+    {
         m->__data[index] = node;
-    } else if (head_node->_hash_val == node->_hash_val) {
+    }
+    else if (head_node->_hash_val == node->_hash_val)
+    {
         /**
          *  Getting two hash values that are the same is extremly unlikly given
          *  different inputs. This is different that getting a hash collition
@@ -371,7 +405,9 @@ static void add_node(Map* m, struct node* node, int index)
          */
         free(m->__data[index]);
         m->__data[index] = node;
-    } else {
+    }
+    else
+    {
         insert_node(&m->__data[index], node);
     }
 }
@@ -412,21 +448,29 @@ static struct node* node_rotateright(struct node* n)
  * mm is short for min/max.
  */
 #define POP_MINMAX_LOOP(SA, SB)                                                                   \
-    if (!tmp->right && !tmp->left) {                                                              \
+    if (!tmp->right && !tmp->left)                                                                \
+    {                                                                                             \
         *node = NULL;                                                                             \
         return tmp;                                                                               \
     }                                                                                             \
-    while (1) {                                                                                   \
-        if (tmp->SA) {                                                                            \
-            if (!tmp->SA->SA) {                                                                   \
+    while (1)                                                                                     \
+    {                                                                                             \
+        if (tmp->SA)                                                                              \
+        {                                                                                         \
+            if (!tmp->SA->SA)                                                                     \
+            {                                                                                     \
                 struct node* mm = tmp->SA;                                                        \
                 mm->SB = tmp->SA->SB;                                                             \
                 tmp->SA = mm->SB;                                                                 \
                 return mm;                                                                        \
-            } else {                                                                              \
+            }                                                                                     \
+            else                                                                                  \
+            {                                                                                     \
                 tmp = tmp->SA;                                                                    \
             }                                                                                     \
-        } else {                                                                                  \
+        }                                                                                         \
+        else                                                                                      \
+        {                                                                                         \
             break;                                                                                \
         }                                                                                         \
     }
@@ -468,23 +512,31 @@ static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
     if (root == NULL)
         return root;
 
-    if (k_hash < root->_hash_val) {
+    if (k_hash < root->_hash_val)
+    {
         root->left = _delete_node(root->left, k_hash, free_key);
-    } else if (k_hash > root->_hash_val) {
+    }
+    else if (k_hash > root->_hash_val)
+    {
         root->right = _delete_node(root->right, k_hash, free_key);
     }
 
-    else if (root->_hash_val == k_hash) {
-        if (!root->left || !root->right) {
+    else if (root->_hash_val == k_hash)
+    {
+        if (!root->left || !root->right)
+        {
             struct node* tmp;
             if (root->left)
                 tmp = root->left;
             else
                 tmp = root->right;
 
-            if (tmp) {
+            if (tmp)
+            {
                 *root = *tmp;
-            } else {
+            }
+            else
+            {
                 tmp = root;
                 root = NULL;
             }
@@ -493,7 +545,8 @@ static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
                 free(tmp->key);
 #endif
             free(tmp);
-        } else /* node has two children */
+        }
+        else /* node has two children */
         {
             struct node* min = min_node(root->right);
             root->_hash_val = min->_hash_val;
@@ -511,14 +564,21 @@ static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
 
     int h_diff = HEIGHT_DIFF(root->left, root->right);
 
-    if (h_diff > 1 && BALENCE(root->left) >= 0) {
+    if (h_diff > 1 && BALENCE(root->left) >= 0)
+    {
         return node_rotateright(root);
-    } else if (h_diff > 1 && BALENCE(root->left) < 0) {
+    }
+    else if (h_diff > 1 && BALENCE(root->left) < 0)
+    {
         root->left = node_rotateleft(root->left);
         return node_rotateright(root);
-    } else if (h_diff < -1 && BALENCE(root->right) <= 0) {
+    }
+    else if (h_diff < -1 && BALENCE(root->right) <= 0)
+    {
         return node_rotateleft(root);
-    } else if (h_diff < -1 && BALENCE(root->right) > 0) {
+    }
+    else if (h_diff < -1 && BALENCE(root->right) > 0)
+    {
         root->right = node_rotateright(root->right);
         return node_rotateleft(root);
     }
@@ -560,7 +620,8 @@ static void copy_nodes(Map* m, struct node* n)
 
 static int node_keys(struct node* n, char** keys, int pos)
 {
-    if (n == NULL) {
+    if (n == NULL)
+    {
         return pos;
     }
 
