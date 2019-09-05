@@ -1,7 +1,6 @@
 # hashmap
 
 This is my hash table implimentation written in c89 complient C.
-I am using djb2 by Dan Bernstein for the string pre-hashing function.
 
 To handle hash collitions, I am using auto balancing binary search trees (avl trees).
 
