@@ -438,58 +438,6 @@ static struct node* node_rotateright(struct node* n)
     return head;
 }
 
-#ifdef HASHMAP_TESTING
-/**
- * SA (side A) is the primary node if it is left then the loop
- * will get the furthest left node.
- *
- * SB (side B) should be the opposite side.
- *
- * mm is short for min/max.
- */
-#define POP_MINMAX_LOOP(SA, SB)                                                                   \
-    if (!tmp->right && !tmp->left)                                                                \
-    {                                                                                             \
-        *node = NULL;                                                                             \
-        return tmp;                                                                               \
-    }                                                                                             \
-    while (1)                                                                                     \
-    {                                                                                             \
-        if (tmp->SA)                                                                              \
-        {                                                                                         \
-            if (!tmp->SA->SA)                                                                     \
-            {                                                                                     \
-                struct node* mm = tmp->SA;                                                        \
-                mm->SB = tmp->SA->SB;                                                             \
-                tmp->SA = mm->SB;                                                                 \
-                return mm;                                                                        \
-            }                                                                                     \
-            else                                                                                  \
-            {                                                                                     \
-                tmp = tmp->SA;                                                                    \
-            }                                                                                     \
-        }                                                                                         \
-        else                                                                                      \
-        {                                                                                         \
-            break;                                                                                \
-        }                                                                                         \
-    }
-
-struct node* pop_min(struct node** node)
-{
-    struct node* tmp = *node;
-    POP_MINMAX_LOOP(left, right);
-    return tmp;
-}
-
-struct node* pop_max(struct node** node)
-{
-    struct node* tmp = *node;
-    POP_MINMAX_LOOP(right, left);
-    return tmp;
-}
-#endif
-
 #ifdef __STDC__
 #if (__STDC_VERSION__ >= 199901L)
 #define _inline inline

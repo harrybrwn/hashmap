@@ -249,54 +249,6 @@ static struct node* newnode(hash_t val)
     return n;
 }
 
-struct node* pop_min(struct node** root);
-struct node* pop_max(struct node** root);
-
-void test_minmax()
-{
-    struct node* root = newnode(10);
-    size_t nodes[8] = { 5, 15, 6, 4, 14, 16, 13, 17 };
-    int i;
-    for (i = 0; i < 8; i++)
-        insert_node(&root, newnode(nodes[i]));
-
-    struct node* max = pop_max(&root);
-    assert(max != NULL);
-    assert(max->left == NULL);
-    assert(max->right == NULL);
-    assert(max->_hash_val == 17);
-    assert(root->right->right->right == NULL);
-    free(max);
-
-    max = pop_min(&root->right);
-    assert(max != NULL);
-    assert(max->left == NULL);
-    assert(max->right == NULL);
-    assert(max->_hash_val == 13);
-    assert(root->right->left->left == NULL);
-    free(max);
-
-    struct node* min = pop_min(&root);
-    assert(min->left == NULL);
-    assert(min->right == NULL);
-    assert(min->_hash_val == 4);
-    assert(root->left->left == NULL);
-    free(min);
-    delete_tree(root);
-
-    root = newnode(10);
-    max = pop_max(&root);
-    assert(max->_hash_val == 10);
-    free(max);
-    free(root);
-
-    root = newnode(99);
-    max = pop_min(&root);
-    assert(max->_hash_val == 99);
-    assert(root == NULL);
-    free(max);
-}
-
 void delete_node(struct node** leaf, hash_t key_hash);
 
 void test_delete_node0()
