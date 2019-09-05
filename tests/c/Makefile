@@ -18,7 +18,7 @@ $(Example): $(TestCommon) $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
 $(Benchmark): $(TestCommon) hashmap.c $(Benchmark).c
-	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) $^
+	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) $^ -Wno-unused-parameter
 
 $(InternalTest): $(TestCommon) hashmap.c $(InternalTest).c
 	$(CC) $(CFLAGS) -o $@ $(TestCommon) $(InternalTest).c
