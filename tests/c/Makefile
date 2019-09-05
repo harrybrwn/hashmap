@@ -11,14 +11,14 @@ c-test: $(Test) $(Example) $(InternalTest)
 	@./$(Example) > /dev/null
 	@./$(InternalTest)
 
-$(Test): $(TestCommon) $(SRC) internal/_hashmap.c $(Test).c
-	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $^
+$(Test): $(TestCommon) hashmap.c $(Test).c
+	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c $(TestCommon)
 
 $(Example): $(TestCommon) $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $(TestSRC) $@.c -lhashmapstatic
 
-$(Benchmark): $(TestCommon) hashmap.c internal/_hashmap.c $(Benchmark).c
+$(Benchmark): $(TestCommon) hashmap.c $(Benchmark).c
 	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) $^
 
-$(InternalTest): $(TestCommon) hashmap.o $(InternalTest).c
-	$(CC) $(CFLAGS) $^ -o $@
+$(InternalTest): $(TestCommon) hashmap.c $(InternalTest).c
+	$(CC) $(CFLAGS) -o $@ $(TestCommon) $(InternalTest).c

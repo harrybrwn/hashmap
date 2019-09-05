@@ -32,11 +32,8 @@ bench: $(Benchmark)
 
 .PHONY: all test bench
 
-hashmap.o: hashmap.c hashmap.h internal/_hashmap.c internal/_hashmap.h
-	$(CC) $(CFLAGS) -c $< -o _$@
-	$(CC) $(CFLAGS) -c internal/_hashmap.c -o internal/_hashmap.o
-	ld -relocatable _$@ internal/_hashmap.o -o $@
-	@rm _$@ internal/_hashmap.o
+hashmap.o: hashmap.c hashmap.h
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: lib
 lib: $(SharedLib) $(StaticLib)
@@ -74,12 +71,12 @@ Profiles=$(Benchmark)_prof $(Test)_prof
 TestProfile=test
 ProfileFiles=$(ProfileBin) gmon.out $(Profiles)
 
-profile: hashmap.c internal/_hashmap.c $(Benchmark).c $(Test).c $(TestCommon:%.o=%.c)
-	@for f in hashmap internal/_hashmap tests/test_common; do\
+profile: hashmap.c $(Benchmark).c $(Test).c $(TestCommon:%.o=%.c)
+	@for f in hashmap tests/test_common; do\
 		$(CC) $(ProfileFlags) -c -o $$f.o $$f.c; done
 
 	@for file in $(Benchmark) $(Test); do\
-		$(CC) $(ProfileFlags) -o "$$file".bin hashmap.o internal/_hashmap.o tests/test_common.o "$$file".c;\
+		$(CC) $(ProfileFlags) -o "$$file".bin hashmap.o tests/test_common.o "$$file".c;\
 		./"$$file".bin;\
 		gprof -b ./"$$file".bin gmon.out > "$$file"_prof;\
 		rm "$$file".bin gmon.out;\

@@ -6,8 +6,13 @@
 
 #define MapValue int
 #include <hashmap.h>
-#include "internal/_hashmap.h"
 #include "tests/test_common.h"
+
+hash_t prehash(char *);
+hash_t djb2(char *str);
+hash_t sdbm(char *str);
+hash_t fnv_1(char *str);
+hash_t rshash(char *str);
 
 // #define N_KEYS 2200000
 #define N_KEYS 2000000

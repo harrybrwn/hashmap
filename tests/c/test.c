@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "hashmap.h"
-#include "internal/_hashmap.h"
+#include "hashmap.c" // to test static methods
 #include "tests/test_common.h"
 
 #define ARR_CMP(ARR1, LEN1, ARR2, LEN2)        \

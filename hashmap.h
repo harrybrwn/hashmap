@@ -15,6 +15,8 @@ extern "C"
 
 #define DEFAULT_MAP_SIZE 32
 
+typedef unsigned long hash_t;
+
 	typedef struct hashmap
 	{
 		struct node **__data;

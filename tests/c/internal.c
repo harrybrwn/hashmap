@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "internal/_hashmap.h"
+
+#include "hashmap.c"
 #include "tests/test_common.h"
 
 static struct node *newnode(hash_t val)
@@ -80,10 +81,10 @@ void test_search()
 	insert_node(&n, newnode(25));
 	insert_node(&n, newnode(1));
 
-	assert(search(n, 5)->_hash_val = 5);
-	assert(search(n, 15)->_hash_val = 15);
-	assert(search(n, 25)->_hash_val = 25);
-	assert(search(n, 1)->_hash_val = 1);
+	assert(search(n, 5)->_hash_val == 5);
+	assert(search(n, 15)->_hash_val == 15);
+	assert(search(n, 25)->_hash_val == 25);
+	assert(search(n, 1)->_hash_val == 1);
 	delete_tree(n);
 }
 

@@ -5,7 +5,6 @@ hashmap = Extension(
 	include_dirs=['../../'],
 	sources=[
 		'../../hashmap.c',
-		'../../internal/_hashmap.c',
 		'py_hashmap.c'
 	]
 )
