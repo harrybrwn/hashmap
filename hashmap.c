@@ -28,7 +28,7 @@ Map *Create_Map(size_t size)
 	return m;
 }
 
-Map *New_Map() { return Create_Map(DEFAULT_MAP_SIZE); }
+Map *New_Map(void) { return Create_Map(DEFAULT_MAP_SIZE); }
 
 void Map_close(Map *m)
 {

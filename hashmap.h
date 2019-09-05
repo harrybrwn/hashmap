@@ -24,7 +24,7 @@ extern "C"
 	} Map;
 
 	/* New_Map creates a new map. Allocates the Map on the heap. */
-	Map *New_Map();
+	Map *New_Map(void);
 
 	/* Create_Map creates a new map but initializes it with a given size */
 	Map *Create_Map(size_t);

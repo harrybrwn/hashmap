@@ -7,9 +7,9 @@
 #include "tests/test_common.h"
 
 #define ARR_CMP(ARR1, LEN1, ARR2, LEN2)        \
-	for (i = 0; i < LEN1; i++)                 \
+	for (i = 0; (i) < (LEN1); i++)                 \
 	{                                          \
-		for (k = 0; k < LEN2; k++)             \
+		for (k = 0; (k) < (LEN2); k++)             \
 		{                                      \
 			if (strcmp(ARR1[i], ARR2[k]) == 0) \
 				goto Same_Arr_val;             \
@@ -128,12 +128,12 @@ void print_avl(struct node *n)
 void test_collitions()
 {
 	Map *m = New_Map();
-	int n = 20;
+	size_t n = 20;
 	/* these keys all collide is a hash table of length 'm->__size' using 'prehash' */
 	char **keys = collition_keys(6, m->__size, prehash, n);
 
 	int x[n];
-	int i;
+	size_t i;
 
 	for (i = 0; i < n; i++)
 	{
@@ -142,7 +142,7 @@ void test_collitions()
 	}
 
 	for (i = 0; i < n; i++)
-		assert(i == *(int *)Map_get(m, keys[i]));
+		assert(((int)i) == *(int *)Map_get(m, keys[i]));
 
 	int nonNullKeys = 0;
 	for (i = 0; i < m->__size; i++)
@@ -159,10 +159,10 @@ void test_collitions()
 void test_Map_keys()
 {
 	Map *m = New_Map();
-	int n = 39;
+	size_t n = 39;
 	char **keys = rand_keys(n);
 	int data[n];
-	int i, k;
+	size_t i, k;
 	for (i = 0; i < n; i++)
 	{
 		data[i] = i;
@@ -173,7 +173,7 @@ void test_Map_keys()
 	{
 		char *mapkeys[m->item_count];
 		Map_keys(m, mapkeys);
-		int k;
+		size_t k;
 		ARR_CMP(mapkeys, m->item_count, keys, n);
 	}
 
@@ -222,11 +222,11 @@ void tests_Map_keys2()
 void test_Map_resize()
 {
 	Map *m = New_Map();
-	int n = 28;
+	size_t n = 28;
 	char **keys = rand_keys(n);
 
 	int x[n];
-	int i;
+	size_t i;
 	for (i = 0; i < n; i++)
 	{
 		x[i] = i;
@@ -237,7 +237,7 @@ void test_Map_resize()
 
 	Map_resize(&m, 3);
 	for (i = 0; i < n; i++)
-		assert(i == *(int *)Map_get(m, keys[i]));
+		assert(((int)i) == *(int *)Map_get(m, keys[i]));
 	assert(m->__size == 3);
 	free_string_arr(keys, n);
 	Map_close(m);

@@ -22,8 +22,9 @@ char* randstring(size_t length)
     if (length) {
         str = malloc(sizeof(char) * (length + 1));
         if (str) {
-			int n, key;
-            for (n = 0;n < length;n++) {
+			size_t n;
+			int key;
+            for (n = 0; n < length;n++) {
                 key = rand() % (int)(sizeof(charset) - 1);
                 str[n] = charset[key];
             }

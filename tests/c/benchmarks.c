@@ -26,7 +26,7 @@ void init_globals()
 
 void teardown_globals()
 {
-	int i;
+	size_t i;
 	for (i = 0; i < map->__size; i++)
 		assert(map->__data[i] == NULL);
 	assert(map->item_count == 0);
@@ -118,7 +118,7 @@ void putdelete_benchmark()
 	char **keys = rand_keys(N_KEYS);
 	MapValue data[N_KEYS];
 
-	int i;
+	size_t i;
 	for (i = 0; i < N_KEYS; i++)
 	{
 		data[i] = i + 1;

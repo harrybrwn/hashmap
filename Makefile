@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -L$(LibDir) -I. -Ofast
+CFLAGS=-Wall -Wextra -L$(LibDir) -I. -Ofast
 AR=ar
 
 SRC=hashmap.c
