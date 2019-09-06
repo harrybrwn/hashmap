@@ -20,7 +20,7 @@ static char HashMap_doc[] =
 
 static void HashMap_dealloc(HashMap *self)
 {
-	Map_close_free_keys(self->_map);
+	map_close_free_keys(self->_map);
 	Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -47,7 +47,7 @@ HashMap_init(HashMap *self, PyObject *args, PyObject *kwgs)
 		return -1;
 	}
 
-	self->_map = Create_Map(msize);
+	self->_map = create_map(msize);
 	if (self->_map == NULL)
 		return -1;
 	self->size = self->_map->__size;
@@ -74,7 +74,7 @@ HashMap_put(HashMap *self, PyObject *args, PyObject *kw)
 	strcpy(mykey, key);
 
 	Py_INCREF(val);
-	Map_put(self->_map, mykey, val);
+	map_put(self->_map, mykey, val);
 
 	Py_INCREF(Py_None);
 	return Py_None;
@@ -91,7 +91,7 @@ HashMap_put(HashMap *self, PyObject *args, PyObject *kw)
 
 static inline PyObject *get_map_val(Map *m, char *key)
 {
-	PyObject *val = Map_get(m, key);
+	PyObject *val = map_get(m, key);
 	KEY_ERR_IF(val == NULL, key);
 
 	Py_INCREF(val);
@@ -116,11 +116,11 @@ HashMap_delete(HashMap *self, PyObject *args, PyObject *kw)
 	if (!PyArg_ParseTupleAndKeywords(args, kw, "s", kwlist, &key))
 		return NULL;
 
-	PyObject *val = Map_get(self->_map, key);
+	PyObject *val = map_get(self->_map, key);
 	KEY_ERR_IF(val == NULL, key);
 	Py_DECREF(val);
 
-	Map_delete(self->_map, key);
+	map_delete(self->_map, key);
 	Py_INCREF(Py_None);
 	return Py_None;
 }
@@ -134,7 +134,7 @@ static PyObject *get_keys(Map *m)
 		return str_list;
 
 	char *keys[count];
-	Map_keys(m, keys);
+	map_keys(m, keys);
 
 	for (i = 0; i < count; i++)
 	{
@@ -155,7 +155,7 @@ static char HashMap_clear_doc[] =
 static PyObject *
 HashMap_clear(HashMap *self, PyObject *Py_UNUSED(ignored))
 {
-	Map_clear_free_keys(self->_map);
+	map_clear_free_keys(self->_map);
 	self->size = 0;
 
 	Py_INCREF(Py_None);
@@ -170,7 +170,7 @@ HashMap_resize(HashMap *self, PyObject *args)
 	if (!PyArg_ParseTuple(args, "i", &size))
 		return NULL;
 
-	if (Map_resize(&self->_map, size) == -1)
+	if (map_resize(&self->_map, size) == -1)
 	{
 		PyErr_SetString(PyExc_MemoryError, "Could not allocate that much memory");
 		return NULL;
@@ -218,7 +218,7 @@ static int HashMap_setsize(HashMap *self, PyObject *value, void *closure)
 
 	self->size = PyLong_AsLong(value);
 	Py_INCREF(value);
-	Map_resize(&self->_map, self->size);
+	map_resize(&self->_map, self->size);
 	return 0;
 }
 
@@ -269,7 +269,7 @@ static int HashMap__setitem__(HashMap *self, PyObject *key, PyObject *val)
 	char *mykey = malloc(strlen(key_str));
 	strcpy(mykey, key_str);
 
-	Map_put(self->_map, mykey, val);
+	map_put(self->_map, mykey, val);
 	Py_INCREF(val);
 	return 0;
 }
@@ -290,7 +290,7 @@ int HashMap__contains__(HashMap *self, PyObject *value)
 	}
 	STR_CONV(value, key);
 
-	PyObject *res = Map_get(self->_map, key);
+	PyObject *res = map_get(self->_map, key);
 	if (res == NULL)
 		return 0;
 	return 1;

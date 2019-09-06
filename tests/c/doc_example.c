@@ -8,15 +8,15 @@ static Map* map = NULL;
 
 void init()
 {
-    map = New_Map();
-    Map_put(map, "working", 1);
+    map = new_map();
+    map_put(map, "working", 1);
 }
 
 int main()
 {
     init();
 
-    MapValue working = Map_get(map, "working");
+    MapValue working = map_get(map, "working");
 
     if (working)
     {

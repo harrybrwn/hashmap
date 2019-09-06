@@ -79,7 +79,7 @@ hash_t fnv_1(char* str)
     return hash;
 }
 
-Map* Create_Map(size_t size)
+Map* create_map(size_t size)
 {
     size_t i;
     Map* m = malloc(sizeof(Map));
@@ -103,13 +103,13 @@ Map* Create_Map(size_t size)
     return m;
 }
 
-Map* New_Map(void)
+Map* new_map(void)
 {
-    return Create_Map(DEFAULT_MAP_SIZE);
+    return create_map(DEFAULT_MAP_SIZE);
 }
 static void delete_tree(struct node*);
 
-void Map_close(Map* m)
+void map_close(Map* m)
 {
     size_t i;
     for (i = 0; i < m->__size; i++)
@@ -125,7 +125,7 @@ static struct node* _new_node(char*, MapValue, hash_t);
 static void copy_nodes(Map*, struct node*);
 static struct node* search(struct node* root, hash_t key_hash);
 
-void Map_put(Map* m, char* key, MapValue val)
+void map_put(Map* m, char* key, MapValue val)
 {
     hash_t key_hash = prehash(key);
     int index = key_hash % m->__size;
@@ -134,7 +134,7 @@ void Map_put(Map* m, char* key, MapValue val)
     m->item_count++;
 }
 
-MapValue Map_get(Map* m, char* key)
+MapValue map_get(Map* m, char* key)
 {
     hash_t k_hash = prehash(key);
     int index = k_hash % m->__size;
@@ -155,7 +155,7 @@ MapValue Map_get(Map* m, char* key)
 
 static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key);
 
-void Map_delete(Map* m, char* key)
+void map_delete(Map* m, char* key)
 {
     hash_t k_hash = prehash(key);
     size_t index = k_hash % m->__size;
@@ -170,9 +170,9 @@ void Map_delete(Map* m, char* key)
     m->item_count--;
 }
 
-int Map_resize(Map** old_m, size_t size)
+int map_resize(Map** old_m, size_t size)
 {
-    Map* new_m = Create_Map(size);
+    Map* new_m = create_map(size);
     if (new_m == NULL)
         return -1;
     new_m->item_count = (*old_m)->item_count;
@@ -185,14 +185,14 @@ int Map_resize(Map** old_m, size_t size)
         if (tmp != NULL)
             copy_nodes(new_m, tmp);
     }
-    Map_close(*old_m);
+    map_close(*old_m);
     (*old_m) = new_m;
     return 0;
 }
 
 static int node_keys(struct node*, char**, int);
 
-void Map_keys(Map* m, char** keys)
+void map_keys(Map* m, char** keys)
 {
     int pos = 0;
     struct node* node;
@@ -208,7 +208,7 @@ void Map_keys(Map* m, char** keys)
     }
 }
 
-void Map_clear(Map* m)
+void map_clear(Map* m)
 {
     size_t i;
     for (i = 0; i < m->__size; i++)
@@ -324,7 +324,7 @@ static void delete_tree_free_keys(struct node* n)
 
 static struct node* _delete_node_free_key(struct node*, hash_t);
 
-void Map_delete_free_key(Map* m, char* key)
+void map_delete_free_key(Map* m, char* key)
 {
     hash_t k_hash = prehash(key);
     size_t index = k_hash % m->__size;
@@ -339,7 +339,7 @@ void Map_delete_free_key(Map* m, char* key)
     m->item_count--;
 }
 
-void Map_clear_free_keys(Map* m)
+void map_clear_free_keys(Map* m)
 {
     size_t i;
     for (i = 0; i < m->__size; i++)
@@ -350,7 +350,7 @@ void Map_clear_free_keys(Map* m)
     m->item_count = 0;
 }
 
-void Map_close_free_keys(Map* m)
+void map_close_free_keys(Map* m)
 {
     size_t i;
     for (i = 0; i < m->__size; i++)

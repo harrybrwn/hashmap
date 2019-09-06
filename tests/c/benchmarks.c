@@ -25,7 +25,7 @@ static char** mapkeys;
 void init_globals()
 {
     srand(time(0));
-    map = Create_Map(N_KEYS + 293);
+    map = create_map(N_KEYS + 293);
     mapkeys = rand_keys(N_KEYS);
 }
 
@@ -36,7 +36,7 @@ void teardown_globals()
         assert(map->__data[i] == NULL);
     assert(map->item_count == 0);
 
-    Map_close(map);
+    map_close(map);
     free_string_arr(mapkeys, N_KEYS);
 }
 
@@ -44,7 +44,7 @@ void put_benchmark()
 {
     int i;
     for (i = 0; i < N_KEYS; i++)
-        Map_put(map, mapkeys[i], 33);
+        map_put(map, mapkeys[i], 33);
 }
 
 void get_benchmark()
@@ -52,7 +52,7 @@ void get_benchmark()
     int i;
     for (i = 0; i < N_KEYS; i++)
     {
-        assert(33 == Map_get(map, mapkeys[i]));
+        assert(33 == map_get(map, mapkeys[i]));
     }
 }
 
@@ -60,7 +60,7 @@ void delete_benchmark()
 {
     int i;
     for (i = 0; i < N_KEYS; i++)
-        Map_delete(map, mapkeys[i]);
+        map_delete(map, mapkeys[i]);
 }
 
 void djb2_benchmark()
@@ -93,7 +93,7 @@ void prehash_benchmark()
 
 void putget_benchmark()
 {
-    Map* m = Create_Map(N_KEYS + 293);
+    Map* m = create_map(N_KEYS + 293);
     assert(m != NULL);
 
     srand(time(0));
@@ -104,20 +104,20 @@ void putget_benchmark()
     for (i = 0; i < N_KEYS; i++)
     {
         data[i] = i + 1;
-        Map_put(m, keys[i], data[i]);
+        map_put(m, keys[i], data[i]);
     }
 
     for (i = 0; i < N_KEYS; i++)
-        assert(data[i] == Map_get(m, keys[i]));
+        assert(data[i] == map_get(m, keys[i]));
 
     assert(m->item_count == N_KEYS);
-    Map_close(m);
+    map_close(m);
     free_string_arr(keys, N_KEYS);
 }
 
 void putdelete_benchmark()
 {
-    Map* m = Create_Map(N_KEYS + 293);
+    Map* m = create_map(N_KEYS + 293);
 
     srand(time(0));
     char** keys = rand_keys(N_KEYS);
@@ -127,16 +127,16 @@ void putdelete_benchmark()
     for (i = 0; i < N_KEYS; i++)
     {
         data[i] = i + 1;
-        Map_put(m, keys[i], data[i]);
+        map_put(m, keys[i], data[i]);
     }
 
     for (i = 0; i < N_KEYS; i++)
-        Map_delete(m, keys[i]);
+        map_delete(m, keys[i]);
     for (i = 0; i < m->__size; i++)
         assert(m->__data[i] == NULL);
 
     assert(m->item_count == 0);
-    Map_close(m);
+    map_close(m);
     free_string_arr(keys, N_KEYS);
 }
 

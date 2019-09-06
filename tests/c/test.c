@@ -39,35 +39,35 @@ static char** collition_keys(size_t str_len, size_t mapsize, hash_t (*hash_fn)(c
 
 void TestMap()
 {
-    Map* map = New_Map();
+    Map* map = new_map();
 
     char* val = "this is a value";
-    Map_put(map, "key", val);
-    assert(strcmp(val, (char*)Map_get(map, "key")) == 0);
+    map_put(map, "key", val);
+    assert(strcmp(val, (char*)map_get(map, "key")) == 0);
 
     val = "updated value stored in the map";
-    Map_put(map, "key", val);
-    assert(strcmp(val, (char*)Map_get(map, "key")) == 0);
+    map_put(map, "key", val);
+    assert(strcmp(val, (char*)map_get(map, "key")) == 0);
 
-    Map_close(map);
+    map_close(map);
 }
 
-void test_Map_delete()
+void test_map_delete()
 {
-    Map* m = New_Map();
+    Map* m = new_map();
     assert(m->item_count == 0);
     int val = 9001;
-    Map_put(m, "key1", &val);
+    map_put(m, "key1", &val);
     assert(m->item_count == 1);
-    assert(*(int*)Map_get(m, "key1") == val);
+    assert(*(int*)map_get(m, "key1") == val);
 
-    Map_delete(m, "key1");
+    map_delete(m, "key1");
     assert(m->item_count == 0);
-    int* res = (int*)Map_get(m, "key1");
+    int* res = (int*)map_get(m, "key1");
     assert(res == NULL);
-    Map_delete(m, "invalid_key");
-    assert(m->item_count == 0); // for that weird line in Map_delete
-    Map_close(m);
+    map_delete(m, "invalid_key");
+    assert(m->item_count == 0); // for that weird line in map_delete
+    map_close(m);
 }
 
 void print_tree(struct node* root, int level, int type)
@@ -123,7 +123,7 @@ void print_avl(struct node* n)
 
 void test_collitions()
 {
-    Map* m = New_Map();
+    Map* m = new_map();
     size_t n = 20;
     /* these keys all collide is a hash table of length 'm->__size' using 'prehash' */
     char** keys = collition_keys(6, m->__size, prehash, n);
@@ -134,11 +134,11 @@ void test_collitions()
     for (i = 0; i < n; i++)
     {
         x[i] = i;
-        Map_put(m, keys[i], &x[i]);
+        map_put(m, keys[i], &x[i]);
     }
 
     for (i = 0; i < n; i++)
-        assert(((int)i) == *(int*)Map_get(m, keys[i]));
+        assert(((int)i) == *(int*)map_get(m, keys[i]));
 
     int nonNullKeys = 0;
     for (i = 0; i < m->__size; i++)
@@ -149,12 +149,12 @@ void test_collitions()
     assert(nonNullKeys == 1);
 
     free_string_arr(keys, n);
-    Map_close(m);
+    map_close(m);
 }
 
-void test_Map_keys()
+void test_map_keys()
 {
-    Map* m = New_Map();
+    Map* m = new_map();
     size_t n = 39;
     char** keys = rand_keys(n);
     int data[n];
@@ -162,62 +162,62 @@ void test_Map_keys()
     for (i = 0; i < n; i++)
     {
         data[i] = i;
-        Map_put(m, keys[i], &data[i]);
+        map_put(m, keys[i], &data[i]);
     }
     assert(m->item_count == n);
 
     {
         char* mapkeys[m->item_count];
-        Map_keys(m, mapkeys);
+        map_keys(m, mapkeys);
         size_t k;
         ARR_CMP(mapkeys, m->item_count, keys, n);
     }
 
-    Map_close(m);
+    map_close(m);
     free_string_arr(keys, n);
 
-    m = Create_Map(71);
+    m = create_map(71);
     char** mapkeys = malloc(sizeof(char*) * 71);
     for (i = 0; i < 71; i++)
         mapkeys[i] = NULL;
     for (i = 0; i < 71; i++)
         assert(mapkeys[i] == NULL);
-    Map_keys(m, mapkeys);
+    map_keys(m, mapkeys);
     for (i = 0; i < 71; i++)
         assert(mapkeys[i] == NULL);
 
     keys = rand_keys(71);
     for (i = 0; i < 71; i++)
-        Map_put(m, keys[i], keys[i]);
+        map_put(m, keys[i], keys[i]);
 
-    Map_keys(m, mapkeys);
+    map_keys(m, mapkeys);
     ASSERT_STR_ARR_EQ(mapkeys, keys, 71);
 
     free(mapkeys);
     free_string_arr(keys, 71);
-    Map_close(m);
+    map_close(m);
 }
 
-void tests_Map_keys2()
+void tests_map_keys2()
 {
-    Map* m = Create_Map(11);
+    Map* m = create_map(11);
     char* ks[] = { "one", "two", "three", "four", "five" };
     int i, k, data[5];
     for (i = 0; i < 5; i++)
     {
         data[i] = i;
-        Map_put(m, ks[i], &data[i]);
+        map_put(m, ks[i], &data[i]);
     }
 
     char* keys[m->item_count];
-    Map_keys(m, keys);
+    map_keys(m, keys);
     ASSERT_STR_ARR_EQ(ks, keys, 5);
-    Map_close(m);
+    map_close(m);
 }
 
-void test_Map_resize()
+void test_map_resize()
 {
-    Map* m = New_Map();
+    Map* m = new_map();
     size_t n = 28;
     char** keys = rand_keys(n);
 
@@ -226,17 +226,17 @@ void test_Map_resize()
     for (i = 0; i < n; i++)
     {
         x[i] = i;
-        Map_put(m, keys[i], &x[i]);
+        map_put(m, keys[i], &x[i]);
     }
-    Map_resize(&m, n + 1);
+    map_resize(&m, n + 1);
     assert(m->__size == n + 1);
 
-    Map_resize(&m, 3);
+    map_resize(&m, 3);
     for (i = 0; i < n; i++)
-        assert(((int)i) == *(int*)Map_get(m, keys[i]));
+        assert(((int)i) == *(int*)map_get(m, keys[i]));
     assert(m->__size == 3);
     free_string_arr(keys, n);
-    Map_close(m);
+    map_close(m);
 }
 
 static struct node* newnode(hash_t val)
@@ -474,10 +474,10 @@ void test_avl_balence()
     delete_tree(root);
 }
 
-void test_Map_clear()
+void test_map_clear()
 {
-    Map* m = New_Map();
-    Map_clear(m); /* shouldn't seg-fault when called on emty map */
+    Map* m = new_map();
+    map_clear(m); /* shouldn't seg-fault when called on emty map */
 
     int i;
     int data[6];
@@ -486,28 +486,28 @@ void test_Map_clear()
     for (i = 0; i < 6; i++)
     {
         data[i] = i;
-        Map_put(m, keys[i], &data[i]);
+        map_put(m, keys[i], &data[i]);
     }
-    Map_clear(m);
+    map_clear(m);
     size_t k;
     for (k = 0; k < m->__size; k++)
     {
         assert(m->__data[k] == NULL);
     }
-    Map_clear(m); /* shouldn't seg-fault when called on emty map */
-    Map_close(m);
+    map_clear(m); /* shouldn't seg-fault when called on emty map */
+    map_close(m);
 }
 
 void test()
 {
     char* keys[] = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
-    Map* m = Create_Map(2);
+    Map* m = create_map(2);
     int a = 1;
     int i;
 
     for (i = 0; i < 8; i++)
-        Map_put(m, keys[i], &a);
-    Map_close(m);
+        map_put(m, keys[i], &a);
+    map_close(m);
 }
 
 static testfunc tests[] = {
@@ -519,11 +519,11 @@ static testfunc tests[] = {
     test_delete_node,
 
     TestMap,
-    test_Map_delete,
-    test_Map_resize,
-    test_Map_keys,
-    tests_Map_keys2,
-    test_Map_clear,
+    test_map_delete,
+    test_map_resize,
+    test_map_keys,
+    tests_map_keys2,
+    test_map_clear,
 
     test_avl_insert,
     test_avl_balence,
