@@ -6,9 +6,3 @@ py-test: $(PyLib)
 
 $(PyLib): $(ExtDir)/py/py_hashmap.c
 	$(PY) ./$(PyTestDir)/setup.py build --build-lib $(PyTestDir) -b $(PyTestDir)
-
-py-clean:
-	@for f in `find $(PyTestDir) -name '*.so'`; do rm $$f; done
-	@if [ -d $(PyTestDir)/temp.* ]; then rm -rf $(PyTestDir)/temp.*; fi
-
-.PHONY: py-test

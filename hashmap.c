@@ -539,16 +539,16 @@ static struct node* _delete_node_free_key(struct node* root, hash_t k_hash)
     return _delete_node(root, k_hash, 1);
 }
 
-#ifdef HASHMAP_TESTING
-/**
- * delete_node is a convienience function for testing puposes only.
- */
-void delete_node(struct node** root, hash_t k_hash)
-{
-    *root = _delete_node(*root, k_hash, 0);
-}
+// #ifdef HASHMAP_TESTING
+// /**
+//  * delete_node is a convienience function for testing puposes only.
+//  */
+// void delete_node(struct node** root, hash_t k_hash)
+// {
+//     *root = _delete_node(*root, k_hash, 0);
+// }
 
-#endif
+// #endif
 
 static void copy_nodes(Map* m, struct node* n)
 {

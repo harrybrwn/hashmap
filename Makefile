@@ -49,38 +49,28 @@ $(StaticLib): hashmap.o
 $(TestCommon): $(TestDir)/test_common.c $(TestDir)/test_common.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-Binaries=$(Test) $(Example) $(Benchmark) $(ProfileBin) $(InternalTest)
+Binaries=$(Test) $(Example) $(Benchmark) $(InternalTest)
 
-clean: py-clean cpp-clean
-	@for file in $(Binaries) preproc.i $(ProfileFiles); do\
-		if [ -f $$file ]; then\
-			rm $$file;\
-		fi;\
-	done
-	@if [ -d lib ]; then rm -rf lib; fi
-	@if [ -d build ]; then rm -rf build; fi
-	@for f in `find . -name '*.o'`; do rm $$f; done
-	@if [ -f hashmap.o ]; then rm hashmap.o; fi
+clean:
+	@rm -f $(Binaries) gmon.out *_prof.txt profile.bin
+	@rm -f $(shell find . -name '*.o')
+	@rm -f $(shell find . -name '*.so')
+	@rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
 
-proc:
-	gcc -I. -E hashmap.c $(Test).c > preproc.i
+prof: bench_prof.txt test_prof.txt
 
-ProfileFlags=-Wall -I. -pg -DHASHMAP_TESTING
-ProfileBin=profile.bin
-Profiles=$(Benchmark)_prof $(Test)_prof
-TestProfile=test
-ProfileFiles=$(ProfileBin) gmon.out $(Profiles)
+bench_prof.txt: hashmap.c $(Benchmark).c $(TestCommon:%.o=%.c)
+	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
+	@./profile.bin
+	@if [ ! -f 'gmon.out' ]; then exit 1; fi
+	gprof profile.bin gmon.out > $@
+	@rm profile.bin
 
-profile: hashmap.c $(Benchmark).c $(Test).c $(TestCommon:%.o=%.c)
-	@for f in hashmap tests/test_common; do\
-		$(CC) $(ProfileFlags) -c -o $$f.o $$f.c; done
+test_prof.txt: $(Test).c $(TestCommon:%.o=%.c)
+	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
+	@./profile.bin
+	@if [ ! -f 'gmon.out' ]; then exit 1; fi
+	gprof profile.bin gmon.out > $@
+	@rm profile.bin
 
-	@for file in $(Benchmark) $(Test); do\
-		$(CC) $(ProfileFlags) -o "$$file".bin hashmap.o tests/test_common.o "$$file".c;\
-		./"$$file".bin;\
-		gprof -b ./"$$file".bin gmon.out > "$$file"_prof;\
-		rm "$$file".bin gmon.out;\
-	done
-	@# for f in `find . -name '*.o'`; do rm $$f; done
-
-.PHONY: clean proc profile fmt
+.PHONY: clean proc prof fmt

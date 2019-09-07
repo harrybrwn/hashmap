@@ -249,7 +249,10 @@ static struct node* newnode(hash_t val)
     return n;
 }
 
-void delete_node(struct node** leaf, hash_t key_hash);
+static void delete_node(struct node** root, hash_t k_hash)
+{
+    *root = _delete_node(*root, k_hash, 0);
+}
 
 void test_delete_node0()
 {

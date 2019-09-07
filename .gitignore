@@ -18,9 +18,9 @@ profile.bin
 
 # Other files
 preproc.i
-prof_out
-*_prof
 gmon.out
+bench_prof.txt
+test_prof.txt
 
 # Tooling
 /.vscode/

@@ -6,12 +6,9 @@ AllCppTests=$(CppTest)
 
 CppTest=$(TestDir)/cpp/test
 
-.PHONY: cpp-test cpp-clean
+.PHONY: cpp-test
 cpp-test: $(CppTest)
 	@./$(CppTest)
-
-cpp-clean:
-	@if [ -f $(CppTest) ]; then rm $(CppTest); fi
 
 $(CppTest): $(CPP_FILE).o hashmap.o $(CppTest).cpp $(TestCommon)
 	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++

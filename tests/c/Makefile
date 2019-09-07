@@ -1,4 +1,4 @@
-AllCTests=$(Test) $(Example) $(Benchmark)
+AllCTests=$(Test) $(Example) $(Benchmark) $(InternalTest)
 
 Test=$(CTestDir)/test
 Example=$(CTestDir)/doc_example
