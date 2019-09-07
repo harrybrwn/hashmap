@@ -107,6 +107,7 @@ Map* new_map(void)
 {
     return create_map(DEFAULT_MAP_SIZE);
 }
+
 static void delete_tree(struct node*);
 
 void map_close(Map* m)
@@ -133,7 +134,7 @@ void map_put(Map* m, char* key, MapValue val)
 
     // add_node(m, _new_node(key, val, key_hash), index);
     struct node* node = _new_node(key, val, key_hash);
-    
+
     struct node* head_node = m->__data[index];
     if (head_node == NULL)
     {
@@ -158,13 +159,13 @@ MapValue map_get(Map* m, char* key)
 
     struct node* root = m->__data[index];
     if (root == NULL)
-        return NULL;
+        return (MapValue)0;
 
     if (k_hash != root->_hash_val)
     {
         struct node* n = search(root, k_hash);
         if (n == NULL)
-            return NULL;
+            return (MapValue)0;
         return n->value;
     }
     return root->value;
@@ -238,7 +239,8 @@ void map_clear(Map* m)
 
 static struct node* search(struct node* root, hash_t key_hash)
 {
-    while (root) {
+    while (root)
+    {
         if (key_hash < root->_hash_val)
         {
             root = root->left;
@@ -433,6 +435,9 @@ static _inline void add_node(Map* m, struct node* node, int index)
          *  If the hash value of the two is the same then we are going to free
          *  the memory from the old node and replace it with the new one.
          */
+        node->left = head_node->left;
+        node->right = head_node->right;
+
         free(m->__data[index]);
         m->__data[index] = node;
     }
@@ -477,7 +482,7 @@ static _inline struct node* min_node(struct node* node)
     return curr;
 }
 
-static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
+static _inline struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
 {
     if (root == NULL)
         return root;
@@ -556,7 +561,7 @@ static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
     return root;
 }
 
-static struct node* _delete_node_free_key(struct node* root, hash_t k_hash)
+static _inline struct node* _delete_node_free_key(struct node* root, hash_t k_hash)
 {
     return _delete_node(root, k_hash, 1);
 }

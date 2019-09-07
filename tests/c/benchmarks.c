@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <stdint.h>
+
 #define MapValue int
 #include "tests/test_common.h"
 // #include <hashmap.h>
@@ -15,13 +17,13 @@ hash_t sdbm(char* str);
 hash_t fnv_1(char* str);
 hash_t rshash(char* str);
 
-
-#define N_KEYS 2500000
-
+// #define N_KEYS 100000000UL
+#define N_KEYS 5000000UL
+// #define N_KEYS 3000000
+// #define N_KEYS 2500000
 // #define N_KEYS 2000000
 // #define N_KEYS 1500000
 // #define N_KEYS 1000000
-// #define N_KEYS 10000
 
 static Map* map;
 static char** mapkeys;
@@ -46,14 +48,14 @@ void teardown_globals()
 
 void put_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
         map_put(map, mapkeys[i], 33);
 }
 
 void get_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
     {
         assert(33 == map_get(map, mapkeys[i]));
@@ -62,35 +64,35 @@ void get_benchmark()
 
 void delete_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
         map_delete(map, mapkeys[i]);
 }
 
 void djb2_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
         djb2(mapkeys[i]);
 }
 
 void fnv_1_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
         fnv_1(mapkeys[i]);
 }
 
 void sdbm_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
         sdbm(mapkeys[i]);
 }
 
 void prehash_benchmark()
 {
-    int i;
+    size_t i;
     for (i = 0; i < N_KEYS; i++)
         prehash(mapkeys[i]);
 }
@@ -103,7 +105,7 @@ void putget_benchmark()
     srand(time(0));
     char** keys = rand_keys(N_KEYS);
     MapValue data[N_KEYS];
-    int i;
+    size_t i;
 
     for (i = 0; i < N_KEYS; i++)
     {
@@ -147,18 +149,18 @@ void putdelete_benchmark()
 int main()
 {
     setlocale(LC_NUMERIC, "");
-    printf("Start Benchmarks with %'d items\n", N_KEYS);
+    printf("Start Benchmarks with %'ld items\n", N_KEYS);
     init_globals();
 
     Benchmark("put", put_benchmark);
     Benchmark("get", get_benchmark);
     Benchmark("delete", delete_benchmark);
 
-    // printf("\n");
-    // Benchmark("djb2", djb2_benchmark);
-    // Benchmark("fnv_1", fnv_1_benchmark);
-    // Benchmark("sdbm", sdbm_benchmark);
-    // Benchmark("prehash", prehash_benchmark);
+    printf("\n");
+    Benchmark("djb2", djb2_benchmark);
+    Benchmark("fnv_1", fnv_1_benchmark);
+    Benchmark("sdbm", sdbm_benchmark);
+    Benchmark("prehash", prehash_benchmark);
 
     // printf("\n");
     // Benchmark("put/get", putget_benchmark);

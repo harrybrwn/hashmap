@@ -513,6 +513,41 @@ void test()
     map_close(m);
 }
 
+void test_add_node()
+{
+    Map* m = create_map(1); // only one bucket in the map
+    int one = 1, two = 2, three = 3;
+    map_put(m, "one", &one);
+    map_put(m, "two", &two);
+    map_put(m, "three", &three);
+    hash_t one_hash = m->__data[0]->_hash_val;
+    printf("\n");
+
+    printf("%s\n", m->__data[0]->key);
+    printf("%s\n", m->__data[0]->right->key);
+    printf("%s\n", m->__data[0]->left->key);
+
+    assert(strcmp(m->__data[0]->key, "one") == 0);
+    assert(1 == *(int*)m->__data[0]->value);
+    assert(strcmp(m->__data[0]->right->key, "two") == 0);
+    assert(2 == *(int*)m->__data[0]->right->value);
+    assert(strcmp(m->__data[0]->left->key, "three") == 0);
+    assert(3 == *(int*)m->__data[0]->left->value);
+
+    add_node(m, _new_node("one", &three, one_hash), 0);
+
+    assert(strcmp(m->__data[0]->key, "one") == 0);
+    assert(3 == *(int*)m->__data[0]->value);
+
+    assert(m->__data[0]->right != NULL);
+    assert(m->__data[0]->left != NULL);
+
+    assert(strcmp(m->__data[0]->right->key, "two") == 0);
+    assert(2 == *(int*)m->__data[0]->right->value);
+    assert(strcmp(m->__data[0]->left->key, "three") == 0);
+    assert(3 == *(int*)m->__data[0]->left->value);
+}
+
 static testfunc tests[] = {
     test,
     test_collitions,
@@ -527,6 +562,7 @@ static testfunc tests[] = {
     test_map_keys,
     tests_map_keys2,
     test_map_clear,
+    test_add_node,
 
     test_avl_insert,
     test_avl_balence,

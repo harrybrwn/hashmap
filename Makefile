@@ -46,7 +46,7 @@ $(StaticLib): hashmap.o
 	$(AR) rcs $@ hashmap.o
 
 $(TestCommon): $(TestDir)/test_common.c $(TestDir)/test_common.h
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -O3 -c $< -o $@
 
 Binaries=$(Test) $(Example) $(Benchmark) $(InternalTest)
 
