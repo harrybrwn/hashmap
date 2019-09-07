@@ -15,8 +15,11 @@ hash_t sdbm(char* str);
 hash_t fnv_1(char* str);
 hash_t rshash(char* str);
 
-// #define N_KEYS 2200000
-#define N_KEYS 2000000
+
+#define N_KEYS 2500000
+
+// #define N_KEYS 2000000
+// #define N_KEYS 1500000
 // #define N_KEYS 1000000
 // #define N_KEYS 10000
 
@@ -150,12 +153,12 @@ int main()
     Benchmark("put", put_benchmark);
     Benchmark("get", get_benchmark);
     Benchmark("delete", delete_benchmark);
-    printf("\n");
 
-    Benchmark("djb2", djb2_benchmark);
-    Benchmark("fnv_1", fnv_1_benchmark);
-    Benchmark("sdbm", sdbm_benchmark);
-    Benchmark("prehash", prehash_benchmark);
+    // printf("\n");
+    // Benchmark("djb2", djb2_benchmark);
+    // Benchmark("fnv_1", fnv_1_benchmark);
+    // Benchmark("sdbm", sdbm_benchmark);
+    // Benchmark("prehash", prehash_benchmark);
 
     // printf("\n");
     // Benchmark("put/get", putget_benchmark);

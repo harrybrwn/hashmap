@@ -124,13 +124,30 @@ static void add_node(Map*, struct node*, int);
 static struct node* _new_node(char*, MapValue, hash_t);
 static void copy_nodes(Map*, struct node*);
 static struct node* search(struct node* root, hash_t key_hash);
+static void insert_node(struct node** root, struct node* new);
 
 void map_put(Map* m, char* key, MapValue val)
 {
     hash_t key_hash = prehash(key);
     int index = key_hash % m->__size;
 
-    add_node(m, _new_node(key, val, key_hash), index);
+    // add_node(m, _new_node(key, val, key_hash), index);
+    struct node* node = _new_node(key, val, key_hash);
+    
+    struct node* head_node = m->__data[index];
+    if (head_node == NULL)
+    {
+        m->__data[index] = node;
+    }
+    else if (head_node->_hash_val == node->_hash_val)
+    {
+        free(m->__data[index]);
+        m->__data[index] = node;
+    }
+    else
+    {
+        insert_node(&m->__data[index], node);
+    }
     m->item_count++;
 }
 
@@ -221,14 +238,18 @@ void map_clear(Map* m)
 
 static struct node* search(struct node* root, hash_t key_hash)
 {
-    if (root->_hash_val == key_hash)
-        return root;
-
-    if (key_hash < root->_hash_val)
-        return search(root->left, key_hash);
-    else if (key_hash > root->_hash_val)
-        return search(root->right, key_hash);
-
+    while (root) {
+        if (key_hash < root->_hash_val)
+        {
+            root = root->left;
+        }
+        else if (key_hash > root->_hash_val)
+        {
+            root = root->right;
+        }
+        else
+            return root;
+    }
     return NULL;
 }
 
@@ -381,7 +402,15 @@ static struct node* _new_node(char* key, MapValue val, hash_t key_hash)
     return n;
 }
 
-static void add_node(Map* m, struct node* node, int index)
+#ifdef __STDC__
+#if (__STDC_VERSION__ >= 199901L)
+#define _inline inline
+#else
+#define _inline
+#endif
+#endif
+
+static _inline void add_node(Map* m, struct node* node, int index)
 {
     struct node* head_node = m->__data[index];
     /**
@@ -438,14 +467,6 @@ static struct node* node_rotateright(struct node* n)
     head->height = MAX(height(head->left), height(head->right)) + 1;
     return head;
 }
-
-#ifdef __STDC__
-#if (__STDC_VERSION__ >= 199901L)
-#define _inline inline
-#else
-#define _inline
-#endif
-#endif
 
 static _inline struct node* min_node(struct node* node)
 {
