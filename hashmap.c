@@ -142,6 +142,8 @@ void map_put(Map* m, char* key, MapValue val)
     }
     else if (head_node->_hash_val == node->_hash_val)
     {
+        node->left = head_node->left;
+        node->right = head_node->right;
         free(m->__data[index]);
         m->__data[index] = node;
     }
