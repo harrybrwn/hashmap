@@ -1,23 +1,22 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -L$(LibDir) -I. -Ofast
+CFLAGS=-Wall -Wextra -Llib -I.
 AR=ar
 
 SRC=hashmap.c
 
 # Directories
 TestDir=tests
-LibDir=lib
 ExtDir=extentions
 PyTestDir=$(TestDir)/python
 CTestDir=$(TestDir)/c
 CppTestDir=$(TestDir)/cpp
 
-StaticLib=$(LibDir)/libhashmapstatic.a
-SharedLib=$(LibDir)/libhashmap.so
+StaticLib=lib/libhashmapstatic.a
+SharedLib=lib/libhashmap.so
 
 TestCommon=$(TestDir)/test_common.o
 
-all: lib build-test
+all: lib build-tests
 
 include $(CTestDir)/Makefile
 include $(PyTestDir)/Makefile
@@ -25,12 +24,12 @@ include $(CppTestDir)/Makefile
 
 test: c-test cpp-test py-test
 
-build-test: $(AllCTests) $(PyLib) $(AllCppTests)
+build-tests: $(AllCTests) $(PyLib) $(AllCppTests)
 
 bench: $(Benchmark)
 	@./$(Benchmark)
 
-.PHONY: all test bench
+.PHONY: all test bench build-tests
 
 hashmap.o: hashmap.c hashmap.h
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -38,7 +37,7 @@ hashmap.o: hashmap.c hashmap.h
 .PHONY: lib
 lib: $(SharedLib) $(StaticLib)
 
-$(SharedLib): $(SRC) hashmap.h
+$(SharedLib): hashmap.c hashmap.h
 	@if [ ! -d lib ]; then mkdir lib; fi
 	$(CC) $(CFLAGS) -fPIC -shared -o $@ $<
 
@@ -59,7 +58,7 @@ clean:
 
 prof: bench_prof.txt test_prof.txt
 
-bench_prof.txt: hashmap.c $(Benchmark).c $(TestCommon:%.o=%.c)
+bench_prof.txt: $(Benchmark).c $(TestCommon:%.o=%.c) #hashmap.c
 	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi

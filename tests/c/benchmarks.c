@@ -6,7 +6,8 @@
 
 #define MapValue int
 #include "tests/test_common.h"
-#include <hashmap.h>
+// #include <hashmap.h>
+#include "hashmap.c"
 
 hash_t prehash(char*);
 hash_t djb2(char* str);
@@ -155,10 +156,10 @@ int main()
     Benchmark("fnv_1", fnv_1_benchmark);
     Benchmark("sdbm", sdbm_benchmark);
     Benchmark("prehash", prehash_benchmark);
-    printf("\n");
 
-    Benchmark("put/get", putget_benchmark);
-    Benchmark("put/delete", putdelete_benchmark);
+    // printf("\n");
+    // Benchmark("put/get", putget_benchmark);
+    // Benchmark("put/delete", putdelete_benchmark);
 
     teardown_globals();
     printf("End Benchmarks\n");

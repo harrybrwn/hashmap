@@ -228,6 +228,7 @@ static struct node* search(struct node* root, hash_t key_hash)
         return search(root->left, key_hash);
     else if (key_hash > root->_hash_val)
         return search(root->right, key_hash);
+
     return NULL;
 }
 
@@ -538,17 +539,6 @@ static struct node* _delete_node_free_key(struct node* root, hash_t k_hash)
 {
     return _delete_node(root, k_hash, 1);
 }
-
-// #ifdef HASHMAP_TESTING
-// /**
-//  * delete_node is a convienience function for testing puposes only.
-//  */
-// void delete_node(struct node** root, hash_t k_hash)
-// {
-//     *root = _delete_node(*root, k_hash, 0);
-// }
-
-// #endif
 
 static void copy_nodes(Map* m, struct node* n)
 {

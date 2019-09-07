@@ -1,4 +1,4 @@
-CPPFLAGS=-Wall -Wextra -Werror -L$(LibDir) -I. -g -DHASHMAP_TESTING
+CPPFLAGS=-Wall -Wextra -Werror -L./lib -I. -g
 CPP_FILE=$(ExtDir)/cpp/HashMap
 CPP_SRC=$(CPP_FILE).cpp $(CPP_FILE).hpp
 
@@ -12,13 +12,6 @@ cpp-test: $(CppTest)
 
 $(CppTest): $(CPP_FILE).o hashmap.o $(CppTest).cpp $(TestCommon)
 	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++
-	# $(CC) -o $@ $(CPPFLAGS) $(CPP_FILE).cpp hashmap.c $(CppTest).cpp $(TestCommon) -lstdc++
 
 $(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp
 	$(CC) $(CPPFLAGS) -c $< -o $@ -lstdc++
-
-$(ExtDir)/cpp/chashmap.o: hashmap.c hashmap.h
-	$(CC) $(CPPFLAGS) -c $< -o $@ -lstdc++
-
-$(ExtDir)/cpp/test_common.o: $(TestDir)/test_common.c $(TestDir)/test_common.h
-	$(CC) $(CPPFLAGS) -c $< -o $@
