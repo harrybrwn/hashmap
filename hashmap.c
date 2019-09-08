@@ -122,25 +122,24 @@ void map_close(Map* m)
 }
 
 static void add_node(Map*, struct node*, int);
-static struct node* _new_node(char*, MapValue, hash_t);
 static void copy_nodes(Map*, struct node*);
-static struct node* search(struct node* root, hash_t key_hash);
 static void insert_node(struct node** root, struct node* new);
+static struct node* _new_node(char*, MapValue, hash_t);
+static struct node* search(struct node* root, hash_t key_hash);
 
 void map_put(Map* m, char* key, MapValue val)
 {
     hash_t key_hash = prehash(key);
     int index = key_hash % m->__size;
 
-    // add_node(m, _new_node(key, val, key_hash), index);
     struct node* node = _new_node(key, val, key_hash);
-
     struct node* head_node = m->__data[index];
+
     if (head_node == NULL)
     {
         m->__data[index] = node;
     }
-    else if (head_node->_hash_val == node->_hash_val)
+    else if (head_node->_hash_val == key_hash)
     {
         node->left = head_node->left;
         node->right = head_node->right;
