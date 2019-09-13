@@ -53,7 +53,7 @@ clean:
 
 prof: bench_prof.txt test_prof.txt
 
-bench_prof.txt: $(Benchmark).c #hashmap.c
+bench_prof.txt: $(Benchmark).c
 	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi

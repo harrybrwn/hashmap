@@ -1,15 +1,13 @@
 #include <assert.h>
 #include <locale.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#include <stdint.h>
-
 #define MapValue int
-#include "tests/test_common.h"
-// #include <hashmap.h>
 #include "hashmap.c"
+#include "tests/test.h"
 
 hash_t prehash(char*);
 hash_t djb2(char* str);

@@ -10,12 +10,13 @@ extern "C" {
 #include <stdio.h>
 #include <sys/timeb.h>
 
+typedef int (*test_func)(void);
 typedef void (*bench_func)(void);
 
 struct testable
 {
     char* name;
-    int (*test_fn)(void);
+    test_func test_fn;
 };
 
 struct benchmark
@@ -24,7 +25,6 @@ struct benchmark
     bench_func bench_fn;
 };
 
-// #ifdef COMPILE_TESTS_H
 int assertion_failure_nodump(const char* fmt, ...)
 {
     char fmtbuf[256];
@@ -36,6 +36,7 @@ int assertion_failure_nodump(const char* fmt, ...)
     va_end(args);
     return -1;
 }
+
 int assertion_failure(const char* fmt, ...)
 {
     char fmtbuf[256];
@@ -89,6 +90,7 @@ int RunAllBenchmarks(struct benchmark* bench_list)
     }
     return 0;
 }
+
 #ifndef assert
 #undef assert
 #define assert(exp)                                                                               \
@@ -172,6 +174,7 @@ int RunAllBenchmarks(struct benchmark* bench_list)
 
  above if my testing framework.
 *************************************************************************/
+#include <stdlib.h>
 
 char* randstring(size_t length)
 {

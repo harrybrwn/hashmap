@@ -6,7 +6,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "tests/test_common.h"
+#include "tests/test.h"
 
 // clang-format off
 TEST(keys, ({
