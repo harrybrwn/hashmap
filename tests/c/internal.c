@@ -1,7 +1,8 @@
 #include <stdio.h>
 
+#define COMPILE_TESTS_H
 #include "hashmap.c"
-#include "tests/test_common.h"
+#include "tests/test.h"
 
 static struct node* newnode(hash_t val)
 {
@@ -13,18 +14,15 @@ static struct node* newnode(hash_t val)
     return n;
 }
 
-void test() {}
-
-void test_macros()
-{
+// clang-format off
+TEST(macros, ({
     struct node* n = NULL;
     assert(height(n) == -1);
     n = newnode(1);
     assert(height(n) == 0);
-}
+}))
 
-void test_rotations()
-{
+TEST(rotations, ({
     struct node* n = newnode(10);
     n->left = newnode(9);
     n->left->left = newnode(8);
@@ -38,10 +36,9 @@ void test_rotations()
     n = node_rotateleft(n);
     assert(n->_hash_val == 11);
     delete_tree(n);
-}
+}))
 
-void test_insert_node()
-{
+TEST(insert_node, ({
     struct node* n = newnode(10);
     insert_node(&n, newnode(5));
     assert(n->_hash_val == 10);
@@ -68,26 +65,24 @@ void test_insert_node()
     assert(n->right->left->_hash_val == 10);
     assert(n->right->right->_hash_val == 16);
     delete_tree(n);
-}
+}))
 
-void test_search()
-{
+TEST(search, ({
     struct node* n = newnode(10);
-    assert(search(n, 10) == n);
+    assert_eq(n, search(n, 10));
     insert_node(&n, newnode(5));
     insert_node(&n, newnode(15));
     insert_node(&n, newnode(25));
     insert_node(&n, newnode(1));
 
-    assert(search(n, 5)->_hash_val == 5);
-    assert(search(n, 15)->_hash_val == 15);
-    assert(search(n, 25)->_hash_val == 25);
-    assert(search(n, 1)->_hash_val == 1);
+    assert_eq(5, search(n, 5)->_hash_val);
+    assert_eq(15, search(n, 15)->_hash_val);
+    assert_eq(25, search(n, 25)->_hash_val);
+    assert_eq(1, search(n, 1)->_hash_val);
     delete_tree(n);
-}
+}))
 
-void test_prehash()
-{
+TEST(prehash, ({
     hash_t a = prehash("abc");
     hash_t b = prehash("cba");
     hash_t c = prehash("bca");
@@ -96,16 +91,15 @@ void test_prehash()
     assert(c != a);
     assert(c != b);
 
-    assert(prehash("abc123") == prehash("abc123"));
+    assert_eq(prehash("abc123"), prehash("abc123"));
     assert(prehash(" ") != prehash("  "));
-}
+}))
 
-static testfunc tests[] = {
-    test, test_prehash, test_macros, test_rotations, test_insert_node, test_search,
-};
-
-int main()
-{
-    int n = sizeof(tests) / sizeof(testfunc);
-    Run(tests, n);
-}
+// clang-format off
+RUN_TEST_SUITE (
+    ADD_TEST(macros),
+    ADD_TEST(rotations),
+    ADD_TEST(insert_node),
+    ADD_TEST(search),
+    ADD_TEST(prehash)
+)

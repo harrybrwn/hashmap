@@ -10,7 +10,7 @@ CppTest=$(TestDir)/cpp/test
 cpp-test: $(CppTest)
 	@./$(CppTest)
 
-$(CppTest): $(CPP_FILE).o hashmap.o $(CppTest).cpp $(TestCommon)
+$(CppTest): $(CPP_FILE).o hashmap.o $(CppTest).cpp
 	$(CC) $(CPPFLAGS) $^ -o $@ -lstdc++
 
 $(CPP_FILE).o: $(CPP_FILE).cpp $(CPP_FILE).hpp

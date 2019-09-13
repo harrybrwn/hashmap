@@ -14,8 +14,6 @@ CppTestDir=$(TestDir)/cpp
 StaticLib=lib/libhashmapstatic.a
 SharedLib=lib/libhashmap.so
 
-TestCommon=$(TestDir)/test_common.o
-
 all: lib build-tests
 
 include $(CTestDir)/Makefile
@@ -45,9 +43,6 @@ $(StaticLib): hashmap.o
 	@if [ ! -d lib ]; then mkdir lib; fi
 	$(AR) rcs $@ hashmap.o
 
-$(TestCommon): $(TestDir)/test_common.c $(TestDir)/test_common.h
-	$(CC) $(CFLAGS) -O3 -c $< -o $@
-
 Binaries=$(Test) $(Example) $(Benchmark) $(InternalTest)
 
 clean:
@@ -58,14 +53,14 @@ clean:
 
 prof: bench_prof.txt test_prof.txt
 
-bench_prof.txt: $(Benchmark).c $(TestCommon:%.o=%.c) #hashmap.c
+bench_prof.txt: $(Benchmark).c #hashmap.c
 	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi
 	gprof profile.bin gmon.out > $@
 	@rm profile.bin
 
-test_prof.txt: $(Test).c $(TestCommon:%.o=%.c)
+test_prof.txt: $(Test).c
 	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi

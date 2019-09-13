@@ -11,14 +11,14 @@ c-test: $(Test) $(Example) $(InternalTest)
 	@./$(Example) > /dev/null
 	@./$(InternalTest)
 
-$(Test): $(TestCommon) hashmap.c $(Test).c
-	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c $(TestCommon)
+$(Test): hashmap.c $(Test).c tests/test.h
+	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c
 
-$(Example): $(TestCommon) $(StaticLib) $(Example).c
+$(Example): $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $@.c -lhashmapstatic
 
-$(Benchmark): $(TestCommon) $(Benchmark).c #hashmap.c
+$(Benchmark): $(Benchmark).c
 	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) -O3 $^ -Wno-unused-parameter
 
-$(InternalTest): $(TestCommon) hashmap.c $(InternalTest).c
-	$(CC) $(CFLAGS) -o $@ $(TestCommon) $(InternalTest).c
+$(InternalTest): hashmap.c $(InternalTest).c tests/test.h
+	$(CC) $(CFLAGS) -o $@ $(InternalTest).c

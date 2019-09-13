@@ -13,7 +13,7 @@
             if (strcmp(ARR1[i], ARR2[k]) == 0)                                                    \
                 goto Same_Arr_val;                                                                \
         }                                                                                         \
-        assert(0);                                                                                \
+        assertion_failure("ARR_CMP failed: %s:%d\n", __FILE__, __LINE__);                         \
     Same_Arr_val:;                                                                                \
     }
 
@@ -36,24 +36,19 @@ static char** collition_keys(size_t str_len, size_t mapsize, hash_t (*hash_fn)(c
     }
     return arr;
 }
-
-void TestMap()
-{
+// clang-format off
+TEST(Map, ({
     Map* map = new_map();
 
     char* val = "this is a value";
     map_put(map, "key", val);
-    assert(strcmp(val, (char*)map_get(map, "key")) == 0);
-
+    assert_eq(0, strcmp(val, (char*)map_get(map, "key")));
     val = "updated value stored in the map";
     map_put(map, "key", val);
-    assert(strcmp(val, (char*)map_get(map, "key")) == 0);
-
+    assert_eq(0, strcmp(val, (char*)map_get(map, "key")));
     map_close(map);
-}
-
-void test_map_delete()
-{
+}))
+TEST(map_delete, ({
     Map* m = new_map();
     assert(m->item_count == 0);
     int val = 9001;
@@ -62,13 +57,13 @@ void test_map_delete()
     assert(*(int*)map_get(m, "key1") == val);
 
     map_delete(m, "key1");
-    assert(m->item_count == 0);
+    assert_eq(0, m->item_count);
     int* res = (int*)map_get(m, "key1");
     assert(res == NULL);
     map_delete(m, "invalid_key");
     assert(m->item_count == 0); // for that weird line in map_delete
     map_close(m);
-}
+}))
 
 void print_tree(struct node* root, int level, int type)
 {
@@ -120,11 +115,10 @@ void print_avl(struct node* n)
 {
     _print_avl(n, 0, 'C');
 }
-
-void test_collitions()
-{
+// clang-format off
+TEST(collitions, ({
     Map* m = new_map();
-    size_t n = 20;
+    const size_t n = 20;
     /* these keys all collide is a hash table of length 'm->__size' using 'prehash' */
     char** keys = collition_keys(6, m->__size, prehash, n);
 
@@ -146,16 +140,15 @@ void test_collitions()
         if (m->__data[i] != NULL)
             nonNullKeys++;
     }
-    assert(nonNullKeys == 1);
+    assert_eq(1, nonNullKeys);
 
     free_string_arr(keys, n);
     map_close(m);
-}
+}))
 
-void test_map_keys()
-{
+TEST(map_keys, ({
     Map* m = new_map();
-    size_t n = 39;
+    const size_t n = 39;
     char** keys = rand_keys(n);
     int data[n];
     size_t i, k;
@@ -164,10 +157,12 @@ void test_map_keys()
         data[i] = i;
         map_put(m, keys[i], &data[i]);
     }
-    assert(m->item_count == n);
+    assert(n == m->item_count);
+    assert_eq(39, n);
+    assert_eq(39, m->item_count);
 
     {
-        char* mapkeys[m->item_count];
+        char* mapkeys[39];
         map_keys(m, mapkeys);
         size_t k;
         ARR_CMP(mapkeys, m->item_count, keys, n);
@@ -191,15 +186,17 @@ void test_map_keys()
         map_put(m, keys[i], keys[i]);
 
     map_keys(m, mapkeys);
+    assert_eq(71, m->item_count);
     ASSERT_STR_ARR_EQ(mapkeys, keys, 71);
 
     free(mapkeys);
     free_string_arr(keys, 71);
     map_close(m);
-}
+    return 0;
+}))
 
-void test_map_keys2()
-{
+// clang-format off
+TEST(map_keys2, ({
     Map* m = create_map(11);
     char* ks[] = { "one", "two", "three", "four", "five" };
     int i, k, data[5];
@@ -209,16 +206,17 @@ void test_map_keys2()
         map_put(m, ks[i], &data[i]);
     }
 
-    char* keys[m->item_count];
+    assert_eq(5, m->item_count);
+    char* keys[5];
     map_keys(m, keys);
     ASSERT_STR_ARR_EQ(ks, keys, 5);
     map_close(m);
-}
+}))
 
-void test_map_resize()
-{
+// clang-format off
+TEST(map_resize, ({
     Map* m = new_map();
-    size_t n = 28;
+    const size_t n = 28;
     char** keys = rand_keys(n);
 
     int x[n];
@@ -229,15 +227,15 @@ void test_map_resize()
         map_put(m, keys[i], &x[i]);
     }
     map_resize(&m, n + 1);
-    assert(m->__size == n + 1);
+    assert_eq(n + 1, m->__size);
 
     map_resize(&m, 3);
     for (i = 0; i < n; i++)
-        assert(((int)i) == *(int*)map_get(m, keys[i]));
-    assert(m->__size == 3);
+        assert_eq(((int)i), *(int*)map_get(m, keys[i]));
+    assert_eq(3, m->__size);
     free_string_arr(keys, n);
     map_close(m);
-}
+}))
 
 static struct node* newnode(hash_t val)
 {
@@ -253,9 +251,8 @@ static void delete_node(struct node** root, hash_t k_hash)
 {
     *root = _delete_node(*root, k_hash, 0);
 }
-
-void test_delete_node0()
-{
+// clang-format off
+TEST(delete_node0, ({
     struct node* root;
     root = newnode(0);
     int i;
@@ -263,7 +260,7 @@ void test_delete_node0()
         insert_node(&root, newnode(i));
 
     delete_node(&root, 23);
-    assert(root->right->_hash_val == 24);
+    assert_eq(24, root->right->_hash_val);
     delete_node(&root, 22);
     assert(search(root, 20) != NULL);
 
@@ -308,27 +305,28 @@ void test_delete_node0()
     assert(root->left == NULL);
     assert(root->right == NULL);
     free(root);
-}
+}))
 
-void test_delete_node1()
-{
+TEST(delete_node1, ({
     struct node* root;
     root = newnode(0);
-    int n = 10;
+    const int n = 10;
     int i;
     for (i = 1; i < n; i++)
         insert_node(&root, newnode(i));
     for (i = 1; i < n; i++)
         delete_node(&root, i);
+    assert_eq(0, height(root));
+    assert_eq(0, root->_hash_val);
     delete_tree(root);
-}
+}))
 
+// clang-format off
 /**
  * This test will fail if data is lost when deleting the root
  * node of a bst.
  */
-void test_delete_root()
-{
+TEST(delete_root, ({
     /*
             delete(50)...
                        ---> 50
@@ -360,12 +358,12 @@ void test_delete_root()
     insert_node(&root, newnode(80));
 
     delete_node(&root, 50);
-    assert(root->_hash_val == 70);
-    assert(root->right->_hash_val == 75);
-    assert(root->left->_hash_val == 25);
+    assert_eq(70, root->_hash_val);
+    assert_eq(75, root->right->_hash_val);
+    assert_eq(25, root->left->_hash_val);
 
     delete_node(&root, 30);
-    assert(root->left->right == NULL);
+    assert_eq(NULL, root->left->right);
     assert(root->height == 2);
     assert(root->left->_hash_val == 25);
     assert(root->_hash_val == 70);
@@ -380,10 +378,10 @@ void test_delete_root()
     assert(root->_hash_val == 20);
     delete_node(&root, 20);
     assert(root == NULL);
-}
+}))
 
-void test_delete_node()
-{
+// clang-format off
+TEST(delete_node, ({
     struct node* root = newnode(25);
     int nodes[] = { 12, 27, 5, 20, 26, 4, 7 };
     int i;
@@ -392,35 +390,35 @@ void test_delete_node()
 
     /* delete nodes with no children */
     insert_node(&root, newnode(28));
-    assert(root->right->right->_hash_val == 28);
+    assert_eq(28, root->right->right->_hash_val);
     delete_node(&root, 28);
-    assert(root->right->right == NULL);
+    assert_eq(NULL, root->right->right);
     insert_node(&root, newnode(19));
-    assert(root->left->right->left->_hash_val == 19);
+    assert_eq(19, root->left->right->left->_hash_val);
     assert(search(root, 19) != NULL);
 
     /* delete node with uneven child heights */
-    assert(root->left->_hash_val == 12);
-    assert(root->left->right->_hash_val == 20);
-    assert(root->left->left->_hash_val == 5);
+    assert_eq(12, root->left->_hash_val);
+    assert_eq(20, root->left->right->_hash_val);
+    assert_eq(5, root->left->left->_hash_val);
     delete_node(&root, 12);
 
-    assert(root->left->_hash_val == 19);
-    assert(root->left->right->_hash_val == 20);
-    assert(root->left->left->_hash_val == 5);
+    assert_eq(19, root->left->_hash_val);
+    assert_eq(20, root->left->right->_hash_val);
+    assert_eq(5, root->left->left->_hash_val);
 
     insert_node(&root, newnode(6));
-    assert(root->left->left->right->_hash_val == 6);
+    assert_eq(6, root->left->left->right->_hash_val);
     delete_node(&root, 5);
 
-    assert(root->left->left->_hash_val == 6);
-    assert(root->left->left->left->_hash_val == 4);
+    assert_eq(6, root->left->left->_hash_val);
+    assert_eq(4, root->left->left->left->_hash_val);
     delete_node(&root, 7);
-    assert(root->left->_hash_val == 19);
+    assert_eq(19, root->left->_hash_val);
     delete_node(&root, 20);
-    assert(root->left->_hash_val == 6);
+    assert_eq(6, root->left->_hash_val);
     delete_tree(root);
-}
+}))
 
 // clang-format off
 TEST(avl_insert, ({
@@ -500,8 +498,6 @@ TEST(map_clear, ({
     map_clear(m); /* shouldn't seg-fault when called on emty map */
     map_close(m);
 }))
-
-// clang-format off
 TEST(test, ({
     char* keys[] = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
     Map* m = create_map(2);
@@ -513,7 +509,6 @@ TEST(test, ({
     map_close(m);
     assert_eq(0, 0);
 }))
-
 TEST(add_node, ({
     Map* m = create_map(1); // only one bucket in the map
     int one = 1, two = 2, three = 3;
@@ -547,49 +542,23 @@ TEST(add_node, ({
     assert(3 == *(int*)m->__data[0]->left->value);
 }))
 
-static testfunc tests[] = {
-    test_collitions,
-    test_delete_node0,
-    test_delete_node1,
-    test_delete_root,
-    test_delete_node,
-
-    TestMap,
-    test_map_delete,
-    test_map_resize,
-    test_map_keys,
-    test_map_keys2,
-    // test_map_clear,
-    // test_add_node,
-
-    // test_avl_insert,
-    // test_avl_balence,
-};
-
 // clang-format off
-TEST_SUITE (
+RUN_TEST_SUITE (
     ADD_TEST(test),
-    // ADD_TEST(collitions),
-    // ADD_TEST(delete_node0),
-    // ADD_TEST(delete_node1),
-    // ADD_TEST(delete_root),
-    // ADD_TEST(delete_node),
+    ADD_TEST(collitions),
+    ADD_TEST(delete_node0),
+    ADD_TEST(delete_node1),
+    ADD_TEST(delete_root),
+    ADD_TEST(delete_node),
 
-    // ADD_TEST(TestMap),
-    // ADD_TEST(map_delete),
-    // ADD_TEST(map_resize),
-    // ADD_TEST(map_keys),
-    // ADD_TEST(map_keys2),
+    ADD_TEST(Map),
+    ADD_TEST(map_delete),
+    ADD_TEST(map_resize),
+    ADD_TEST(map_keys),
+    ADD_TEST(map_keys2),
     ADD_TEST(map_clear),
     ADD_TEST(add_node),
 
     ADD_TEST(avl_insert),
     ADD_TEST(avl_balence)
 )
-
-int main()
-{
-    int n = sizeof(tests) / sizeof(testfunc);
-    RunTests();
-    return Run(tests, n);
-}
