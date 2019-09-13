@@ -14,7 +14,9 @@
 extern "C" {
 #endif
 
+#define COMPILE_TESTS_H
 #include "tests/test_common.h"
+#undef COMPILE_TESTS_H
 
 char* randstring(size_t length)
 {
@@ -67,62 +69,60 @@ struct timezone
 };
 #endif
 
-double get_time()
-{
-    struct timeval t;
-    struct timezone tzp;
-    gettimeofday(&t, &tzp);
-    return t.tv_sec + t.tv_usec * 1e-6;
-}
+// static double get_time()
+// {
+//     struct timeval t;
+//     struct timezone tzp;
+//     gettimeofday(&t, &tzp);
+//     return t.tv_sec + t.tv_usec * 1e-6;
+// }
 
-double benchmark(testfunc testfn)
-{
-    struct timeb start, end;
-    ftime(&start);
-
-    testfn();
-
-    ftime(&end);
-
-    double diff =
-      (double)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm)) / 1000;
-    return diff;
-}
-
-double nbenchmark(testfunc testfn, int n)
+static double nbenchmark(bench_func testfn, int n)
 {
     struct timeb start, end;
-    ftime(&start);
     int i;
+    if (testfn == NULL)
+    {
+        printf("NULL benchmark function!\n");
+        return -1.0;
+    }
+
+    ftime(&start);
     for (i = 0; i < n; i++)
+    {
+        printf("timing...\n");
         testfn();
+        printf("ran benchmark\n");
+    }
 
     ftime(&end);
+    printf("diffing time\n");
 
     double diff =
       (double)(1000.0 * (end.time - start.time) + (end.millitm - start.millitm)) / 1000;
     return diff;
 }
 
-void Benchmark(const char* name, testfunc testfn)
+void Benchmark(const char* name, bench_func testfn)
 {
-    double result = benchmark(testfn);
+    // printf("hello\n");
+    double result = nbenchmark(testfn, 1);
     printf("  %s: %.3f sec\n", name, result);
 }
 
-void Benchmarkf(const char* name, testfunc testfn, const char* msg)
+void Benchmarkf(const char* name, bench_func testfn, const char* msg)
 {
-    double result = benchmark(testfn);
+    double result = nbenchmark(testfn, 1);
     printf("  %s: %s %.3f\n", name, msg, result);
 }
 
-void AverageBenchmark(const char* name, testfunc testfn, size_t n)
+void AverageBenchmark(const char* name, bench_func testfn, size_t n)
 {
     double result = nbenchmark(testfn, n);
     printf("  %s:\n    total: %.3f\n    average: %.3f\n", name, result, result / (double)n);
 }
 
-void nBenchmark(const char* name, testfunc testfn, size_t n)
+void nBenchmark(const char* name, bench_func testfn, size_t n)
 {
     float result = nbenchmark(testfn, n);
     printf("  %s x %lu: %.3f\n", name, n, result);
@@ -141,61 +141,6 @@ int Run(testfunc* tests, int n)
     printf("Ran %d tests\n", n);
     printf("\nOK\n\n");
     return 0;
-}
-
-int RunAllTests(struct testable* tests)
-{
-    struct testable t;
-    int i = 0, failure = 0, result;
-
-    while ((t = tests[i++]).name != NULL)
-    {
-        result = t.test_fn();
-        if (result != 0)
-        {
-            printf("%s failed!\n", t.name);
-            failure = 1;
-        }
-        else
-        {
-            printf(".");
-        }
-    }
-
-    if (failure)
-        printf("\n\033[0;31mFAILURE\033[0m\n");
-    else
-        printf("\n\033[0;32mPASS\033[0m\n");
-    return failure;
-}
-
-#define ERR_FMT "\033[0;31m%s\033[0m"
-
-static void verrorf(const char* outer_fmt, const char* fmt, va_list args)
-{
-    char fmtbuf[256];
-    snprintf(fmtbuf, sizeof(fmtbuf), outer_fmt, fmt);
-    vfprintf(stderr, fmtbuf, args);
-}
-
-// errorf will print out an error and exit the program with the given
-// status code. This function will not exit.
-void errorf(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    verrorf(ERR_FMT, fmt, args);
-    va_end(args);
-}
-
-int assertion_failure(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    verrorf("\033[0;31mAssertion Failure:\033[0m %s", fmt, args);
-    va_end(args);
-    raise(SIGABRT);
-    return -1;
 }
 
 #ifdef __cplusplus

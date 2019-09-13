@@ -567,7 +567,7 @@ static testfunc tests[] = {
 };
 
 // clang-format off
-TEST_SUITE(
+TEST_SUITE (
     ADD_TEST(test),
     // ADD_TEST(collitions),
     // ADD_TEST(delete_node0),
