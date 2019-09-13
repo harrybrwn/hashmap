@@ -198,7 +198,7 @@ void test_map_keys()
     map_close(m);
 }
 
-void tests_map_keys2()
+void test_map_keys2()
 {
     Map* m = create_map(11);
     char* ks[] = { "one", "two", "three", "four", "five" };
@@ -422,22 +422,22 @@ void test_delete_node()
     delete_tree(root);
 }
 
-void test_avl_insert()
-{
+// clang-format off
+TEST(avl_insert, ({
     int vals[] = { 3, 7, 4, 2 };
     struct node* root = newnode(5);
     int i;
     for (i = 0; i < 4; i++)
         insert_node(&root, newnode(vals[i]));
-    assert(root->height == 2);
+    assert_eq(2, root->height);
 
-    assert(root->_hash_val == 5);
+    assert_eq(5, root->_hash_val);
     delete_tree(root);
     root = NULL;
-}
+}))
 
-void test_avl_balence()
-{
+// clang-format off
+TEST(avl_balence, ({
     struct node* root = newnode(41);
     int vals[] = { 65, 20, 50, 26, 11, 29, 23 };
     int i;
@@ -445,16 +445,16 @@ void test_avl_balence()
         insert_node(&root, newnode(vals[i]));
 
     insert_node(&root, newnode(55));
-    assert(root->right->_hash_val == 55);
-    assert(root->right->right->_hash_val == 65);
-    assert(root->right->left->_hash_val == 50);
+    assert_eq(55, root->right->_hash_val);
+    assert_eq(65, root->right->right->_hash_val);
+    assert_eq(root->right->left->_hash_val, 50);
     delete_tree(root);
 
     root = newnode(41);
     int newvals[] = { 65, 20, 50, 29, 11, 26 };
     for (i = 0; i < 6; i++)
         insert_node(&root, newnode(newvals[i]));
-    assert(root->left->right->_hash_val == 29);
+    assert_eq(29, root->left->right->_hash_val);
 
     insert_node(&root, newnode(23));
     assert(root->left->right->_hash_val == 26);
@@ -475,10 +475,10 @@ void test_avl_balence()
     insert_node(&root, newnode(7));
     assert(root->right->right->_hash_val == 7);
     delete_tree(root);
-}
+}))
 
-void test_map_clear()
-{
+// clang-format off
+TEST(map_clear, ({
     Map* m = new_map();
     map_clear(m); /* shouldn't seg-fault when called on emty map */
 
@@ -495,14 +495,14 @@ void test_map_clear()
     size_t k;
     for (k = 0; k < m->__size; k++)
     {
-        assert(m->__data[k] == NULL);
+        assert_eq(m->__data[k], NULL);
     }
     map_clear(m); /* shouldn't seg-fault when called on emty map */
     map_close(m);
-}
+}))
 
-void test()
-{
+// clang-format off
+TEST(test, ({
     char* keys[] = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
     Map* m = create_map(2);
     int a = 1;
@@ -511,21 +511,20 @@ void test()
     for (i = 0; i < 8; i++)
         map_put(m, keys[i], &a);
     map_close(m);
-}
+    assert_eq(0, 0);
+}))
 
-void test_add_node()
-{
+TEST(add_node, ({
     Map* m = create_map(1); // only one bucket in the map
     int one = 1, two = 2, three = 3;
     map_put(m, "one", &one);
     map_put(m, "two", &two);
     map_put(m, "three", &three);
     hash_t one_hash = m->__data[0]->_hash_val;
-    printf("\n");
-
-    printf("%s\n", m->__data[0]->key);
-    printf("%s\n", m->__data[0]->right->key);
-    printf("%s\n", m->__data[0]->left->key);
+    // printf("\n");
+    // printf("%s\n", m->__data[0]->key);
+    // printf("%s\n", m->__data[0]->right->key);
+    // printf("%s\n", m->__data[0]->left->key);
 
     assert(strcmp(m->__data[0]->key, "one") == 0);
     assert(1 == *(int*)m->__data[0]->value);
@@ -536,7 +535,7 @@ void test_add_node()
 
     add_node(m, _new_node("one", &three, one_hash), 0);
 
-    assert(strcmp(m->__data[0]->key, "one") == 0);
+    assert_eq(0, strcmp(m->__data[0]->key, "one"));
     assert(3 == *(int*)m->__data[0]->value);
 
     assert(m->__data[0]->right != NULL);
@@ -546,10 +545,9 @@ void test_add_node()
     assert(2 == *(int*)m->__data[0]->right->value);
     assert(strcmp(m->__data[0]->left->key, "three") == 0);
     assert(3 == *(int*)m->__data[0]->left->value);
-}
+}))
 
 static testfunc tests[] = {
-    test,
     test_collitions,
     test_delete_node0,
     test_delete_node1,
@@ -560,16 +558,38 @@ static testfunc tests[] = {
     test_map_delete,
     test_map_resize,
     test_map_keys,
-    tests_map_keys2,
-    test_map_clear,
-    test_add_node,
+    test_map_keys2,
+    // test_map_clear,
+    // test_add_node,
 
-    test_avl_insert,
-    test_avl_balence,
+    // test_avl_insert,
+    // test_avl_balence,
 };
+
+// clang-format off
+TEST_SUITE(
+    ADD_TEST(test),
+    // ADD_TEST(collitions),
+    // ADD_TEST(delete_node0),
+    // ADD_TEST(delete_node1),
+    // ADD_TEST(delete_root),
+    // ADD_TEST(delete_node),
+
+    // ADD_TEST(TestMap),
+    // ADD_TEST(map_delete),
+    // ADD_TEST(map_resize),
+    // ADD_TEST(map_keys),
+    // ADD_TEST(map_keys2),
+    ADD_TEST(map_clear),
+    ADD_TEST(add_node),
+
+    ADD_TEST(avl_insert),
+    ADD_TEST(avl_balence)
+)
 
 int main()
 {
     int n = sizeof(tests) / sizeof(testfunc);
+    RunTests();
     return Run(tests, n);
 }

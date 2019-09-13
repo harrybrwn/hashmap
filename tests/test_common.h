@@ -16,10 +16,16 @@ typedef void (*testfunc)(void);
 #endif
 
 // because i like pretty colors :)
-#define assert(exp)                                                                               \
-    ((exp) ? (void)(0)                                                                            \
-           : __assert_fail("\033[0;31m" #exp "\033[0m", "\033[0;31m" __FILE__ "\033[0m",          \
+/*
+#define assert(exp) \
+    ((exp) ? (void)(0) \
+           : __assert_fail("\033[0;31m" #exp "\033[0m", "\033[0;31m" __FILE__ "\033[0m", \
                            __LINE__, __ASSERT_FUNCTION))
+*/
+int assertion_failure(const char* fmt, ...);
+
+#define assert(exp)                                                                               \
+    ((exp) ? (void)(0) : assertion_failure("%s:%d \"%s\"\n", __FILE__, __LINE__, #exp));
 
 /**
  * compares two string arrays that can be out of order
@@ -39,6 +45,42 @@ typedef void (*testfunc)(void);
         Found:;                                                                                   \
         }                                                                                         \
     }
+
+struct testable
+{
+    char* name;
+    int (*test_fn)(void);
+};
+
+#define assert_eq(C1, C2)                                                                         \
+    if ((C1) != (C2))                                                                             \
+    {                                                                                             \
+        printf("\n\033[0;31mAssertion failed: %s:%d\033[0m \"%s and %s\"\n", __FILE__, __LINE__,  \
+               #C1, #C2);                                                                         \
+        result = 1;                                                                               \
+        goto EndOfTest;                                                                           \
+    }
+
+// clang-format off
+#define ADD_TEST(NAME) { #NAME, test_##NAME }
+
+#define TEST(NAME, CLOSURE)                                                                       \
+    int test_##NAME(void)                                                                         \
+    {                                                                                             \
+        int result = 0;                                                                           \
+        CLOSURE;                                                                                  \
+    EndOfTest:                                                                                    \
+        return result;                                                                            \
+    }
+
+#define TEST_SUITE(...) static struct testable _main_tests[] = { __VA_ARGS__, { NULL, NULL } };
+
+#define RUN_TEST_SUITE(...)                                                                       \
+    TEST_SUITE(__VA_ARGS__);                                                                      \
+    int main() { return RunAllTests(_main_tests); }
+
+int RunAllTests(struct testable* tests);
+#define RunTests() RunAllTests(_main_tests);
 
 extern char* randstring(size_t);
 extern char** rand_keys(size_t n);
