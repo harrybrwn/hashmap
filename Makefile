@@ -57,7 +57,7 @@ bench_prof.txt: $(Benchmark).c
 	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi
-	gprof profile.bin gmon.out > $@
+	gprof profile.bin --no-time=randstring gmon.out > $@
 	@rm profile.bin
 
 test_prof.txt: $(Test).c

@@ -15,22 +15,22 @@ hash_t sdbm(char* str);
 hash_t fnv_1(char* str);
 hash_t rshash(char* str);
 
-// #define N_KEYS 100000000UL
-// #define N_KEYS 5000000UL
-#define N_KEYS 3000000UL
-// #define N_KEYS 2500000
-// #define N_KEYS 2000000
-// #define N_KEYS 1500000
-// #define N_KEYS 1000000
+#define KEY_LEN 10
+#define N_KEYS 3000017UL
 
 static Map* map;
-static char** mapkeys;
+static char* mapkeys[N_KEYS];
 
 void init_globals(void)
 {
     srand(time(0));
-    map = create_map(N_KEYS + 293);
-    mapkeys = rand_keys(N_KEYS);
+    map = create_map(N_KEYS);
+    // mapkeys = rand_keys(N_KEYS);
+    size_t i;
+    for (i = 0; i < N_KEYS; i++)
+    {
+        mapkeys[i] = randstring(KEY_LEN);
+    }
 }
 
 void teardown_globals(void)
@@ -41,7 +41,9 @@ void teardown_globals(void)
     assert(map->item_count == 0);
 
     map_close(map);
-    free_string_arr(mapkeys, N_KEYS);
+    // free_string_arr(mapkeys, N_KEYS);
+    for (i = 0; i < N_KEYS; i++)
+        free(mapkeys[i]);
 }
 
 // clang-format off
@@ -82,23 +84,29 @@ BENCH(prehash, ({
     for (i = 0; i < N_KEYS; i++)
         prehash(mapkeys[i]);
 }))
+BENCH(fnv_1a, ({
+    size_t i;
+    for (i = 0; i < N_KEYS; i++)
+        fnv_1a(mapkeys[i]);
+}))
 
 // clang-format off
 BENCHMARK_SUITE(
+    ADD_BENCH(djb2),
+    ADD_BENCH(sdbm),
+    ADD_BENCH(fnv_1),
+    ADD_BENCH(fnv_1a),
+    ADD_BENCH(prehash),
     ADD_BENCH(put),
     ADD_BENCH(get),
-    ADD_BENCH(delete),
-    ADD_BENCH(prehash),
-    ADD_BENCH(djb2),
-    ADD_BENCH(fnv_1),
-    ADD_BENCH(sdbm)
+    ADD_BENCH(delete)
 )
 
 int main()
 {
     setlocale(LC_NUMERIC, "");
     printf("Start Benchmarks with %'ld items\n", N_KEYS);
-    
+
     init_globals();
     RunBenchmarks();
     teardown_globals();

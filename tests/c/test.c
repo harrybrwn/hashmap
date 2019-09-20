@@ -515,6 +515,8 @@ TEST(add_node, ({
     map_put(m, "one", &one);
     map_put(m, "two", &two);
     map_put(m, "three", &three);
+    assert(m->item_count == 3);
+
     hash_t one_hash = m->__data[0]->_hash_val;
     // printf("\n");
     // printf("%s\n", m->__data[0]->key);
@@ -523,10 +525,10 @@ TEST(add_node, ({
 
     assert(strcmp(m->__data[0]->key, "one") == 0);
     assert(1 == *(int*)m->__data[0]->value);
-    assert(strcmp(m->__data[0]->right->key, "two") == 0);
-    assert(2 == *(int*)m->__data[0]->right->value);
-    assert(strcmp(m->__data[0]->left->key, "three") == 0);
-    assert(3 == *(int*)m->__data[0]->left->value);
+    assert(strcmp(m->__data[0]->left->key, "two") == 0);
+    assert(2 == *(int*)m->__data[0]->left->value);
+    assert(strcmp(m->__data[0]->right->key, "three") == 0);
+    assert(3 == *(int*)m->__data[0]->right->value);
 
     add_node(m, _new_node("one", &three, one_hash), 0);
 
@@ -536,10 +538,12 @@ TEST(add_node, ({
     assert(m->__data[0]->right != NULL);
     assert(m->__data[0]->left != NULL);
 
-    assert(strcmp(m->__data[0]->right->key, "two") == 0);
-    assert(2 == *(int*)m->__data[0]->right->value);
-    assert(strcmp(m->__data[0]->left->key, "three") == 0);
-    assert(3 == *(int*)m->__data[0]->left->value);
+    assert(strcmp(m->__data[0]->left->key, "two") == 0);
+    assert(2 == *(int*)m->__data[0]->left->value);
+    assert(strcmp(m->__data[0]->right->key, "three") == 0);
+    assert(3 == *(int*)m->__data[0]->right->value);
+
+    map_close(m);
 }))
 
 // clang-format off
