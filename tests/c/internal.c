@@ -94,8 +94,7 @@ TEST(prehash, ({
     assert_eq(prehash("abc123"), prehash("abc123"));
     assert(prehash(" ") != prehash("  "));
 
-    // assert(prehash("qwerty") == fnv_1a("qwerty"));
-    assert(prehash("qwerty") == fnv_1("qwerty"));
+    assert_eq(prehash("qwerty"), fnv_1("qwerty"));
 }))
 
 // clang-format off

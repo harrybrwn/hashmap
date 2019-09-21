@@ -510,6 +510,8 @@ TEST(test, ({
     assert_eq(0, 0);
 }))
 TEST(add_node, ({
+    // this test will break if the prehash changes
+
     Map* m = create_map(1); // only one bucket in the map
     int one = 1, two = 2, three = 3;
     map_put(m, "one", &one);

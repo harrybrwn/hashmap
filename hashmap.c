@@ -20,6 +20,9 @@ struct node
     hash_t _hash_val;
 };
 
+/**
+ * fnv hashing specification found at http://isthe.com/chongo/tech/comp/fnv/
+ */
 #if __x86_64__ || __ppc64__ // if compiled for 64 bit os
 #define FNV_PRIME 0x100000001b3UL
 #define FNV_PRIME_MUL(X) (X << 1) + (X << 4) + (X << 5) + (X << 7) + (X << 8) + (X << 40)
@@ -438,7 +441,7 @@ static struct node* _new_node(char* key, MapValue val, hash_t key_hash)
 #endif
 #endif
 
-static _inline void add_node(Map* m, struct node* node, int index)
+static void add_node(Map* m, struct node* node, int index)
 {
     struct node* head_node = m->__data[index];
     /**
@@ -508,7 +511,7 @@ static _inline struct node* min_node(struct node* node)
     return curr;
 }
 
-static _inline struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
+static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key)
 {
     if (root == NULL)
         return root;

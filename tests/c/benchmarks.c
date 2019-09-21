@@ -16,7 +16,9 @@ hash_t fnv_1(char* str);
 hash_t rshash(char* str);
 
 #define KEY_LEN 10
-#define N_KEYS 3000017UL
+#define N_KEYS   3000017UL
+#define MAP_SIZE 4015567UL
+#define LOAD_FACTOR ((double)N_KEYS / (double)MAP_SIZE)
 
 static Map* map;
 static char* mapkeys[N_KEYS];
@@ -24,19 +26,23 @@ static char* mapkeys[N_KEYS];
 void init_globals(void)
 {
     srand(time(0));
-    map = create_map(N_KEYS);
-    // mapkeys = rand_keys(N_KEYS);
+    map = create_map(MAP_SIZE);
     size_t i;
     for (i = 0; i < N_KEYS; i++)
     {
         mapkeys[i] = randstring(KEY_LEN);
     }
+    printf("setting up map...\n");
+    printf("load factor: %f\n", LOAD_FACTOR);
+    printf("map uses %'lu bytes.\n",
+        sizeof(Map) +
+        (sizeof(struct node*) * N_KEYS));
 }
 
 void teardown_globals(void)
 {
     size_t i;
-    for (i = 0; i < map->__size; i++)
+    for (i = 0; i < MAP_SIZE; i++)
         assert(map->__data[i] == NULL);
     assert(map->item_count == 0);
 
@@ -58,6 +64,23 @@ BENCH(get, ({
     {
         assert(33 == map_get(map, mapkeys[i]));
     }
+}))
+BENCH(map_stats, ({
+    size_t i;
+    int max = 0;
+    long empty = 0;
+    for (i = 0; i < MAP_SIZE; i++) {
+        if (map->__data[i] != NULL) {
+            if (map->__data[i]->height > max) {
+                max = map->__data[i]->height;
+            }
+        } else {
+            empty++;
+        }
+    }
+    printf("    max node height: %d\n", max);
+    printf("    empty nodes:     %'ld\n", empty);
+    printf("    percend used:    %.2f%%\n", ((double)(MAP_SIZE - empty) / (double)MAP_SIZE) * 100);
 }))
 BENCH(delete, ({
     size_t i;
@@ -98,6 +121,7 @@ BENCHMARK_SUITE(
     ADD_BENCH(fnv_1a),
     ADD_BENCH(prehash),
     ADD_BENCH(put),
+    ADD_BENCH(map_stats),
     ADD_BENCH(get),
     ADD_BENCH(delete)
 )
@@ -105,9 +129,10 @@ BENCHMARK_SUITE(
 int main()
 {
     setlocale(LC_NUMERIC, "");
-    printf("Start Benchmarks with %'ld items\n", N_KEYS);
-
     init_globals();
+
+    printf("\nStart Benchmarks with %'ld items\n", N_KEYS);
+
     RunBenchmarks();
     teardown_globals();
 

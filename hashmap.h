@@ -4,6 +4,7 @@
 #include <stddef.h>
 #if !defined(MapValue)
 #define MapValue void*
+typedef MapValue mapval_t;
 #endif
 
 #ifdef __cplusplus

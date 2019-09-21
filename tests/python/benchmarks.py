@@ -3,7 +3,6 @@ from hashmap import HashMap
 def bench_HashMap():
 	m = HashMap()
 	m['test'] = 'test'
-	m['test']
 	if m['test'] != 'test':
 		print('what')
 
