@@ -56,7 +56,7 @@ class HashMapTest(unittest.TestCase):
 		keys = ['one', 'two', 'three', 'five', 'seven', 'eleven', 'thirteen']
 		for k in keys:
 			self.map.put(k, 'prime')
-		
+
 		for key in self.map:
 			self.assertTrue(key in keys)
 
@@ -92,7 +92,7 @@ class HashMapTest(unittest.TestCase):
 		m = hashmap.HashMap(99)
 		self.assertEqual(m.size, 99)
 		m2 = hashmap.HashMap()
-		self.assertEqual(m2.size, 32)
+		self.assertEqual(m2.size, 31)
 
 	def test_keys(self):
 		keys = ['one', 'two', 'three', 'four', 'five', 'six']
@@ -104,7 +104,7 @@ class HashMapTest(unittest.TestCase):
 		self.map.put('self.map', self.map)
 		m = self.map.get('self.map')
 		self.assertEqual(id(self.map), id(m))
-	
+
 	def test_contains(self):
 		self.map['athing'] = 'some thing'
 		self.assertTrue('athing' in self.map)

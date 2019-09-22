@@ -255,11 +255,11 @@ void map_clear(Map* m)
 
 static struct node* _new_node(char*, mapval_t, hash_t);
 static void insert_node(struct node** root, struct node* new);
-static void add_node(Map*, struct node*, int);
+static void add_node(Map*, struct node*, size_t);
 
 static inline void put_from_hash(Map* m, char* key, hash_t k_hash, mapval_t value)
 {
-    int index = k_hash % m->__size;
+    size_t index = k_hash % m->__size;
 
     struct node* node = _new_node(key, value, k_hash);
     struct node* head_node = m->__data[index];
@@ -477,7 +477,7 @@ static struct node* _new_node(char* key, mapval_t val, hash_t key_hash)
 #endif
 #endif
 
-static void add_node(Map* m, struct node* node, int index)
+static void add_node(Map* m, struct node* node, size_t index)
 {
     struct node* head_node = m->__data[index];
     /**
@@ -639,7 +639,7 @@ static void copy_nodes(Map* m, struct node* n)
     if (n->right != NULL)
         copy_nodes(m, n->right);
 
-    int index = n->_hash_val % m->__size;
+    size_t index = n->_hash_val % m->__size;
 #ifndef TRASH_KEY
     add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
 #else

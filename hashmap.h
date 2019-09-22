@@ -12,7 +12,7 @@ extern "C" {
 
 #pragma pack(1)
 
-#define DEFAULT_MAP_SIZE 32
+#define DEFAULT_MAP_SIZE 31
 
 typedef size_t hash_t;
 typedef MapValue mapval_t;
