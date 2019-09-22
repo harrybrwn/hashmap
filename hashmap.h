@@ -4,7 +4,6 @@
 #include <stddef.h>
 #if !defined(MapValue)
 #define MapValue void*
-typedef MapValue mapval_t;
 #endif
 
 #ifdef __cplusplus
@@ -16,6 +15,7 @@ extern "C" {
 #define DEFAULT_MAP_SIZE 32
 
 typedef size_t hash_t;
+typedef MapValue mapval_t;
 
 typedef struct hashmap
 {
@@ -24,6 +24,14 @@ typedef struct hashmap
 
     size_t item_count;
 } Map;
+
+/**
+ * The key struct is used for when you need to use a key that is not a string.
+ */
+struct key {
+    void* value;
+    size_t length;
+};
 
 /* new_map creates a new map. Allocates the Map on the heap. */
 Map* new_map(void);
@@ -38,10 +46,10 @@ Map* create_map(size_t);
 void map_close(Map*);
 
 /* map_put addes a void pointer at a key. */
-void map_put(Map* m, char* key, MapValue val);
+void map_put(Map* m, char* key, mapval_t val);
 
 /* map_get returns the void pointer stored at a key. */
-MapValue map_get(Map* m, char* key);
+mapval_t map_get(Map* m, char* key);
 
 /* map_delete will delete the data stored at a keys. */
 void map_delete(Map* m, char* key);

@@ -10,7 +10,7 @@ struct node
 #ifndef TRASH_KEY
     char* key;
 #endif
-    MapValue value;
+    mapval_t value;
 
     /* I'm making some assumtions about the size of each tree here.
    It should be fine if the heights stay under 255. */
@@ -42,6 +42,20 @@ hash_t prehash(char* str)
     {
         hval += FNV_PRIME_MUL(hval);
         hval ^= (hash_t)*s++;
+    }
+    return hval;
+}
+
+hash_t prehash_key(struct key key)
+{
+    size_t i;
+    unsigned char* s = (unsigned char*)key.value;
+    hash_t hval = FNV_OFFSET;
+
+    for (i = 0; i < key.length; i++)
+    {
+        hval += FNV_PRIME_MUL(hval);
+        hval ^= (hash_t)s[i];
     }
     return hval;
 }
@@ -149,57 +163,30 @@ void map_close(Map* m)
     free(m);
 }
 
-static void add_node(Map*, struct node*, int);
+static inline void put_from_hash(Map*, char*, hash_t, mapval_t);
+static inline mapval_t get_from_hash(Map* m, hash_t k_hash);
+
+void map_put(Map* m, char* key, mapval_t val)
+{
+    return put_from_hash(m, key, prehash(key), val);
+}
+
+void map_key_put(Map* m, struct key key, mapval_t val)
+{
+    return put_from_hash(m, (char*){'\0'}, prehash_key(key), (mapval_t)val);
+}
+
+mapval_t map_get(Map* m, char* key)
+{
+    return get_from_hash(m, prehash(key));
+}
+
+mapval_t map_key_get(Map* m, struct key key)
+{
+    return get_from_hash(m, prehash_key(key));
+}
+
 static void copy_nodes(Map*, struct node*);
-static void insert_node(struct node** root, struct node* new);
-static struct node* _new_node(char*, MapValue, hash_t);
-static struct node* search(struct node* root, hash_t key_hash);
-
-void map_put(Map* m, char* key, MapValue val)
-{
-    hash_t key_hash = prehash(key);
-    int index = key_hash % m->__size;
-
-    struct node* node = _new_node(key, val, key_hash);
-    struct node* head_node = m->__data[index];
-
-    if (head_node == NULL)
-    {
-        m->__data[index] = node;
-    }
-    else if (head_node->_hash_val == key_hash)
-    {
-        node->left = head_node->left;
-        node->right = head_node->right;
-        free(m->__data[index]);
-        m->__data[index] = node;
-    }
-    else
-    {
-        insert_node(&m->__data[index], node);
-    }
-    m->item_count++;
-}
-
-MapValue map_get(Map* m, char* key)
-{
-    hash_t k_hash = prehash(key);
-    int index = k_hash % m->__size;
-
-    struct node* root = m->__data[index];
-    if (root == NULL)
-        return (MapValue)0;
-
-    if (k_hash != root->_hash_val)
-    {
-        struct node* n = search(root, k_hash);
-        if (n == NULL)
-            return (MapValue)0;
-        return n->value;
-    }
-    return root->value;
-}
-
 static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key);
 
 void map_delete(Map* m, char* key)
@@ -264,6 +251,55 @@ void map_clear(Map* m)
         m->__data[i] = NULL;
     }
     m->item_count = 0;
+}
+
+static struct node* _new_node(char*, mapval_t, hash_t);
+static void insert_node(struct node** root, struct node* new);
+static void add_node(Map*, struct node*, int);
+
+static inline void put_from_hash(Map* m, char* key, hash_t k_hash, mapval_t value)
+{
+    int index = k_hash % m->__size;
+
+    struct node* node = _new_node(key, value, k_hash);
+    struct node* head_node = m->__data[index];
+
+    if (head_node == NULL)
+    {
+        m->__data[index] = node;
+    }
+    else if (head_node->_hash_val == k_hash)
+    {
+        node->left = head_node->left;
+        node->right = head_node->right;
+        free(m->__data[index]);
+        m->__data[index] = node;
+    }
+    else
+    {
+        insert_node(&m->__data[index], node);
+    }
+    m->item_count++;
+}
+
+static struct node* search(struct node* root, hash_t key_hash);
+
+static inline mapval_t get_from_hash(Map* m, hash_t k_hash)
+{
+    size_t index = k_hash % m->__size;
+
+    struct node* root = m->__data[index];
+    if (root == NULL)
+        return (mapval_t)0;
+
+    if (k_hash != root->_hash_val)
+    {
+        struct node* n = search(root, k_hash);
+        if (n == NULL)
+            return (mapval_t)0;
+        return n->value;
+    }
+    return root->value;
 }
 
 static struct node* search(struct node* root, hash_t key_hash)
@@ -414,7 +450,7 @@ void map_close_free_keys(Map* m)
     free(m);
 }
 
-static struct node* _new_node(char* key, MapValue val, hash_t key_hash)
+static struct node* _new_node(char* key, mapval_t val, hash_t key_hash)
 {
     struct node* n = malloc(sizeof(struct node));
     if (n == NULL)

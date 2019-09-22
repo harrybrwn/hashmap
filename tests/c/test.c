@@ -547,6 +547,29 @@ TEST(add_node, ({
 
     map_close(m);
 }))
+TEST(key_struct, ({
+    struct key k = {"strkey", 6};
+    hash_t h1 = prehash("strkey");
+    hash_t h2 = prehash_key(k);
+    assert_eq(h1, h2);
+
+    Map* map = create_map(31);
+    char* val = "test value";
+    map_put(map, "strkey", (mapval_t)val);
+
+    char* res = (char*)map_key_get(map, k);
+    assert(res != NULL);
+    assert_eq(0, strncmp(res, "test value", 10));
+
+    hash_t keykeyhash = prehash_key((struct key){&k, sizeof(k)});
+    put_from_hash(map, "", keykeyhash, "keykeyvalue");
+    char* keykeyvalue = (char*)get_from_hash(
+        map,
+        prehash_key((struct key){&k, sizeof(k)})
+    );
+    assert_eq(0, strcmp(keykeyvalue, "keykeyvalue"));
+    map_close(map);
+}))
 
 // clang-format off
 RUN_TEST_SUITE (
@@ -564,6 +587,8 @@ RUN_TEST_SUITE (
     ADD_TEST(map_keys2),
     ADD_TEST(map_clear),
     ADD_TEST(add_node),
+
+    ADD_TEST(key_struct),
 
     ADD_TEST(avl_insert),
     ADD_TEST(avl_balence)
