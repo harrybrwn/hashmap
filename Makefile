@@ -16,9 +16,9 @@ SharedLib=lib/libhashmap.so
 
 all: lib build-tests
 
-include $(CTestDir)/Makefile
-include $(PyTestDir)/Makefile
-include $(CppTestDir)/Makefile
+include $(CTestDir)/ctests.mk
+include $(CppTestDir)/cpptests.mk
+include $(PyTestDir)/pytests.mk
 
 test: c-test cpp-test py-test
 
