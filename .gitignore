@@ -15,6 +15,7 @@ cpp-test
 doc_example
 benchmarks
 internal
+test_lib
 profile.bin
 
 # Other files

@@ -163,6 +163,8 @@ void map_close(Map* m)
     free(m);
 }
 
+void map_free(Map*) __attribute__((alias("map_close")));
+
 static inline void put_from_hash(Map*, char*, hash_t, mapval_t);
 static inline mapval_t get_from_hash(Map* m, hash_t k_hash);
 
@@ -173,7 +175,7 @@ void map_put(Map* m, char* key, mapval_t val)
 
 void map_key_put(Map* m, struct key key, mapval_t val)
 {
-    return put_from_hash(m, (char*){'\0'}, prehash_key(key), (mapval_t)val);
+    return put_from_hash(m, (char*){ '\0' }, prehash_key(key), (mapval_t)val);
 }
 
 mapval_t map_get(Map* m, char* key)

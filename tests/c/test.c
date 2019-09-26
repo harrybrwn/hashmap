@@ -545,7 +545,7 @@ TEST(add_node, ({
     assert(strcmp(m->__data[0]->right->key, "three") == 0);
     assert(3 == *(int*)m->__data[0]->right->value);
 
-    map_close(m);
+    map_free(m);
 }))
 TEST(key_struct, ({
     struct key k = {"strkey", 6};
@@ -568,7 +568,7 @@ TEST(key_struct, ({
         prehash_key((struct key){&k, sizeof(k)})
     );
     assert_eq(0, strcmp(keykeyvalue, "keykeyvalue"));
-    map_close(map);
+    map_free(map);
 }))
 
 // clang-format off

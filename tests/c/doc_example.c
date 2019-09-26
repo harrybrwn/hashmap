@@ -27,5 +27,6 @@ int main()
         printf("map is not working\n");
         return 1;
     }
+    map_free(map);
     return 0;
 }
