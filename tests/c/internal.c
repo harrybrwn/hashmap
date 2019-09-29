@@ -2,7 +2,9 @@
 
 #define COMPILE_TESTS_H
 #include "hashmap.c"
-#include "tests/test.h"
+
+#define AUTOTEST
+#include "tests/utest.h"
 
 static struct node* newnode(hash_t val)
 {
@@ -15,14 +17,14 @@ static struct node* newnode(hash_t val)
 }
 
 // clang-format off
-TEST(macros, ({
+TEST(macros) {
     struct node* n = NULL;
     assert(height(n) == -1);
     n = newnode(1);
     assert(height(n) == 0);
-}))
+}
 
-TEST(rotations, ({
+TEST(rotations) {
     struct node* n = newnode(10);
     n->left = newnode(9);
     n->left->left = newnode(8);
@@ -36,9 +38,9 @@ TEST(rotations, ({
     n = node_rotateleft(n);
     assert(n->_hash_val == 11);
     delete_tree(n);
-}))
+}
 
-TEST(insert_node, ({
+TEST(insert_node) {
     struct node* n = newnode(10);
     insert_node(&n, newnode(5));
     assert(n->_hash_val == 10);
@@ -65,9 +67,9 @@ TEST(insert_node, ({
     assert(n->right->left->_hash_val == 10);
     assert(n->right->right->_hash_val == 16);
     delete_tree(n);
-}))
+}
 
-TEST(search, ({
+TEST(search) {
     struct node* n = newnode(10);
     assert_eq(n, search(n, 10));
     insert_node(&n, newnode(5));
@@ -75,14 +77,20 @@ TEST(search, ({
     insert_node(&n, newnode(25));
     insert_node(&n, newnode(1));
 
-    assert_eq(5, search(n, 5)->_hash_val);
-    assert_eq(15, search(n, 15)->_hash_val);
-    assert_eq(25, search(n, 25)->_hash_val);
-    assert_eq(1, search(n, 1)->_hash_val);
-    delete_tree(n);
-}))
+    assert_eq((hash_t)5, search(n, 5)->_hash_val);
+    assert_eq((hash_t)15, search(n, 15)->_hash_val);
+    assert_eq((hash_t)25, search(n, 25)->_hash_val);
+    assert_eq((hash_t)1, search(n, 1)->_hash_val);
 
-TEST(prehash, ({
+    size_t i;
+    for (i = 0; i < 10; i++)
+        insert_node(&n, newnode((hash_t)i));
+    for (i = 0; i < 10; i++)
+        eq(i, search(n, i)->_hash_val);
+    delete_tree(n);
+}
+
+TEST(prehash) {
     hash_t a = prehash("abc");
     hash_t b = prehash("cba");
     hash_t c = prehash("bca");
@@ -95,13 +103,4 @@ TEST(prehash, ({
     assert(prehash(" ") != prehash("  "));
 
     assert_eq(prehash("qwerty"), fnv_1("qwerty"));
-}))
-
-// clang-format off
-RUN_TEST_SUITE (
-    ADD_TEST(macros),
-    ADD_TEST(rotations),
-    ADD_TEST(insert_node),
-    ADD_TEST(search),
-    ADD_TEST(prehash)
-)
+}

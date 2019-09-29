@@ -23,9 +23,13 @@ preproc.i
 gmon.out
 bench_prof.txt
 test_prof.txt
+*.gcda
+*.gcno
+*.gcov
 
 # Tooling
 /.vscode/
 *.vscode/
 TODO
 .clang-format
+update.sh

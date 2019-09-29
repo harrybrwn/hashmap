@@ -1,6 +1,8 @@
 #ifndef _TEST_H
 #define _TEST_H
 
+#if !defined(_UTEST_H)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -174,6 +176,8 @@ int RunAllBenchmarks(struct benchmark* bench_list)
 
  above if my testing framework.
 *************************************************************************/
+#endif /* !defined(_UTEST_H) */
+
 #include <stdlib.h>
 
 char* randstring(size_t length)
