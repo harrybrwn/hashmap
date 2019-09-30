@@ -16,9 +16,9 @@ c-test: $(AllCTests)
 	@$(LoadLib) $(LibTest) > /dev/null
 
 clean-ctests:
-	@$(RM) $(LibTest)
+	@$(RM) $(LibTest) *.gcov
 
-clean: clean-ctests clean-cov
+clean: clean-ctests
 
 $(Test): hashmap.c $(Test).c tests/test.h tests/utest.o
 	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c tests/utest.o
@@ -40,13 +40,16 @@ lib-test: $(LibTest)
 	$(LoadLib) valgrind $(LibTest)
 
 $(LibTest): $(LibTest).c $(SharedLib)
-	@#$(CC) $(CFLAGS) -libhashmap.so $< -o $@
 	$(CC) $(CFLAGS) $< -o $@ -lhashmap
 
-cov:
-	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage tests/c/test.c tests/utest.c -o tests/c/test
-	@tests/c/test > /dev/null
-	gcov hashmap test
+test-cov: $(Test).c $(TestDir)/utest.c
+	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage $^ -o $(Test)
+	@$(Test) > /dev/null
+	gcov test hashmap
+	@$(RM) *.gcda *.gcno
 
-clean-cov:
-	$(RM) *.gcda *.gcno *.gcov
+internal-cov: $(InternalTest).c $(TestDir)/utest.c
+	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage $^ -o $(InternalTest)
+	@$(InternalTest) > /dev/null
+	gcov internal hashmap
+	@$(RM) *.gcda *.gcno
