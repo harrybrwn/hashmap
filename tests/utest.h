@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 struct utest_runner;
@@ -35,19 +35,19 @@ typedef struct utest_runner
     AssertionMsgFunc warning;
 } UTestRunner;
 
-extern UTestCase* _current_test;
+extern UTestCase *_current_test;
 
 // 8 bit unsigned integer.
 typedef unsigned int byte_t __attribute__((__mode__(QI)));
 
 int RunTests(void);
 
-void BuildTestCase(UTestCase, TestMethod, char*);
+void BuildTestCase(UTestCase, TestMethod, char *);
 
 int assertion_failure(const char* fmt, ...);
 int utest_warning(const char* fmt, ...);
 
-int utest_capture_output(char** buf);
+int utest_capture_output(char **buf);
 
 /**
  * Return: 1 for a match, 0 for no match.
@@ -59,79 +59,82 @@ int strcomp(char* one, char* two);
 
 #if defined(AUTOTEST) && !defined(_MAIN_DEFINED) && !defined(_UTEST_IMPL)
 #define _MAIN_DEFINED
-int main(void)
-{
+int main(void) {
     return RunTests();
 }
 #endif /* AUTOTEST && _MAIN_DEFINED && _UTEST_IMPL */
 
-#define _UTEST_PRINT_FMT(A) (_Generic((A), char* : "%s", const char* : "%s", int : "%d"))
+#define _UTEST_PRINT_FMT(A)\
+    (_Generic((A),         \
+        char*: "%s",       \
+        const char*: "%s", \
+        int: "%d"))
 
-#define _ARR_EQ_DECL(SUFFIX, TYPE)                                                                \
-    int arr_unordered_eq_##SUFFIX(TYPE*, TYPE*, size_t);                                          \
-    int arr_eq_##SUFFIX(TYPE*, TYPE*, size_t);
+#define _ARR_EQ_DECL(SUFFIX, TYPE)                   \
+int arr_unordered_eq_##SUFFIX(TYPE*, TYPE*, size_t); \
+int arr_eq_##SUFFIX(TYPE*, TYPE*, size_t);
 
 _ARR_EQ_DECL(s, char*)
 
 #undef _ARR_EQ_DECL
 
-#define _EQ_EXPR(A, B)                                                                            \
-    (_Generic((A),                                                                   \
+#define _EQ_EXPR(A, B)                                                           \
+(_Generic((A),                                                                   \
     char*:       strcomp(((char*)(uintptr_t)(A)), ((char*)(uintptr_t)(B))) == 0, \
     const char*: strcomp(((char*)(uintptr_t)(A)), ((char*)(uintptr_t)(B))) == 0, \
     default: A == B)                                                             \
 )
 
-#define FAIL(EXP)                                                                                 \
-    (_current_test->status +=                                                                     \
-     assertion_failure("TEST(%s) %s:%d '%s'\n", _current_test->name, __FILE__, __LINE__, EXP))
+#define FAIL(EXP)                                                       \
+    (_current_test->status += assertion_failure("TEST(%s) %s:%d '%s'\n",\
+                _current_test->name, __FILE__, __LINE__, EXP))
 
-#define _ASSERT_FAIL(LEFT, OP, RIGHT)                                                             \
-    (_current_test->status += assertion_failure("TEST(%s) %s:%d '%s'\n", _current_test->name,     \
-                                                __FILE__, __LINE__, #LEFT OP #RIGHT))
+#define _ASSERT_FAIL(LEFT, OP, RIGHT) \
+    (_current_test->status += assertion_failure("TEST(%s) %s:%d '%s'\n",\
+                _current_test->name, __FILE__, __LINE__, #LEFT OP #RIGHT))
 
 #ifndef assert
 #undef assert
 #define assert(exp) (exp) ? ((void)0) : FAIL(#exp)
 #endif
 
-#define assert_eq(A, B)                                                                           \
-    ({                                                                                            \
-        __typeof__(A) _A = A;                                                                     \
-        __typeof__(B) _B = B;                                                                     \
-        (_EQ_EXPR(_A, _B)) ? ((void)0) : _ASSERT_FAIL(A, " == ", B);                              \
-    })
+#define assert_eq(A, B)               \
+    ({__typeof__(A) _A = A;           \
+    __typeof__(B) _B = B;             \
+    (_EQ_EXPR(_A, _B)) ?              \
+        ((void)0) :                   \
+        _ASSERT_FAIL(A, " == ", B);})
 
-#define assert_not_eq(A, B)                                                                       \
-    ({                                                                                            \
-        __typeof__(A) _A = A;                                                                     \
-        __typeof__(B) _B = B;                                                                     \
-        (!_EQ_EXPR(_A, _B)) ? ((void)0) : _ASSERT_FAIL(A, " != ", B);                             \
-    })
+#define assert_not_eq(A, B)  \
+    ({__typeof__(A) _A = A;  \
+    __typeof__(B) _B   = B;  \
+    (!_EQ_EXPR(_A, _B)) ?    \
+        ((void)0) :          \
+        _ASSERT_FAIL(A, " != ", B);})
 
 /**
  * assert that the memory stored at two address for length `LEN` are equal
  */
-#define assert_eqn(A, B, LEN)                                                                     \
-    (binary_compare((byte_t*)(uintptr_t)A, (byte_t*)(uintptr_t)B, LEN))                           \
-      ? ((void)0)                                                                                 \
-      : _ASSERT_FAIL(A, " == ", B)
+#define assert_eqn(A, B, LEN)     \
+    (binary_compare((byte_t*)(uintptr_t)A, (byte_t*)(uintptr_t)B, LEN)) ? \
+        ((void)0) :               \
+        _ASSERT_FAIL(A, " == ", B)
 
 /**
  * assert that the memory stored at two address for length `LEN` are not equal
  */
-#define assert_not_eqn(A, B, LEN)                                                                 \
-    (!binary_compare((byte_t*)(uintptr_t)A, (byte_t*)(uintptr_t)B, LEN))                          \
-      ? ((void)0)                                                                                 \
-      : _ASSERT_FAIL(A, " != ", B)
+#define assert_not_eqn(A, B, LEN)  \
+    (!binary_compare((byte_t*)(uintptr_t)A, (byte_t*)(uintptr_t)B, LEN)) ? \
+        ((void)0) :                \
+        _ASSERT_FAIL(A, " != ", B)
 
-#define eq(A, B) assert_eq(A, B)
-#define not_eq (A, B) assert_not_eq(A, B)
-#define eqn(A, B, L) assert_eqn(A, B, L)
+#define eq(A, B)         assert_eq(A, B)
+#define not_eq(A, B)     assert_not_eq(A, B)
+#define eqn(A, B, L)     assert_eqn(A, B, L)
 #define not_eqn(A, B, L) assert_not_eqn(A, B, L)
 
 #define TEST_NAME(NAME) _utest_test_##NAME
-#define _TEST_DECL(NAME) void TEST_NAME(NAME)(UTestRunner * utest __attribute__((unused)))
+#define _TEST_DECL(NAME) void TEST_NAME(NAME)(UTestRunner* utest __attribute__((unused)))
 
 /**
  * The TEST macro is what creates a test.
@@ -151,24 +154,23 @@ _ARR_EQ_DECL(s, char*)
  *      assert(false);
  *  }
  */
-#define TEST(NAME, ...)                                                                           \
-    _TEST_DECL(NAME);                                                                             \
-    __attribute__((constructor)) void _add_##NAME##_to_tests(void)                                \
-    {                                                                                             \
-        UTestCase opt = { __VA_ARGS__ };                                                          \
-        BuildTestCase(opt, TEST_NAME(NAME), #NAME);                                               \
-    }                                                                                             \
+#define TEST(NAME, ...)                             \
+    _TEST_DECL(NAME);                               \
+    __attribute__((constructor))                    \
+    void _add_##NAME##_to_tests(void) {             \
+        UTestCase opt = { __VA_ARGS__ };            \
+        BuildTestCase(opt, TEST_NAME(NAME), #NAME); \
+    }                                               \
     _TEST_DECL(NAME)
 
-#define CATCH_OUTPUT(BUFFER)                                                                      \
-    char* BUFFER = NULL;                                                                          \
-    _current_test->capture_output = 1;                                                            \
-    if (_current_test->output != NULL)                                                            \
-    {                                                                                             \
-        free(_current_test->output);                                                              \
-        _current_test->output = NULL;                                                             \
-    }                                                                                             \
-    while (utest_capture_output(&BUFFER))
+#define CATCH_OUTPUT(BUFFER)         \
+char *BUFFER = NULL;                 \
+_current_test->capture_output = 1;   \
+if (_current_test->output != NULL) { \
+    free(_current_test->output);     \
+    _current_test->output = NULL;    \
+}                                    \
+while (utest_capture_output(&BUFFER))
 
 #ifdef __cplusplus
 }
