@@ -355,7 +355,6 @@ static struct node* node_rotateleft(struct node* n);
 
 static void insert_node(struct node** root, struct node* new)
 {
-    /* insert left */
     if (new->_hash_val < (*root)->_hash_val)
     {
         if ((*root)->left != NULL)
@@ -370,7 +369,6 @@ static void insert_node(struct node** root, struct node* new)
         }
         else
             (*root)->left = new;
-        /* insert right */
     }
     else if (new->_hash_val > (*root)->_hash_val)
     {
@@ -387,6 +385,13 @@ static void insert_node(struct node** root, struct node* new)
         else
             (*root)->right = new;
     }
+    else
+    {
+        new->left = (*root)->left;
+        new->right = (*root)->right;
+        free(*root);
+        *root = new;
+    }
     (*root)->height = MAX(height((*root)->left), height((*root)->right)) + 1;
 }
 
@@ -396,6 +401,8 @@ static void delete_tree(struct node* leaf)
     {
         delete_tree(leaf->right);
         delete_tree(leaf->left);
+        leaf->left = NULL;
+        leaf->right = NULL;
         free(leaf);
     }
 }
@@ -406,6 +413,8 @@ static void delete_tree_free_keys(struct node* n)
     {
         delete_tree_free_keys(n->left);
         delete_tree_free_keys(n->right);
+        n->left = NULL;
+        n->right = NULL;
 #ifndef TRASH_KEY
         free(n->key);
 #endif
@@ -447,6 +456,7 @@ void map_close_free_keys(Map* m)
     for (i = 0; i < m->__size; i++)
     {
         delete_tree_free_keys(m->__data[i]);
+        m->__data[i] = NULL;
     }
     free(m->__data);
     free(m);

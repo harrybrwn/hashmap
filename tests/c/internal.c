@@ -1,10 +1,14 @@
 #include <stdio.h>
 
-#define COMPILE_TESTS_H
+#ifndef HASHMAP_MAIN_TEST
 #include "hashmap.c"
 
+#ifndef AUTOTEST
 #define AUTOTEST
+#endif
 #include "tests/utest.h"
+
+#include "tests/test.h"
 
 static struct node* newnode(hash_t val)
 {
@@ -15,6 +19,7 @@ static struct node* newnode(hash_t val)
     n->right = NULL;
     return n;
 }
+#endif /* HASHMAP_MAIN_TEST */
 
 // clang-format off
 TEST(macros) {
@@ -22,6 +27,7 @@ TEST(macros) {
     assert(height(n) == -1);
     n = newnode(1);
     assert(height(n) == 0);
+    delete_tree(n);
 }
 
 TEST(rotations) {
@@ -69,26 +75,103 @@ TEST(insert_node) {
     delete_tree(n);
 }
 
+void print_tree(struct node* root, int level, int type)
+{
+    if (root != NULL)
+    {
+        int i;
+        for (i = 0; i < (level * 4); i++)
+            printf("%c", ' ');
+
+        if (type < 0)
+            printf("left: {");
+        else if (type > 0)
+            printf("right: {");
+        else if (type == 0)
+            printf("root: {");
+
+        printf("val: %lu, ", root->_hash_val);
+        printf("height: %d", root->height);
+        printf("}\n");
+
+        print_tree(root->left, level + 1, -1);
+        print_tree(root->right, level + 1, 1);
+    }
+}
+
+#define SPACE_INCR 20
+
+static void _print_avl(struct node* n, int space, char side)
+{
+    if (n == NULL)
+        return;
+
+    space += SPACE_INCR;
+    _print_avl(n->right, space, 'R');
+
+    printf("\n");
+    int i;
+    for (i = SPACE_INCR; i < space; i++)
+        printf(" ");
+
+    printf("(%lu)\n", n->_hash_val);
+    // printf("(%s)\n", n->key);
+
+    _print_avl(n->left, space, 'L');
+    if (side == 'L' && n->left == NULL && n->right == NULL)
+        printf("\n");
+}
+
+void print_avl(struct node* n)
+{
+    _print_avl(n, 0, 'C');
+}
+
 TEST(search) {
     struct node* n = newnode(10);
     assert_eq(n, search(n, 10));
+
     insert_node(&n, newnode(5));
     insert_node(&n, newnode(15));
     insert_node(&n, newnode(25));
     insert_node(&n, newnode(1));
 
-    assert_eq((hash_t)5, search(n, 5)->_hash_val);
-    assert_eq((hash_t)15, search(n, 15)->_hash_val);
-    assert_eq((hash_t)25, search(n, 25)->_hash_val);
-    assert_eq((hash_t)1, search(n, 1)->_hash_val);
+    assert_eq(5UL, search(n, 5)->_hash_val);
+    assert_eq(15UL, search(n, 15)->_hash_val);
+    assert_eq(25UL, search(n, 25)->_hash_val);
+    assert_eq(1UL, search(n, 1)->_hash_val);
 
     size_t i;
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 50; i++)
         insert_node(&n, newnode((hash_t)i));
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 50; i++)
         eq(i, search(n, i)->_hash_val);
     delete_tree(n);
 }
+
+TEST(insert_node_on_root)
+{
+    struct node* n = newnode(15);
+    n->key = "root node";
+
+    struct node* new_root = newnode(15);
+    new_root->key = "new root node";
+
+    insert_node(&n, newnode(1));
+    insert_node(&n, newnode(30));
+
+    eq(n->_hash_val, 15UL);
+    eq(n->key, "root node");
+
+    insert_node(&n, new_root);
+    eq(n->_hash_val, 15UL);
+    eq(n->key, "new root node");
+
+    eq(n->left->_hash_val, 1UL);
+    eq(n->right->_hash_val, 30UL);
+    delete_tree(n);
+}
+
 
 TEST(prehash) {
     hash_t a = prehash("abc");
