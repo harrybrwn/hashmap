@@ -60,7 +60,7 @@ bench_prof.txt: $(Benchmark).c
 	gprof profile.bin gmon.out --no-time=randstring > $@
 	@rm profile.bin
 
-test_prof.txt: $(Test).c
+test_prof.txt: $(Test).c tests/utest.c
 	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi

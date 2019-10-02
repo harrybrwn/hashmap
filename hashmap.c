@@ -12,8 +12,16 @@ struct node
 #endif
     mapval_t value;
 
-    /* I'm making some assumtions about the size of each tree here.
-   It should be fine if the heights stay under 255. */
+    /**
+     * Using unsigned char to save space
+     *
+     * The height of a tree is log2(n), and the max height of
+     * this implementation is 255, which means that the maximum number
+     * of nodes in each tree is 2^255 or about 5.79e76, more than
+     * enough wiggle room seeing as though that is almost as many
+     * atoms in the observable universe, I think one byte will be enough.
+     */
+
     unsigned char height;
 
     struct node *right, *left;

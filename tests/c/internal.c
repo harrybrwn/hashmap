@@ -99,32 +99,25 @@ void print_tree(struct node* root, int level, int type)
     }
 }
 
-#define SPACE_INCR 20
-
-static void _print_avl(struct node* n, int space, char side)
+static void _print_avl(struct node* n, int space, char side, const int incr)
 {
-    if (n == NULL)
-        return;
-
-    space += SPACE_INCR;
-    _print_avl(n->right, space, 'R');
-
+    if (n == NULL) return;
+    space += incr;
+    _print_avl(n->right, space, 'R', incr);
     printf("\n");
     int i;
-    for (i = SPACE_INCR; i < space; i++)
-        printf(" ");
+    for (i = incr; i < space; i++) { printf(" "); }
 
-    printf("(%lu)\n", n->_hash_val);
+    // printf("(%lu)\n", n->_hash_val);
     // printf("(%s)\n", n->key);
+    printf("(%d)\n", n->height);
 
-    _print_avl(n->left, space, 'L');
-    if (side == 'L' && n->left == NULL && n->right == NULL)
-        printf("\n");
+    _print_avl(n->left, space, 'L', incr);
+    if (side == 'L' && n->left == NULL && n->right == NULL) printf("\n");
 }
-
 void print_avl(struct node* n)
 {
-    _print_avl(n, 0, 'C');
+    _print_avl(n, 0, 'C', 20);
 }
 
 TEST(search) {
@@ -166,12 +159,25 @@ TEST(insert_node_on_root)
     insert_node(&n, new_root);
     eq(n->_hash_val, 15UL);
     eq(n->key, "new root node");
-
     eq(n->left->_hash_val, 1UL);
     eq(n->right->_hash_val, 30UL);
+
+    insert_node(&n, newnode(31));
+    eq(31UL, n->right->right->_hash_val);
+
+    insert_node(&n, newnode(32));
+    eq(31UL, n->right->_hash_val);
+    eq(30UL, n->right->left->_hash_val);
+    eq(32UL, n->right->right->_hash_val);
+
+    n->right->key = "old thirty one node";
+    struct node* thirty_one = newnode(31);
+    thirty_one->key = "thirty-one";
+    insert_node(&n, thirty_one);
+    eq("thirty-one", n->right->key);
+
     delete_tree(n);
 }
-
 
 TEST(prehash) {
     hash_t a = prehash("abc");
@@ -186,4 +192,32 @@ TEST(prehash) {
     assert(prehash(" ") != prehash("  "));
 
     assert_eq(prehash("qwerty"), fnv_1("qwerty"));
+}
+
+#include <math.h>
+
+TEST(small_map, .ignore=0)
+{
+    Map* m = create_map(1);
+    const int n = 256;
+    int vals[n], i;
+    char **keys = rand_keys(n);
+
+    vals[0] = 0;
+    map_put(m, keys[0], &vals[0]);
+    for (i = 1; i < n; i++)
+    {
+        vals[i] = i*i;
+        map_put(m, keys[i], &vals[i]);
+    }
+
+    // print_avl(m->__data[0]);
+
+    int h = (int)log2(n);
+    int height = m->__data[0]->height;
+    assert(h == height || h == height-1);
+    // eq(h, height);
+
+    free_string_arr(keys, n);
+    map_free(m);
 }

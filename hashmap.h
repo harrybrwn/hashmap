@@ -10,8 +10,6 @@
 extern "C" {
 #endif
 
-#pragma pack(1)
-
 #define DEFAULT_MAP_SIZE 31
 
 typedef size_t hash_t;
@@ -28,7 +26,8 @@ typedef struct hashmap
 /**
  * The key struct is used for when you need to use a key that is not a string.
  */
-struct key {
+struct key
+{
     void* value;
     size_t length;
 };

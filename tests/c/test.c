@@ -1,4 +1,5 @@
 #define HASHMAP_MAIN_TEST
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -109,7 +110,6 @@ TEST(map_keys) {
     char** keys = rand_keys(n);
     int data[n];
     size_t i;
-    // size_t k;
     for (i = 0; i < n; i++)
     {
         data[i] = i;
@@ -157,7 +157,6 @@ TEST(map_keys2) {
     Map* m = create_map(11);
     char* ks[] = { "one", "two", "three", "four", "five" };
     int i, data[5];
-    // int k;
     for (i = 0; i < 5; i++)
     {
         data[i] = i;
@@ -167,9 +166,7 @@ TEST(map_keys2) {
     assert_eq(5UL, m->item_count);
     char* keys[5];
     map_keys(m, keys);
-    // ASSERT_STR_ARR_EQ(ks, keys, 5);
 
-    // assert_eqn(ks, keys, 5);
     arr_unordered_eq_s(ks, keys, 5);
 
     map_close(m);
@@ -196,9 +193,9 @@ TEST(map_resize) {
         assert_eq(((int)i), *(int*)map_get(m, keys[i]));
     assert_eq(3UL, m->__size);
 
-    // eq(5, *(int*)map_get(m, keys[5]));
-    // map_delete_free_key(m, keys[5]);
-    // eq(NULL, map_get(m, keys[5]));
+    eq(5, *(int*)map_get(m, keys[5]));
+    map_delete_free_key(m, keys[5]);
+    eq(NULL, map_get(m, keys[5]));
 
     map_close_free_keys(m);
     free(keys);
@@ -218,6 +215,7 @@ static void delete_node(struct node** root, hash_t k_hash)
 {
     *root = _delete_node(*root, k_hash, 0);
 }
+
 // clang-format off
 TEST(delete_node0) {
     struct node* root;
@@ -288,34 +286,11 @@ TEST(delete_node1) {
     delete_tree(root);
 }
 
-// clang-format off
 /**
  * This test will fail if data is lost when deleting the root
  * node of a bst.
  */
 TEST(delete_root) {
-    /*
-            delete(50)...
-                       ---> 50
-                              /   \
-                            25	   75
-                       /  \   /  \
-             20   30 70  80
-
-            result...
-                                    70
-                              /    \
-                            25     75
-                       /  \      \
-                     20   30     80
-            delete(30)...
-
-                                    70
-                               /  \
-                             25    75
-                            /        \
-                       20	     80
-     */
     struct node* root = newnode(50);
     insert_node(&root, newnode(25));
     insert_node(&root, newnode(75));
@@ -347,7 +322,6 @@ TEST(delete_root) {
     assert(root == NULL);
 }
 
-// clang-format off
 TEST(delete_node) {
     struct node* root = newnode(25);
     int nodes[] = { 12, 27, 5, 20, 26, 4, 7 };
@@ -387,7 +361,6 @@ TEST(delete_node) {
     delete_tree(root);
 }
 
-// clang-format off
 TEST(avl_insert) {
     int vals[] = { 3, 7, 4, 2 };
     struct node* root = newnode(5);
@@ -401,7 +374,6 @@ TEST(avl_insert) {
     root = NULL;
 }
 
-// clang-format off
 TEST(avl_balence) {
     struct node* root = newnode(41);
     int vals[] = { 65, 20, 50, 26, 11, 29, 23 };
@@ -442,7 +414,6 @@ TEST(avl_balence) {
     delete_tree(root);
 }
 
-// clang-format off
 TEST(map_clear) {
     Map* m = new_map();
     map_clear(m); /* shouldn't seg-fault when called on emty map */
@@ -554,7 +525,6 @@ TEST(key_struct_put)
     int val = 42;
     map_key_put(m, k, &val);
     eq(42, *(int*)map_get(m, "the answer"));
-    // map_free(m);
     map_close(m);
 }
 
@@ -671,19 +641,21 @@ TEST(auto_free_keys, .ignore = 1)
     map_clear_free_keys(m); // invalid free here, probably trying to free, "key"
     eq(NULL, map_get(m, "another_key"));
 
-    // free(k1);
     free(m->__data);
     free(m);
 }
 
 #include "tests/c/internal.c"
 
+typedef hash_t (*hash_fn)(char*);
+// this test is mostly for better test coverage... sshhhhh dont tell anyone! ;)
+// i just like keeping these hash functions around just in case.
 TEST(hash_stuff)
 {
-    // this test is mostly for better test coverage... sshhhhh dont tell anyone! ;)
-    assert(djb2("key") > 0);
-    assert(sdbm("key") > 0);
-    assert(rshash("key") > 0);
-    assert(fnv_1("key") > 0);
-    assert(fnv_1a("key") > 0);
+    hash_fn hashes[] = {djb2, sdbm, rshash, fnv_1, fnv_1a};
+    const int n = sizeof(hashes)/sizeof(hashes[0]);
+    int i;
+
+    for (i = 0; i < n; i++)
+        assert(hashes[i]("key") > 0);
 }
