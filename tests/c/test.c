@@ -646,16 +646,3 @@ TEST(auto_free_keys, .ignore = 1)
 }
 
 #include "tests/c/internal.c"
-
-typedef hash_t (*hash_fn)(char*);
-// this test is mostly for better test coverage... sshhhhh dont tell anyone! ;)
-// i just like keeping these hash functions around just in case.
-TEST(hash_stuff)
-{
-    hash_fn hashes[] = {djb2, sdbm, rshash, fnv_1, fnv_1a};
-    const int n = sizeof(hashes)/sizeof(hashes[0]);
-    int i;
-
-    for (i = 0; i < n; i++)
-        assert(hashes[i]("key") > 0);
-}

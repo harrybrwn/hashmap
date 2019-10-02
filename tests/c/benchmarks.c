@@ -7,6 +7,10 @@
 
 #define MapValue int
 #include "hashmap.c"
+#undef FNV_PRIME
+#undef FNV_PRIME_MUL
+#undef FNV_OFFSET
+#include "hash.c"
 #include "tests/test.h"
 
 hash_t prehash(char*);

@@ -190,8 +190,6 @@ TEST(prehash) {
 
     assert_eq(prehash("abc123"), prehash("abc123"));
     assert(prehash(" ") != prehash("  "));
-
-    assert_eq(prehash("qwerty"), fnv_1("qwerty"));
 }
 
 #include <math.h>

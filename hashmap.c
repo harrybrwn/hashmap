@@ -68,67 +68,6 @@ hash_t prehash_key(struct key key)
     return hval;
 }
 
-hash_t djb2(char* str)
-{
-    hash_t hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c;
-
-    return hash;
-}
-
-hash_t sdbm(char* str)
-{
-    hash_t hash = 0;
-    int c;
-
-    while ((c = *str++))
-        hash = c + (hash << 6) + (hash << 16) - hash;
-
-    return hash;
-}
-
-hash_t rshash(char* str)
-{
-    hash_t a = 63689, b = 378551, hash = 0;
-    int c;
-
-    while ((c = *str++))
-    {
-        hash = hash * a + c;
-        a = a * b;
-    }
-    return (hash & 0x7FFFFFFF);
-}
-
-hash_t fnv_1(char* str)
-{
-    unsigned char* s = (unsigned char*)str;
-    hash_t hval = FNV_OFFSET;
-
-    while (*s)
-    {
-        hval += FNV_PRIME_MUL(hval);
-        hval ^= (hash_t)*s++;
-    }
-    return hval;
-}
-
-hash_t fnv_1a(char* str)
-{
-    unsigned char* s = (unsigned char*)str;
-    hash_t hval = FNV_OFFSET;
-
-    while (*s)
-    {
-        hval ^= (hash_t)*s++;
-        hval += FNV_PRIME_MUL(hval);
-    }
-    return hval;
-}
-
 Map* create_map(size_t size)
 {
     size_t i;
