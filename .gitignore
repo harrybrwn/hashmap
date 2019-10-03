@@ -17,6 +17,7 @@ benchmarks
 internal
 test_lib
 profile.bin
+iter_test
 
 # Other files
 preproc.i
@@ -28,8 +29,7 @@ test_prof.txt
 *.gcov
 
 # Tooling
-/.vscode/
-*.vscode/
+.vscode
 TODO
 .clang-format
 update.sh

@@ -3,6 +3,7 @@ Example=$(CTestDir)/doc_example
 Benchmark=$(CTestDir)/benchmarks
 InternalTest=$(CTestDir)/internal
 LibTest=$(CTestDir)/test_lib
+IterTest=$(CTestDir)/iter_test
 
 AllCTests=$(Test) $(Example) $(Benchmark) $(InternalTest) $(LibTest)
 
@@ -16,7 +17,7 @@ c-test: $(AllCTests)
 	@$(LoadLib) $(LibTest) > /dev/null
 
 clean-ctests:
-	@$(RM) $(LibTest) *.gcov
+	@$(RM) $(LibTest) *.gcov $(CTestDir)/iter_test
 
 clean: clean-ctests
 
@@ -32,8 +33,14 @@ $(Benchmark): $(Benchmark).c
 $(InternalTest): hashmap.c tests/utest.o $(InternalTest).c tests/test.h
 	$(CC) $(CFLAGS) -o $@ $(InternalTest).c tests/utest.o -lm
 
-$(TestDir)/utest.o: $(TestDir)/utest.c
-	$(CC) $(CFLAGS) -c $< -o $@
+$(IterTest): $(IterTest).c hashmap.o $(UTEST)
+	$(CC) $(CFLAGS) $^ -o $@
+
+iter: $(IterTest)
+	@$<
+
+mem: $(IterTest)
+	valgrind --leak-check=full ./$(IterTest)
 
 .PHONY: lib-test
 lib-test: $(LibTest)

@@ -1,0 +1,125 @@
+#include "hashmap.h"
+
+struct stack_node
+{
+    struct node* node;
+    struct stack_node* next;
+    char* key;
+    mapval_t val;
+};
+
+typedef struct mapiter
+{
+    struct stack_node* root; // array of nodes
+    size_t pos;
+    size_t counter;
+    Map* _map;
+} MapIterator;
+
+static struct stack_node* create_stack_node(void);
+static void push_tree(struct stack_node**, struct node*);
+struct node* pop(struct stack_node**);
+void push(struct stack_node**, struct node*);
+static inline int is_empty(struct stack_node*);
+
+MapIterator* map_iter(Map* m)
+{
+    MapIterator* iter = malloc(sizeof(MapIterator));
+    iter->pos = 0;
+    iter->root = create_stack_node();
+    iter->_map = m;
+    iter->counter = m->item_count;
+    return iter;
+}
+
+int iter_done(MapIterator* it)
+{
+    return it->counter == 0 && is_empty(it->root);
+}
+
+struct node
+{
+    char* key;
+    mapval_t val;
+    unsigned char height;
+    struct node *right, *left;
+    hash_t hash;
+};
+
+struct node* iter_next(MapIterator* it)
+{
+    if (it->pos >= it->_map->__size)
+        return NULL;
+    while (it->_map->__data[it->pos] == NULL)
+    {
+        it->pos++;
+        if (it->pos >= it->_map->__size)
+            return NULL;
+    }
+    push_tree(&it->root, it->_map->__data[it->pos++]);
+    it->counter--;
+    return pop(&(it->root));
+}
+
+char* iter_next_key(MapIterator* it)
+{
+    return iter_next(it)->key;
+}
+
+static void push_tree(struct stack_node** stack, struct node* n)
+{
+    if (n->left != NULL)
+    {
+        push_tree(stack, n->left);
+    }
+    if (n->right != NULL)
+    {
+        push_tree(stack, n->right);
+    }
+    push(stack, n);
+}
+
+static struct stack_node* create_stack_node(void)
+{
+    struct stack_node* s = malloc(sizeof(struct stack_node));
+    s->next = NULL;
+    s->node = NULL;
+    return s;
+}
+
+void push(struct stack_node** stack, struct node* n)
+{
+    if ((*stack) != NULL && (*stack)->node == NULL)
+    {
+        (*stack)->node = n;
+        (*stack)->next = NULL;
+        return;
+    }
+
+    struct stack_node* new = malloc(sizeof(struct stack_node));
+    new->next = *stack;
+    new->node = n;
+    *stack = new;
+}
+
+struct node* pop(struct stack_node** stack)
+{
+    struct stack_node* tmp = *stack;
+    *stack = (*stack)->next;
+    tmp->next = NULL;
+    struct node* value = tmp->node;
+    free(tmp);
+    return value;
+}
+
+static inline int is_empty(struct stack_node* stack)
+{
+    return stack == NULL;
+}
+
+void free_stack(struct stack_node* stack)
+{
+    if (stack->next)
+        free_stack(stack->next);
+    free(stack);
+}

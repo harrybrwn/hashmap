@@ -14,6 +14,8 @@ CppTestDir=$(TestDir)/cpp
 StaticLib=lib/libhashmapstatic.a
 SharedLib=lib/libhashmap.so
 
+UTEST=$(TestDir)/utest.o
+
 all: lib build-tests
 
 include $(CTestDir)/ctests.mk
@@ -30,6 +32,9 @@ bench: $(Benchmark)
 .PHONY: all test bench build-tests
 
 hashmap.o: hashmap.c hashmap.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(UTEST): $(TestDir)/utest.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: lib

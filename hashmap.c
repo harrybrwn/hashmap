@@ -3,8 +3,6 @@
 
 #include "hashmap.h"
 
-#pragma pack(1)
-
 struct node
 {
 #ifndef TRASH_KEY
