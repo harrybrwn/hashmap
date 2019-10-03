@@ -1,4 +1,6 @@
+#include "map_iter.h"
 #include "hashmap.h"
+#include <stdlib.h>
 
 struct stack_node
 {
@@ -7,14 +9,6 @@ struct stack_node
     char* key;
     mapval_t val;
 };
-
-typedef struct mapiter
-{
-    struct stack_node* root;
-    size_t pos;
-    long int counter;
-    Map* _map;
-} MapIterator;
 
 static struct stack_node* create_stack_node(void);
 static void push_tree(struct stack_node**, struct node*);
@@ -35,15 +29,6 @@ int iter_done(MapIterator* it)
 {
     return it->counter <= 0 && it->root == NULL;
 }
-
-struct node
-{
-    char* key;
-    mapval_t val;
-    unsigned char height;
-    struct node *right, *left;
-    hash_t hash;
-};
 
 struct node* iter_next(MapIterator* it)
 {
