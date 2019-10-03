@@ -67,7 +67,6 @@ TEST(push)
     eq(popped, n2);
     node popped2 = pop(&stack);
     eq(popped2, n1);
-    assert(is_empty(stack));
     assert(stack == NULL);
 
     free(n1);
@@ -133,13 +132,11 @@ TEST(iterator)
     }
 
     struct node* n;
-    i = 0;
     MapIterator* it = map_iter(m);
-    while (!iter_done(it))
+    for (i = 0; !iter_done(it); i++)
     {
         n = iter_next(it);
         assert(map_get(m, n->key) != NULL);
-        i++;
     }
     eq(i, 200);
 

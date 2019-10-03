@@ -10,7 +10,7 @@ struct stack_node
 
 typedef struct mapiter
 {
-    struct stack_node* root; // array of nodes
+    struct stack_node* root;
     size_t pos;
     size_t counter;
     Map* _map;
@@ -18,9 +18,8 @@ typedef struct mapiter
 
 static struct stack_node* create_stack_node(void);
 static void push_tree(struct stack_node**, struct node*);
-struct node* pop(struct stack_node**);
-void push(struct stack_node**, struct node*);
-static inline int is_empty(struct stack_node*);
+static struct node* pop(struct stack_node**);
+static void push(struct stack_node**, struct node*);
 
 MapIterator* map_iter(Map* m)
 {
@@ -32,9 +31,9 @@ MapIterator* map_iter(Map* m)
     return iter;
 }
 
-inline int iter_done(MapIterator* it)
+int iter_done(MapIterator* it)
 {
-    return it->counter == 0 && is_empty(it->root);
+    return it->counter == 0 && it->root == NULL;
 }
 
 struct node
@@ -57,7 +56,7 @@ struct node* iter_next(MapIterator* it)
     it->counter--;
     if (it->root == NULL)
         return NULL;
-    return pop(&(it->root));
+    return pop(&it->root);
 }
 
 char* iter_next_key(MapIterator* it)
@@ -86,7 +85,7 @@ static struct stack_node* create_stack_node(void)
     return s;
 }
 
-void push(struct stack_node** stack, struct node* n)
+static void push(struct stack_node** stack, struct node* n)
 {
     if ((*stack) != NULL && (*stack)->node == NULL)
     {
@@ -101,7 +100,7 @@ void push(struct stack_node** stack, struct node* n)
     *stack = new;
 }
 
-struct node* pop(struct stack_node** stack)
+static struct node* pop(struct stack_node** stack)
 {
     struct stack_node* tmp = *stack;
     *stack = (*stack)->next;
@@ -109,11 +108,6 @@ struct node* pop(struct stack_node** stack)
     struct node* value = tmp->node;
     free(tmp);
     return value;
-}
-
-static inline int is_empty(struct stack_node* stack)
-{
-    return stack == NULL;
 }
 
 void free_stack(struct stack_node* stack)
