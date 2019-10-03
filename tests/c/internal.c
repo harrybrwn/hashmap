@@ -1,13 +1,16 @@
 #include <stdio.h>
 
 #ifndef HASHMAP_MAIN_TEST
+#ifndef HASHMAP_C_INC
+#define HASHMAP_C_INC
 #include "hashmap.c"
+#endif
 
 #ifndef AUTOTEST
 #define AUTOTEST
 #endif
 #include "tests/utest.h"
-
+// test.h must come after utest.h
 #include "tests/test.h"
 
 static struct node* newnode(hash_t val)
@@ -18,6 +21,56 @@ static struct node* newnode(hash_t val)
     n->left = NULL;
     n->right = NULL;
     return n;
+}
+
+void print_tree(struct node* root, int level, int type)
+{
+    if (root != NULL)
+    {
+        int i;
+        for (i = 0; i < (level * 4); i++)
+            printf("%c", ' ');
+
+        if (type < 0)
+            printf("left: {");
+        else if (type > 0)
+            printf("right: {");
+        else if (type == 0)
+            printf("root: {");
+
+        printf("val: %lu, ", root->_hash_val);
+        printf("height: %d", root->height);
+        printf("}\n");
+
+        print_tree(root->left, level + 1, -1);
+        print_tree(root->right, level + 1, 1);
+    }
+}
+
+static void _print_avl(struct node* n, int space, char side, const int incr)
+{
+    if (n == NULL)
+        return;
+    space += incr;
+    _print_avl(n->right, space, 'R', incr);
+    printf("\n");
+    int i;
+    for (i = incr; i < space; i++)
+    {
+        printf(" ");
+    }
+
+    // printf("(%lu)\n", n->_hash_val);
+    // printf("(%s)\n", n->key);
+    printf("(%d)\n", n->height);
+
+    _print_avl(n->left, space, 'L', incr);
+    if (side == 'L' && n->left == NULL && n->right == NULL)
+        printf("\n");
+}
+void print_avl(struct node* n)
+{
+    _print_avl(n, 0, 'C', 20);
 }
 #endif /* HASHMAP_MAIN_TEST */
 
@@ -73,51 +126,6 @@ TEST(insert_node) {
     assert(n->right->left->_hash_val == 10);
     assert(n->right->right->_hash_val == 16);
     delete_tree(n);
-}
-
-void print_tree(struct node* root, int level, int type)
-{
-    if (root != NULL)
-    {
-        int i;
-        for (i = 0; i < (level * 4); i++)
-            printf("%c", ' ');
-
-        if (type < 0)
-            printf("left: {");
-        else if (type > 0)
-            printf("right: {");
-        else if (type == 0)
-            printf("root: {");
-
-        printf("val: %lu, ", root->_hash_val);
-        printf("height: %d", root->height);
-        printf("}\n");
-
-        print_tree(root->left, level + 1, -1);
-        print_tree(root->right, level + 1, 1);
-    }
-}
-
-static void _print_avl(struct node* n, int space, char side, const int incr)
-{
-    if (n == NULL) return;
-    space += incr;
-    _print_avl(n->right, space, 'R', incr);
-    printf("\n");
-    int i;
-    for (i = incr; i < space; i++) { printf(" "); }
-
-    // printf("(%lu)\n", n->_hash_val);
-    // printf("(%s)\n", n->key);
-    printf("(%d)\n", n->height);
-
-    _print_avl(n->left, space, 'L', incr);
-    if (side == 'L' && n->left == NULL && n->right == NULL) printf("\n");
-}
-void print_avl(struct node* n)
-{
-    _print_avl(n, 0, 'C', 20);
 }
 
 TEST(search) {
