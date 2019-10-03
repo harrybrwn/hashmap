@@ -5,7 +5,7 @@ InternalTest=$(CTestDir)/internal
 LibTest=$(CTestDir)/test_lib
 IterTest=$(CTestDir)/iter_test
 
-AllCTests=$(Test) $(Example) $(Benchmark) $(InternalTest) $(LibTest)
+AllCTests=$(Test) $(Example) $(Benchmark) $(InternalTest) $(LibTest) $(IterTest)
 
 LoadLib = LD_LIBRARY_PATH=./lib:$$LD_LIBRARY_PATH
 

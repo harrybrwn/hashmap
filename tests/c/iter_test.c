@@ -42,6 +42,7 @@ TEST(small_iter)
     {
         res = iter_next(it);
         assert(res == NULL);
+        assert(iter_done(it));
     }
 
     free(it);

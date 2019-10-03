@@ -12,7 +12,7 @@ typedef struct mapiter
 {
     struct stack_node* root;
     size_t pos;
-    size_t counter;
+    long int counter;
     Map* _map;
 } MapIterator;
 
@@ -33,7 +33,7 @@ MapIterator* map_iter(Map* m)
 
 int iter_done(MapIterator* it)
 {
-    return it->counter == 0 && it->root == NULL;
+    return it->counter <= 0 && it->root == NULL;
 }
 
 struct node
