@@ -22,8 +22,8 @@ h: help
 help:
 	@echo "  help:      desciptions of the build targets"
 	@echo "  all:       compile everything"
-	@echo "  install:   build static and shared libraries and move them to '$(InstallDir)'"
-	@echo "  uninstall: remove static and shared libraries from '$(InstallDir)'"
+	@echo "  install:   copy header files, static and shared libraries to '$(HeaderInstallDir)' and '$(LibInstallDir)'"
+	@echo "  uninstall: remove header files, static and shared libraries from '$(HeaderInstallDir)' and '$(InstallDir)'"
 	@echo "  test:      run all tests"
 	@echo "  clean:     remove extra files from build"
 	@echo "  bench:     run the benchmarks"
@@ -32,10 +32,16 @@ help:
 all: lib build-tests
 
 install: lib
-	@echo "install doesn't do anything yet"
+	sudo cp -f lib/libhashmap.so $(LibInstallDir)
+	sudo cp -f lib/libshashmap.a $(LibInstallDir)
+	sudo cp -f hashmap.h $(HeaderInstallDir)
+	sudo cp -f map_iter.h $(HeaderInstallDir)
 
 uninstall:
-	@echo "uninstall doesn't do anything yet"
+	sudo rm -f $(LibInstallDir)/libhashmap.so
+	sudo rm -f $(LibInstallDir)/libshashmap.a
+	sudo rm -f $(HeaderInstallDir)/hashmap.h
+	sudo rm -f $(HeaderInstallDir)/map_iter.h
 
 include $(CTestDir)/ctests.mk
 include $(CppTestDir)/cpptests.mk
@@ -58,7 +64,10 @@ lib: $(SharedLib) $(StaticLib)
 
 $(SharedLib): hashmap.c hashmap.h map_iter.c map_iter.h
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) $(CFLAGS) -fPIC -shared -o $@ $(filter %.c, $^)
+	$(CC) -Wall -Wextra -fPIC -c hashmap.c -o lib_hashmap.o
+	$(CC) -Wall -Wextra -fPIC -c map_iter.c -o lib_map_iter.o
+	$(CC) -shared lib_hashmap.o lib_map_iter.o -o $@
+	@$(RM) lib_hashmap.o lib_map_iter.o
 
 $(StaticLib): hashmap.o map_iter.o
 	@if [ ! -d lib ]; then mkdir lib; fi
