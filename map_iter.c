@@ -32,7 +32,7 @@ MapIterator* map_iter(Map* m)
     return iter;
 }
 
-int iter_done(MapIterator* it)
+inline int iter_done(MapIterator* it)
 {
     return it->counter == 0 && is_empty(it->root);
 }
@@ -48,16 +48,15 @@ struct node
 
 struct node* iter_next(MapIterator* it)
 {
-    if (it->pos >= it->_map->__size)
-        return NULL;
-    while (it->_map->__data[it->pos] == NULL)
-    {
+    while (it->_map->__data[it->pos] == NULL && it->pos < it->_map->__size - 1)
         it->pos++;
-        if (it->pos >= it->_map->__size)
-            return NULL;
-    }
-    push_tree(&it->root, it->_map->__data[it->pos++]);
+
+    if (it->pos < it->_map->__size - 1)
+        push_tree(&it->root, it->_map->__data[it->pos++]);
+
     it->counter--;
+    if (it->root == NULL)
+        return NULL;
     return pop(&(it->root));
 }
 

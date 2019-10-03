@@ -120,13 +120,30 @@ TEST(push_tree_to_stack)
     free(n);
 }
 
-TEST(mapless_iterator)
-{
-    // MapIterator* it = malloc(sizeof(MapIterator));
-    // it->pos = 0;
-    // it->root = NULL;
-    // it->root = create_stack_node();
+#include "tests/test.h"
 
-    // const int len = 20;
-    // struct node* nodes[len];
+TEST(iterator)
+{
+    Map* m = create_map(211);
+    char** keys = rand_keys(200);
+    int i;
+    for (i = 0; i < 200; i++)
+    {
+        map_put(m, keys[i], keys[i]);
+    }
+
+    struct node* n;
+    i = 0;
+    MapIterator* it = map_iter(m);
+    while (!iter_done(it))
+    {
+        n = iter_next(it);
+        assert(map_get(m, n->key) != NULL);
+        i++;
+    }
+    eq(i, 200);
+
+    free(it);
+    map_close_free_keys(m);
+    free(keys);
 }
