@@ -15,6 +15,7 @@ c-test: $(AllCTests)
 	@./$(Example) > /dev/null
 	@./$(InternalTest)
 	@$(LoadLib) $(LibTest) > /dev/null
+	@./$(IterTest)
 
 clean-ctests:
 	@$(RM) $(LibTest) *.gcov $(CTestDir)/iter_test
@@ -35,12 +36,6 @@ $(InternalTest): hashmap.c tests/utest.o $(InternalTest).c tests/test.h
 
 $(IterTest): $(IterTest).c hashmap.o $(UTEST)
 	$(CC) $(CFLAGS) $^ -o $@
-
-iter: $(IterTest)
-	@$<
-
-mem: $(IterTest)
-	valgrind --leak-check=full ./$(IterTest)
 
 .PHONY: lib-test
 lib-test: $(LibTest)
