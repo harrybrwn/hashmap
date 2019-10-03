@@ -19,7 +19,7 @@ typedef struct hashmap {
 `MapValue` is a macro that is meant to look like a datatype because it represents
 the datatype stored in the hashmap. If `MapValue` is defined before hashmap.h is
 included then the hashmap will use that type. If it is not defined by a user, the
-default is `void*`.
+default is `void*`. The `mapval_t` is the MapValue macro wrapped in a typedef.
 
 By default, the internal node struct stores the key, if `TRASH_KEY` is defines then
 the key is not stored. This gives the Map a small performance boost however
@@ -72,7 +72,7 @@ void init() {
 int main() {
 	init();
 
-	MapValue working = map_get(map, "working");
+	mapval_t working = map_get(map, "working");
 
 	if (working) {
 		printf("everything is working great :) \n");

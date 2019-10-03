@@ -56,6 +56,8 @@ void map_put(Map* m, char* key, mapval_t val);
  *  map_key_put is the same as put except it uses a `struct key` as the key.
  * This allows any data type to be used to generate a hash as long as the length
  * is specified in the key struct.
+ *
+ * The the node that stores the value will have a null key.
  */
 void map_key_put(Map* m, struct key key, mapval_t val);
 
