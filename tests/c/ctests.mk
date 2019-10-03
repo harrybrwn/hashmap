@@ -7,26 +7,25 @@ IterTest=$(CTestDir)/iter_test
 
 AllCTests=$(Test) $(Example) $(Benchmark) $(InternalTest) $(LibTest) $(IterTest)
 
-LoadLib = LD_LIBRARY_PATH=./lib:$$LD_LIBRARY_PATH
+LoadSharedLib = LD_LIBRARY_PATH=./lib:$$LD_LIBRARY_PATH
 
 .PHONY: c-test
 c-test: $(AllCTests)
 	@./$(Test)
 	@./$(Example) > /dev/null
 	@./$(InternalTest)
-	@$(LoadLib) $(LibTest) > /dev/null
+	@$(LoadSharedLib) $(LibTest) > /dev/null
 	@./$(IterTest)
 
+clean: clean-ctests
 clean-ctests:
 	@$(RM) $(LibTest) *.gcov $(CTestDir)/iter_test
-
-clean: clean-ctests
 
 $(Test): hashmap.c $(Test).c tests/test.h tests/utest.o
 	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c tests/utest.o -lm
 
 $(Example): $(StaticLib) $(Example).c
-	$(CC) -o $@ $(CFLAGS) $@.c -lhashmapstatic
+	$(CC) -o $@ $(CFLAGS) $@.c -lshashmap
 
 $(Benchmark): $(Benchmark).c
 	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) -O3 $^ -Wno-unused-parameter
@@ -39,7 +38,8 @@ $(IterTest): $(IterTest).c hashmap.o $(UTEST)
 
 .PHONY: lib-test
 lib-test: $(LibTest)
-	$(LoadLib) valgrind $(LibTest)
+	@$(LoadSharedLib) valgrind $(LibTest)
+	@#$(LoadSharedLib) $(LibTest)
 
 $(LibTest): $(LibTest).c $(SharedLib)
 	$(CC) $(CFLAGS) $< -o $@ -lhashmap
