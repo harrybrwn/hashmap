@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Llib -I.
+CFLAGS=-Wall -Wextra -Llib -I. -g
 AR=ar
 
 SRC=hashmap.c

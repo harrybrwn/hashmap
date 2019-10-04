@@ -64,8 +64,10 @@ TEST(map_resize_test)
     assert_eq(3UL, m->__size);
 
     eq(5, *(int*)map_get(m, keys[5]));
-    map_delete_free_key(m, keys[5]);
-    eq(NULL, map_get(m, keys[5]));
+    map_delete(m, keys[5]);
+    assert(map_get(m, keys[5]) == NULL);
+    free(keys[5]);
+    // eq(NULL, map_get(m, keys[5]));
 
     map_close_free_keys(m);
     free(keys);
@@ -175,12 +177,16 @@ TEST(map_putn_test)
     };
 
     Map* m = new_map();
-    struct map_putn_struct key = { 1, 2, 3.3, NULL };
+    struct map_putn_struct key;
+    memset(&key, 0, sizeof(struct map_putn_struct));
+    key = (struct map_putn_struct){ 1, '2', 3.3, NULL };
+
     eq(sizeof(key), sizeof(struct map_putn_struct));
     map_putn(m, &key, sizeof(key), "hello?");
 
     char* val = map_getn(m, &key, sizeof(key));
     eq(val, "hello?");
+    map_close(m);
 }
 
 TEST(prehash_len_test)
