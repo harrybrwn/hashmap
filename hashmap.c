@@ -453,11 +453,9 @@ static void add_node(Map* m, struct node* node, size_t index)
     else if (head_node->_hash_val == node->_hash_val)
     {
         /**
-         *  Getting two hash values that are the same is extremly unlikly given
+         *  Getting two raw hash values that are the same is extremly unlikly given
          *  different inputs. This is different that getting a hash collition
          *  which is after you take the modulus of the hash.
-         *  If the hash value of the two is the same then we are going to free
-         *  the memory from the old node and replace it with the new one.
          */
         node->left = head_node->left;
         node->right = head_node->right;
