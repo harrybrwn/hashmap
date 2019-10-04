@@ -132,9 +132,7 @@ TEST(iterator)
     char** keys = rand_keys(200);
     int i;
     for (i = 0; i < 200; i++)
-    {
         map_put(m, keys[i], keys[i]);
-    }
 
     // struct node* n;
     tuple_t n;
@@ -159,9 +157,7 @@ TEST(map_size_of_1)
     Map* m = create_map(1);
 
     for (i = 0; i < n; i++)
-    {
         map_put(m, keys[i], keys[i]);
-    }
 
     i = 0;
     MapIterator* it = map_iter(m);
@@ -220,15 +216,14 @@ TEST(destroy_iter_test)
     char** keys = rand_keys(100);
     int i;
     for (i = 0; i < 100; i++)
-    {
         map_put(m, keys[i], keys[i]);
-    }
 
     MapIterator* it = map_iter(m);
     for (i = 0; i < 25 && iter_hasnext(it); i++) {
         tuple_t tuple = iter_next(it);
         assert(tuple.key != NULL);
         assert(tuple.value != NULL);
+        assert(str_arr_contains(keys, 100, tuple.key));
         eq(tuple.key, (char*)tuple.value);
     }
 

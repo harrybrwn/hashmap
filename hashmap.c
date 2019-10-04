@@ -1,6 +1,4 @@
-#include <stdio.h>
 #include <stdlib.h>
-
 #include "hashmap.h"
 
 struct node
@@ -70,19 +68,9 @@ Map* create_map(size_t size)
 {
     size_t i;
     Map* m = malloc(sizeof(Map));
-    if (m == NULL)
-    {
-        perror("Error: ran out of memory allocating a Map");
-        return NULL;
-    }
 
     m->__size = size;
     m->__data = malloc(sizeof(struct node*) * size);
-    if (m->__data == NULL)
-    {
-        perror("Error: ran out of memory allocating a node array");
-        return NULL;
-    }
 
     for (i = 0; i < size; i++)
         m->__data[i] = NULL;
@@ -159,8 +147,6 @@ static void copy_nodes(Map*, struct node*);
 int map_resize(Map** old_m, size_t size)
 {
     Map* new_m = create_map(size);
-    if (new_m == NULL)
-        return -1;
     new_m->item_count = (*old_m)->item_count;
 
     struct node* tmp;
@@ -431,11 +417,6 @@ void map_close_free_keys(Map* m)
 static struct node* _new_node(char* key, mapval_t val, hash_t key_hash)
 {
     struct node* n = malloc(sizeof(struct node));
-    if (n == NULL)
-    {
-        perror("Error: out of memory allocating nodes");
-        return NULL;
-    }
 #ifndef TRASH_KEY
     n->key = key;
 #endif
