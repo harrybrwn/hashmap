@@ -88,13 +88,13 @@ int main(void)
 
     MapIterator* it;
 
-    struct node* n;
+    tuple_t t;
     it = map_iter(m);
     while (!iter_done(it))
     {
-        n = iter_next(it);
-        printf("%lu ", n->hash);
-        printf("%s ", n->key);
+        t = iter_next(it);
+        // printf("%lu ", n->hash);
+        printf("%s ", t.key);
         printf("\n");
     }
     free(it);

@@ -7,7 +7,7 @@
 struct node* newnode(hash_t h)
 {
     struct node* n = malloc(sizeof(struct node));
-    n->hash = h;
+    n->_hash_val = h;
     n->height = 0;
     n->left = NULL;
     n->right = NULL;
@@ -23,25 +23,30 @@ TEST(small_iter)
     map_put(m, "eleven", &primes[5]);
 
     MapIterator* it = map_iter(m);
-    struct node* res = iter_next(it);
-    assert(res != NULL);
-    eq(res->key, "five");
+    tuple_t res = iter_next(it);
+    assert(res.key != NULL);
+    assert(res.value != NULL);
+    eq(res.key, "five");
 
     res = iter_next(it);
-    assert(res != NULL);
-    eq(res->key, "eleven");
+    assert(res.key != NULL);
+    assert(res.value != NULL);
+    eq(res.key, "eleven");
 
     res = iter_next(it);
-    assert(res != NULL);
-    eq(res->key, "seven");
+    assert(res.key != NULL);
+    assert(res.value != NULL);
+    eq(res.key, "seven");
 
     res = iter_next(it);
-    assert(res == NULL);
+    assert(res.key == NULL);
+    assert(res.value == NULL);
     int i;
     for (i = 0; i < 10; i++)
     {
         res = iter_next(it);
-        assert(res == NULL);
+        assert(res.key == NULL);
+        assert(res.value == NULL);
         assert(iter_done(it));
     }
 
@@ -64,7 +69,6 @@ TEST(push)
     eq(stack->node, n2);
 
     node popped = pop(&stack);
-    eq(popped->hash, n2->hash);
     eq(popped, n2);
     node popped2 = pop(&stack);
     eq(popped2, n1);
@@ -105,15 +109,15 @@ TEST(push_tree_to_stack)
 
     struct node* p = pop(&stack);
     eq(p, n);
-    eq(p->hash, n->hash);
+    eq(p->_hash_val, n->_hash_val);
 
     p = pop(&stack);
     eq(p, n->right);
-    eq(p->hash, n->right->hash);
+    eq(p->_hash_val, n->right->_hash_val);
 
     p = pop(&stack);
     eq(p, n->left);
-    eq(p->hash, n->left->hash);
+    eq(p->_hash_val, n->left->_hash_val);
 
     free(n->left);
     free(n->right);
@@ -132,12 +136,14 @@ TEST(iterator)
         map_put(m, keys[i], keys[i]);
     }
 
-    struct node* n;
+    // struct node* n;
+    tuple_t n;
     MapIterator* it = map_iter(m);
+    eq(it->counter, 200L);
     for (i = 0; !iter_done(it); i++)
     {
         n = iter_next(it);
-        assert(map_get(m, n->key) != NULL);
+        assert(map_get(m, n.key) != NULL);
     }
     eq(i, 200);
 
@@ -157,15 +163,16 @@ TEST(map_size_of_1)
         map_put(m, keys[i], keys[i]);
     }
 
-    struct node* node;
     i = 0;
     MapIterator* it = map_iter(m);
     eq(it->pos, 0UL);
-    while (!iter_done(it))
+    tuple_t pair;
+    while (iter_hasnext(it))
     {
-        node = iter_next(it);
-        assert(node != NULL);
-        assert(str_arr_contains(keys, n, node->key));
+        pair = iter_next(it);
+        assert(pair.key != NULL);
+        assert(pair.value != NULL);
+        assert(str_arr_contains(keys, n, pair.key));
         i++;
     }
     eq(i, n);
@@ -173,4 +180,61 @@ TEST(map_size_of_1)
     map_free(m);
     free(it);
     free_string_arr(keys, n);
+}
+
+TEST(auto_done_test)
+{
+    Map* m = create_map(23);
+    char* key = malloc(sizeof("key"));
+    int * val = malloc(sizeof(int));
+    char* key2 = malloc(sizeof("huh"));
+    int * val2 = malloc(sizeof(int));
+
+    strncpy(key, "key", 4);
+    *val = 11;
+    strncpy(key2, "huh", 4);
+    *val2 = 69;
+
+    map_put(m, key, val);
+    map_put(m, key2, val2);
+
+    MapIterator* it = map_iter(m);
+    while (!iter_auto_done(&it))
+    {
+        tuple_t n = iter_next(it);
+        assert(n.key != NULL);
+        assert(n.value != NULL);
+    }
+
+    assert(it == NULL);
+    map_close(m);
+    free(key);
+    free(val);
+    free(key2);
+    free(val2);
+}
+
+TEST(destroy_iter_test)
+{
+    Map* m = create_map(111);
+    char** keys = rand_keys(100);
+    int i;
+    for (i = 0; i < 100; i++)
+    {
+        map_put(m, keys[i], keys[i]);
+    }
+
+    MapIterator* it = map_iter(m);
+    for (i = 0; i < 25 && iter_hasnext(it); i++) {
+        tuple_t tuple = iter_next(it);
+        assert(tuple.key != NULL);
+        assert(tuple.value != NULL);
+        eq(tuple.key, (char*)tuple.value);
+    }
+
+    eq(it->counter, 75L);
+    assert(it->root != NULL);
+    destroy_iter(it);
+    free_string_arr(keys, 100);
+    map_free(m);
 }

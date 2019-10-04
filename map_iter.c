@@ -10,6 +10,18 @@ struct stack_node
     mapval_t val;
 };
 
+struct node
+{
+#ifndef TRASH_KEY
+    char* key;
+#endif
+    mapval_t value;
+    unsigned char height;
+
+    struct node *right, *left;
+    hash_t _hash_val;
+};
+
 static struct stack_node* create_stack_node(void);
 static void push_tree(struct stack_node**, struct node*);
 static struct node* pop(struct stack_node**);
@@ -30,7 +42,35 @@ int iter_done(MapIterator* it)
     return it->counter <= 0 && it->root == NULL;
 }
 
-struct node* iter_next(MapIterator* it)
+int iter_hasnext(MapIterator* it)
+{
+    return it->counter > 0 || it->root != NULL;
+}
+
+int iter_auto_done(MapIterator** it)
+{
+    if ((*it)->counter <= 0 && (*it)->root == NULL)
+    {
+        free(*it);
+        *it = NULL;
+        return 1;
+    }
+    return 0;
+}
+
+static void free_stack(struct stack_node*);
+
+void destroy_iter(MapIterator* it)
+{
+    if (it->root) {
+        free_stack(it->root);
+        it->root = NULL;
+    }
+
+    free(it);
+}
+
+tuple_t iter_next(MapIterator* it)
 {
     while (it->pos < it->_map->__size)
     {
@@ -44,14 +84,17 @@ struct node* iter_next(MapIterator* it)
     }
 
     it->counter--;
-    if (it->root == NULL)
-        return NULL;
-    return pop(&it->root);
+    if (it->root == NULL) {
+        return (tuple_t){NULL, (mapval_t)0};
+    }
+
+    struct node* n = pop(&it->root);
+    return (tuple_t){n->key, n->value};
 }
 
 char* iter_next_key(MapIterator* it)
 {
-    return iter_next(it)->key;
+    return iter_next(it).key;
 }
 
 static void push_tree(struct stack_node** stack, struct node* n)
@@ -100,7 +143,7 @@ static struct node* pop(struct stack_node** stack)
     return value;
 }
 
-void free_stack(struct stack_node* stack)
+static void free_stack(struct stack_node* stack)
 {
     if (stack->next)
         free_stack(stack->next);

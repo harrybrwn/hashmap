@@ -6,14 +6,12 @@
 
 struct stack_node;
 
-struct node
-{
-    char* key;
-    mapval_t val;
-    unsigned char height;
-    struct node *right, *left;
-    hash_t hash;
+struct tuple {
+    char *key;
+    mapval_t value;
 };
+
+typedef struct tuple tuple_t;
 
 typedef struct mapiter
 {
@@ -24,8 +22,15 @@ typedef struct mapiter
 } MapIterator;
 
 MapIterator* map_iter(Map*);
+
+void destroy_iter(MapIterator*);
+
 int iter_done(MapIterator*);
-struct node* iter_next(MapIterator*);
+
+int iter_hasnext(MapIterator*);
+
+tuple_t iter_next(MapIterator*);
+
 char* iter_next_key(MapIterator*);
 
 #endif /* _MAP_ITER_H */
