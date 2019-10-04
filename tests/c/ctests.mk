@@ -21,7 +21,7 @@ clean: clean-ctests
 clean-ctests:
 	@$(RM) $(LibTest) *.gcov $(CTestDir)/iter_test
 
-$(Test): hashmap.c $(Test).c tests/test.h tests/utest.o
+$(Test): hashmap.c $(Test).c tests/test.h tests/utest.o tests/c/map_test.c
 	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c tests/utest.o -lm
 
 $(Example): $(StaticLib) $(Example).c

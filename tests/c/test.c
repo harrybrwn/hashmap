@@ -333,7 +333,7 @@ TEST(add_node) {
 TEST(key_struct_get) {
     struct key k = {"strkey", 6};
     hash_t h1 = prehash("strkey");
-    hash_t h2 = prehash_key(k);
+    hash_t h2 = prehash_len(k.value, k.length);
     assert_eq(h1, h2);
 
     Map* map = create_map(31);
@@ -344,12 +344,9 @@ TEST(key_struct_get) {
     assert(res != NULL);
     assert_eq(0, strncmp(res, "test value", 10));
 
-    hash_t keykeyhash = prehash_key((struct key){&k, sizeof(k)});
+    hash_t keykeyhash = prehash_len(&k, sizeof(k));
     put_from_hash(map, "", keykeyhash, "keykeyvalue");
-    char* keykeyvalue = (char*)get_from_hash(
-        map,
-        prehash_key((struct key){&k, sizeof(k)})
-    );
+    char* keykeyvalue = (char*)get_from_hash(map, prehash_len(&k, sizeof(k)));
     assert_eq(0, strcmp(keykeyvalue, "keykeyvalue"));
     assert_eq(keykeyvalue, "keykeyvalue");
     map_free(map);
@@ -359,7 +356,7 @@ TEST(key_struct_put)
 {
     struct key k = {"the answer", 10};
     hash_t h1 = prehash("the answer");
-    hash_t h2 = prehash_key(k);
+    hash_t h2 = prehash_len(k.value, k.length);
     assert_eq(h1, h2);
 
     Map* m = new_map();

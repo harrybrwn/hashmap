@@ -64,8 +64,8 @@ lib: $(SharedLib) $(StaticLib)
 
 $(SharedLib): hashmap.c hashmap.h map_iter.c map_iter.h
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) -Wall -Wextra -fPIC -c hashmap.c -o lib_hashmap.o
-	$(CC) -Wall -Wextra -fPIC -c map_iter.c -o lib_map_iter.o
+	$(CC) $(LibBuildFlags) -Wall -Wextra -fPIC -c hashmap.c -o lib_hashmap.o
+	$(CC) $(LibBuildFlags) -Wall -Wextra -fPIC -c map_iter.c -o lib_map_iter.o
 	$(CC) -shared lib_hashmap.o lib_map_iter.o -o $@
 	@$(RM) lib_hashmap.o lib_map_iter.o
 

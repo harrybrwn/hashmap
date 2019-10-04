@@ -53,6 +53,11 @@ void map_free(Map*);
 void map_put(Map* m, char* key, mapval_t val);
 
 /**
+ * put `val` into the Map `m` using `n` bytes from `key`.
+ */
+void map_putn(Map* m, void* key, size_t n, mapval_t val);
+
+/**
  *  map_key_put is the same as put except it uses a `struct key` as the key.
  * This allows any data type to be used to generate a hash as long as the length
  * is specified in the key struct.
@@ -65,6 +70,11 @@ void map_key_put(Map* m, struct key key, mapval_t val);
 mapval_t map_get(Map* m, char* key);
 
 /**
+ * get data from the map using `n` bytes of data from `key`.
+ */
+mapval_t map_getn(Map* m, void* key, size_t n);
+
+/**
  * map_key_get will retrive the data stored using a void* and its length as
  * a key (see `struct key`).
  */
@@ -72,6 +82,11 @@ mapval_t map_key_get(Map* m, struct key key);
 
 /* map_delete will delete the data stored at a keys. */
 void map_delete(Map* m, char* key);
+
+/**
+ * delete data from a map using `n` bytes from `key`.
+ */
+void map_deleten(Map* m, void* key, size_t n);
 
 /**
  * map_resize resizes the map to the given size. The Map given will be copied

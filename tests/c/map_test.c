@@ -163,3 +163,31 @@ TEST(map_clear)
     map_clear(m); /* shouldn't seg-fault when called on emty map */
     map_close(m);
 }
+
+TEST(map_putn_test)
+{
+    struct map_putn_struct
+    {
+        int a;
+        char b;
+        float c;
+        struct map_putn_struct* d;
+    };
+
+    Map* m = new_map();
+    struct map_putn_struct key = { 1, 2, 3.3, NULL };
+    eq(sizeof(key), sizeof(struct map_putn_struct));
+    map_putn(m, &key, sizeof(key), "hello?");
+
+    char* val = map_getn(m, &key, sizeof(key));
+    eq(val, "hello?");
+}
+
+TEST(prehash_len_test)
+{
+    hash_t a = prehash("hello");
+    hash_t b = prehash_len("hello", 5);
+    eq(a, b);
+    hash_t c = prehash_len("hello", 6);
+    not_eq (a, c);
+}

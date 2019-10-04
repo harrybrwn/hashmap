@@ -52,13 +52,13 @@ hash_t prehash(char* str)
     return hval;
 }
 
-hash_t prehash_key(struct key key)
+hash_t prehash_len(void* data, size_t len)
 {
     size_t i;
-    unsigned char* s = (unsigned char*)key.value;
+    unsigned char* s = (unsigned char*)data;
     hash_t hval = FNV_OFFSET;
 
-    for (i = 0; i < key.length; i++)
+    for (i = 0; i < len; i++)
     {
         hval += FNV_PRIME_MUL(hval);
         hval ^= (hash_t)s[i];
@@ -111,16 +111,12 @@ void map_close(Map* m)
 void map_free(Map*) __attribute__((alias("map_close")));
 
 static inline void put_from_hash(Map*, char*, hash_t, mapval_t);
-static inline mapval_t get_from_hash(Map* m, hash_t k_hash);
+static inline mapval_t get_from_hash(Map*, hash_t);
+static inline void delete_from_hash(Map*, hash_t);
 
 void map_put(Map* m, char* key, mapval_t val)
 {
     return put_from_hash(m, key, prehash(key), val);
-}
-
-void map_key_put(Map* m, struct key key, mapval_t val)
-{
-    return put_from_hash(m, (char*){ '\0' }, prehash_key(key), (mapval_t)val);
 }
 
 mapval_t map_get(Map* m, char* key)
@@ -128,28 +124,37 @@ mapval_t map_get(Map* m, char* key)
     return get_from_hash(m, prehash(key));
 }
 
-mapval_t map_key_get(Map* m, struct key key)
+void map_putn(Map* m, void* key, size_t n, mapval_t val)
 {
-    return get_from_hash(m, prehash_key(key));
+    return put_from_hash(m, (char*){ '\0' }, prehash_len(key, n), val);
 }
 
-static void copy_nodes(Map*, struct node*);
-static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key);
+mapval_t map_getn(Map* m, void* key, size_t n)
+{
+    return get_from_hash(m, prehash_len(key, n));
+}
+
+void map_key_put(Map* m, struct key key, mapval_t val)
+{
+    return put_from_hash(m, (char*){ '\0' }, prehash_len(key.value, key.length), (mapval_t)val);
+}
+
+mapval_t map_key_get(Map* m, struct key key)
+{
+    return get_from_hash(m, prehash_len(key.value, key.length));
+}
 
 void map_delete(Map* m, char* key)
 {
-    hash_t k_hash = prehash(key);
-    size_t index = k_hash % m->__size;
-
-    struct node* root = m->__data[index];
-    if (root == NULL)
-    {
-        return;
-    }
-
-    m->__data[index] = _delete_node(root, k_hash, 0);
-    m->item_count--;
+    return delete_from_hash(m, prehash(key));
 }
+
+void map_deleten(Map* m, void* key, size_t n)
+{
+    return delete_from_hash(m, prehash_len(key, n));
+}
+
+static void copy_nodes(Map*, struct node*);
 
 int map_resize(Map** old_m, size_t size)
 {
@@ -247,6 +252,22 @@ static inline mapval_t get_from_hash(Map* m, hash_t k_hash)
         return n->value;
     }
     return root->value;
+}
+
+static struct node* _delete_node(struct node* root, hash_t k_hash, int free_key);
+
+static inline void delete_from_hash(Map* m, hash_t k_hash)
+{
+    size_t index = k_hash % m->__size;
+
+    struct node* root = m->__data[index];
+    if (root == NULL)
+    {
+        return;
+    }
+
+    m->__data[index] = _delete_node(root, k_hash, 0);
+    m->item_count--;
 }
 
 static struct node* search(struct node* root, hash_t key_hash)
