@@ -32,11 +32,16 @@ int iter_done(MapIterator* it)
 
 struct node* iter_next(MapIterator* it)
 {
-    while (it->_map->__data[it->pos] == NULL && it->pos < it->_map->__size - 1)
-        it->pos++;
-
-    if (it->pos < it->_map->__size - 1)
-        push_tree(&it->root, it->_map->__data[it->pos++]);
+    while (it->pos < it->_map->__size)
+    {
+        if (it->_map->__data[it->pos] == NULL)
+            it->pos++;
+        else
+        {
+            push_tree(&it->root, it->_map->__data[it->pos++]);
+            break;
+        }
+    }
 
     it->counter--;
     if (it->root == NULL)

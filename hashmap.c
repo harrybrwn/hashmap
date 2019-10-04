@@ -77,7 +77,7 @@ Map* create_map(size_t size)
     }
 
     m->__size = size;
-    m->__data = malloc(sizeof(struct node*) * m->__size);
+    m->__data = malloc(sizeof(struct node*) * size);
     if (m->__data == NULL)
     {
         perror("Error: ran out of memory allocating a node array");

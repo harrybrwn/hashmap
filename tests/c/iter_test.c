@@ -21,8 +21,8 @@ TEST(small_iter)
     map_put(m, "five", &primes[3]);
     map_put(m, "seven", &primes[4]);
     map_put(m, "eleven", &primes[5]);
-    MapIterator* it = map_iter(m);
 
+    MapIterator* it = map_iter(m);
     struct node* res = iter_next(it);
     assert(res != NULL);
     eq(res->key, "five");
@@ -144,4 +144,33 @@ TEST(iterator)
     free(it);
     map_close_free_keys(m);
     free(keys);
+}
+
+TEST(map_size_of_1)
+{
+    int n = 10, i;
+    char** keys = rand_keys(n);
+    Map* m = create_map(1);
+
+    for (i = 0; i < n; i++)
+    {
+        map_put(m, keys[i], keys[i]);
+    }
+
+    struct node* node;
+    i = 0;
+    MapIterator* it = map_iter(m);
+    eq(it->pos, 0UL);
+    while (!iter_done(it))
+    {
+        node = iter_next(it);
+        assert(node != NULL);
+        assert(str_arr_contains(keys, n, node->key));
+        i++;
+    }
+    eq(i, n);
+
+    map_free(m);
+    free(it);
+    free_string_arr(keys, n);
 }
