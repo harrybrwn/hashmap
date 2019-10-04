@@ -4,8 +4,8 @@ from distutils.core import setup, Extension
 
 hashmap = Extension(
 	'hashmap',
-	include_dirs=['.'],
-	sources=['hashmap.c', 'extentions/py/py_hashmap.c'],
+	include_dirs=['.', 'inc'],
+	sources=['src/hashmap.c', 'extentions/py/py_hashmap.c'],
 )
 
 setup(

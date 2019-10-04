@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Llib -I. -g
+CFLAGS=-Wall -Wextra -Llib -Iinc -I. -g
 AR=ar
 
 SRC=hashmap.c
@@ -34,14 +34,17 @@ all: lib build-tests
 install: lib
 	sudo cp -f lib/libhashmap.so $(LibInstallDir)
 	sudo cp -f lib/libshashmap.a $(LibInstallDir)
-	sudo cp -f hashmap.h $(HeaderInstallDir)
-	sudo cp -f map_iter.h $(HeaderInstallDir)
+	sudo cp -f inc/hashmap.h $(HeaderInstallDir)
+	sudo cp -f inc/map_iter.h $(HeaderInstallDir)
 
 uninstall:
 	sudo rm -f $(LibInstallDir)/libhashmap.so
 	sudo rm -f $(LibInstallDir)/libshashmap.a
 	sudo rm -f $(HeaderInstallDir)/hashmap.h
 	sudo rm -f $(HeaderInstallDir)/map_iter.h
+
+HASHMAP=src/hashmap.c
+MAPITER=src/map_iter.c
 
 include $(CTestDir)/ctests.mk
 include $(CppTestDir)/cpptests.mk
@@ -56,16 +59,18 @@ bench: $(Benchmark)
 
 .PHONY: all test bench build-tests
 
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $(filter %.c, $^) -o $@
+%.o: src/%.c inc/%.h
+	$(CC) $(CFLAGS) -c $(filter %.c, $^) -o $(notdir $@)
 
 .PHONY: lib
 lib: $(SharedLib) $(StaticLib)
 
-$(SharedLib): hashmap.c hashmap.h map_iter.c map_iter.h
+LibBuildFlags += -Iinc -Wall -Wextra -fPIC
+
+$(SharedLib): $(HASHMAP) inc/hashmap.h $(MAPITER) inc/map_iter.h
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) $(LibBuildFlags) -Wall -Wextra -fPIC -c hashmap.c -o lib_hashmap.o
-	$(CC) $(LibBuildFlags) -Wall -Wextra -fPIC -c map_iter.c -o lib_map_iter.o
+	$(CC) $(LibBuildFlags) -c $(HASHMAP) -o lib_hashmap.o
+	$(CC) $(LibBuildFlags) -c $(MAPITER) -o lib_map_iter.o
 	$(CC) -shared lib_hashmap.o lib_map_iter.o -o $@
 	@$(RM) lib_hashmap.o lib_map_iter.o
 
@@ -76,10 +81,10 @@ $(StaticLib): hashmap.o map_iter.o
 Binaries=$(Test) $(Example) $(Benchmark) $(InternalTest)
 
 clean:
-	@rm -f $(Binaries) gmon.out *_prof.txt profile.bin
-	@rm -f $(shell find . -name '*.o')
-	@rm -f $(shell find . -name '*.so')
-	@rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
+	rm -f $(Binaries) gmon.out *_prof.txt profile.bin
+	rm -f $(shell find . -name '*.o')
+	rm -f $(shell find . -name '*.so')
+	rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
 
 prof: bench_prof.txt test_prof.txt
 

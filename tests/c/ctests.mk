@@ -21,20 +21,20 @@ clean: clean-ctests
 clean-ctests:
 	@$(RM) $(LibTest) *.gcov $(CTestDir)/iter_test
 
-$(Test): hashmap.c $(Test).c tests/test.h tests/utest.o tests/c/map_test.c
-	$(CC) -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c tests/utest.o -lm
+$(Test): $(HASHMAP) $(Test).c tests/test.h $(UTEST) tests/c/map_test.c
+	$(CC) -Isrc -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c $(UTEST) -lm
 
 $(Example): $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $@.c -lshashmap
 
 $(Benchmark): $(Benchmark).c
-	$(CC) -DTRASH_KEY -o $@ $(CFLAGS) -O3 $^ -Wno-unused-parameter
+	$(CC) -Isrc -DTRASH_KEY -o $@ $(CFLAGS) -O3 $^ -Wno-unused-parameter
 
-$(InternalTest): hashmap.c tests/utest.o $(InternalTest).c tests/test.h
-	$(CC) $(CFLAGS) -o $@ $(InternalTest).c tests/utest.o -lm
+$(InternalTest): $(HASHMAP) $(UTEST) $(InternalTest).c tests/test.h
+	$(CC) -Isrc $(CFLAGS) -o $@ $(InternalTest).c $(UTEST) -lm
 
 $(IterTest): $(IterTest).c hashmap.o $(UTEST)
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) -Isrc $(CFLAGS) $^ -o $@
 
 .PHONY: lib-test
 lib-test: $(LibTest)
