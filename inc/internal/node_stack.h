@@ -2,6 +2,7 @@
 #define _INTERNAL_NODE_STACK_H
 
 #include "hashmap.h"
+#include "internal/node.h"
 
 struct stack_node
 {
@@ -10,20 +11,6 @@ struct stack_node
     char* key;
     mapval_t val;
 };
-
-#ifndef NODE_DEFINED
-struct node
-{
-#ifndef TRASH_KEY
-    char* key;
-#endif
-    mapval_t value;
-    unsigned char height;
-
-    struct node *right, *left;
-    hash_t _hash_val;
-};
-#endif
 
 struct stack_node* create_stack_node(void);
 struct node* pop(struct stack_node**);
