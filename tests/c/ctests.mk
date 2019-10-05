@@ -12,17 +12,17 @@ LoadSharedLib = LD_LIBRARY_PATH=./lib:$$LD_LIBRARY_PATH
 .PHONY: c-test
 c-test: $(AllCTests)
 	@./$(Test)
-	@./$(Example) > /dev/null
 	@./$(InternalTest)
-	@$(LoadSharedLib) $(LibTest) > /dev/null
 	@./$(IterTest)
+	@./$(Example) > /dev/null
+	@$(LoadSharedLib) $(LibTest) > /dev/null
 
 clean: clean-ctests
 clean-ctests:
-	@$(RM) $(LibTest) *.gcov $(CTestDir)/iter_test
+	$(RM) *.gcov $(AllCTests)
 
 $(Test): $(HASHMAP) $(Test).c tests/test.h $(UTEST) tests/c/map_test.c
-	$(CC) -Isrc -DHASHMAP_TESTING $(CFLAGS) -o $@ $(Test).c $(UTEST) -lm
+	$(CC) -Isrc $(CFLAGS) -o $@ $(Test).c $(UTEST) -lm
 
 $(Example): $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $@.c -lshashmap
@@ -36,13 +36,11 @@ $(InternalTest): $(HASHMAP) $(UTEST) $(InternalTest).c tests/test.h
 $(IterTest): $(IterTest).c hashmap.o $(UTEST)
 	$(CC) -Isrc $(CFLAGS) $^ -o $@
 
-.PHONY: lib-test
-lib-test: $(LibTest)
-	@$(LoadSharedLib) valgrind $(LibTest)
-	@#$(LoadSharedLib) $(LibTest)
-
 $(LibTest): $(LibTest).c $(SharedLib)
 	$(CC) $(CFLAGS) $< -o $@ -lhashmap
+
+mem/%: tests/c/%
+	@valgrind $<
 
 test-cov: $(Test).c $(TestDir)/utest.c
 	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage $^ -o $(Test) -lm

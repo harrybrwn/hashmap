@@ -62,26 +62,28 @@ bench: $(Benchmark)
 %.o: src/%.c inc/%.h
 	$(CC) $(CFLAGS) -c $(filter %.c, $^) -o $(notdir $@)
 
-.PHONY: lib
-lib: $(SharedLib) $(StaticLib)
+.PHONY: lib lib-setup
+lib: lib-setup $(SharedLib) $(StaticLib)
 
-LibBuildFlags += -Iinc -Wall -Wextra -fPIC
-
-$(SharedLib): $(HASHMAP) inc/hashmap.h $(MAPITER) inc/map_iter.h
+lib-setup:
 	@if [ ! -d lib ]; then mkdir lib; fi
-	$(CC) $(LibBuildFlags) -c $(HASHMAP) -o lib_hashmap.o
-	$(CC) $(LibBuildFlags) -c $(MAPITER) -o lib_map_iter.o
-	$(CC) -shared lib_hashmap.o lib_map_iter.o -o $@
-	@$(RM) lib_hashmap.o lib_map_iter.o
 
-$(StaticLib): hashmap.o map_iter.o
-	@if [ ! -d lib ]; then mkdir lib; fi
+LibBuildFlags += -Iinc -Wall -Wextra -O3 -c
+
+lib/%_static.o: lib-setup src/%.c inc/%.h
+	$(CC) $(LibBuildFlags) $(filter %.c, $^) -o $@
+
+lib/%_shared.o: lib-setup src/%.c inc/%.h
+	$(CC) $(LibBuildFlags) -fPIC $(filter %.c, $^) -o $@
+
+$(SharedLib): lib/hashmap_shared.o lib/map_iter_shared.o
+	$(CC) -shared $^ -o $@
+
+$(StaticLib): lib/hashmap_static.o lib/map_iter_static.o
 	$(AR) rcs $@ $^
 
-Binaries=$(Test) $(Example) $(Benchmark) $(InternalTest)
-
 clean:
-	rm -f $(Binaries) gmon.out *_prof.txt profile.bin
+	rm -f gmon.out *_prof.txt profile.bin
 	rm -f $(shell find . -name '*.o')
 	rm -f $(shell find . -name '*.so')
 	rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
