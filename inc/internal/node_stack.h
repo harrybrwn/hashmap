@@ -4,18 +4,18 @@
 #include "hashmap.h"
 #include "internal/node.h"
 
-struct stack_node
+struct node_stack
 {
     struct node* node;
-    struct stack_node* next;
+    struct node_stack* next;
     char* key;
     mapval_t val;
 };
 
-struct stack_node* create_stack_node(void);
-struct node* pop(struct stack_node**);
-void push(struct stack_node**, struct node*);
-void free_stack(struct stack_node*);
-void push_tree(struct stack_node**, struct node*);
+struct node_stack* create_node_stack(void);
+struct node* pop(struct node_stack**);
+void push(struct node_stack**, struct node*);
+void free_stack(struct node_stack*);
+void push_tree(struct node_stack**, struct node*);
 
 #endif /* _INTERNAL_NODE_STACK_H */
