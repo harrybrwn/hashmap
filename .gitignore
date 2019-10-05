@@ -15,6 +15,7 @@ cpp-test
 doc_example
 benchmarks
 test_lib
+tests/c/internal
 profile.bin
 iter_test
 

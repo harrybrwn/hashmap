@@ -40,3 +40,16 @@ void free_stack(struct stack_node* stack)
         free_stack(stack->next);
     free(stack);
 }
+
+void push_tree(struct stack_node** stack, struct node* n)
+{
+    if (n->left != NULL)
+    {
+        push_tree(stack, n->left);
+    }
+    if (n->right != NULL)
+    {
+        push_tree(stack, n->right);
+    }
+    push(stack, n);
+}

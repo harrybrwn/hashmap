@@ -46,7 +46,7 @@ void destroy_iter(MapIterator* it)
     free(it);
 }
 
-static void push_tree(struct stack_node**, struct node*);
+// static void push_tree(struct stack_node**, struct node*);
 
 tuple_t iter_next(MapIterator* it)
 {
@@ -74,17 +74,4 @@ tuple_t iter_next(MapIterator* it)
 char* iter_next_key(MapIterator* it)
 {
     return iter_next(it).key;
-}
-
-static void push_tree(struct stack_node** stack, struct node* n)
-{
-    if (n->left != NULL)
-    {
-        push_tree(stack, n->left);
-    }
-    if (n->right != NULL)
-    {
-        push_tree(stack, n->right);
-    }
-    push(stack, n);
 }

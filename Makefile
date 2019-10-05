@@ -68,18 +68,28 @@ lib: lib-setup $(SharedLib) $(StaticLib)
 lib-setup:
 	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
 
-LibBuildFlags += -Iinc -Wall -Wextra -O3 -c
+LibBuildFlags = -Iinc -Wall -Wextra $(LibBuildMacros:%=-D%) -c
 
-lib/static/%.o: lib-setup lib/static/internal/node_stack.o src/%.c inc/%.h
+ifeq ($(BuildType), test)
+LibBuildFlags += -g
+else
+LibBuildFlags += -O3
+endif
+
+lib/static/%.o: src/%.c inc/%.h
+	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
 	$(CC) $(LibBuildFlags) $(filter %.c, $^) -o $@
 
-lib/shared/%.o: lib-setup lib/shared/internal/node_stack.o src/%.c inc/%.h
+lib/shared/%.o: src/%.c inc/%.h
+	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
 	$(CC) $(LibBuildFlags) -fPIC $(filter %.c, $^) -o $@
 
 $(SharedLib): lib/shared/internal/node_stack.o lib/shared/hashmap.o lib/shared/map_iter.o
-	$(CC) -shared $^  -o $@
+	@echo shared lib
+	$(CC) -shared $^ -o $@
 
 $(StaticLib): lib/static/internal/node_stack.o lib/static/hashmap.o lib/static/map_iter.o
+	@echo static lib
 	$(AR) rcs $@ $^
 
 clean:
@@ -88,20 +98,4 @@ clean:
 	rm -f $(shell find . -name '*.so')
 	rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
 
-prof: bench_prof.txt test_prof.txt
-
-bench_prof.txt: $(Benchmark).c
-	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
-	@./profile.bin
-	@if [ ! -f 'gmon.out' ]; then exit 1; fi
-	gprof profile.bin gmon.out --no-time=randstring > $@
-	@rm profile.bin
-
-test_prof.txt: $(Test).c tests/utest.c
-	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
-	@./profile.bin
-	@if [ ! -f 'gmon.out' ]; then exit 1; fi
-	gprof profile.bin gmon.out > $@
-	@rm profile.bin
-
-.PHONY: clean proc prof fmt
+.PHONY: clean

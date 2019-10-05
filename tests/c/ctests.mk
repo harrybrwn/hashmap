@@ -10,7 +10,7 @@ AllCTests=$(Test) $(Example) $(Benchmark) $(InternalTest) $(LibTest) $(IterTest)
 LoadSharedLib = LD_LIBRARY_PATH=./lib:$$LD_LIBRARY_PATH
 
 .PHONY: c-test
-c-test: $(AllCTests)
+c-test: $(StaticLib) $(AllCTests)
 	@./$(Test)
 	@./$(InternalTest)
 	@./$(IterTest)
@@ -21,19 +21,21 @@ clean: clean-ctests
 clean-ctests:
 	$(RM) *.gcov $(AllCTests)
 
+TestFlags=-I. -Isrc -Iinc -Wall -Wextra -Llib -g -lm -lshashmap
+
 $(Test): $(HASHMAP) $(Test).c tests/test.h $(UTEST) tests/c/map_test.c
-	$(CC) -Isrc $(CFLAGS) -o $@ $(Test).c $(UTEST) -lm
+	$(CC) -o $@ $(Test).c $(UTEST) $(TestFlags)
 
 $(Example): $(StaticLib) $(Example).c
 	$(CC) -o $@ $(CFLAGS) $@.c -lshashmap
 
 $(Benchmark): $(Benchmark).c
-	$(CC) -Isrc -DTRASH_KEY -o $@ $(CFLAGS) -O3 $^ -Wno-unused-parameter
+	$(CC) -DTRASH_KEY -o $@ -O3 $^ $(TestFlags)
 
 $(InternalTest): $(HASHMAP) $(UTEST) $(InternalTest).c tests/test.h
-	$(CC) -Isrc $(CFLAGS) -o $@ $(InternalTest).c $(UTEST) -lm
+	$(CC) -o $@ $(InternalTest).c $(UTEST) $(TestFlags)
 
-$(IterTest): $(IterTest).c src/internal/node_stack.c hashmap.o $(UTEST)
+$(IterTest): $(IterTest).c hashmap.o src/internal/node_stack.c $(UTEST)
 	$(CC) -Isrc $(CFLAGS) $^ -o $@
 
 $(LibTest): $(LibTest).c $(SharedLib)
@@ -53,3 +55,20 @@ internal-cov: $(InternalTest).c $(TestDir)/utest.c
 	@$(InternalTest) > /dev/null
 	gcov internal hashmap
 	@$(RM) *.gcda *.gcno
+
+.PHONY: prof
+prof: bench_prof.txt test_prof.txt
+
+bench_prof.txt: $(Benchmark).c
+	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
+	@./profile.bin
+	@if [ ! -f 'gmon.out' ]; then exit 1; fi
+	gprof profile.bin gmon.out --no-time=randstring > $@
+	@rm profile.bin
+
+test_prof.txt: $(Test).c tests/utest.c
+	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
+	@./profile.bin
+	@if [ ! -f 'gmon.out' ]; then exit 1; fi
+	gprof profile.bin gmon.out > $@
+	@rm profile.bin

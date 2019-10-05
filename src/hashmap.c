@@ -1,5 +1,9 @@
-#include <stdlib.h>
 #include "hashmap.h"
+
+#define NODE_DEFINED
+#include "internal/node_stack.h"
+
+#include <stdlib.h>
 
 struct node
 {
@@ -142,22 +146,38 @@ void map_deleten(Map* m, void* key, size_t n)
     return delete_from_hash(m, prehash_len(key, n));
 }
 
-static void copy_nodes(Map*, struct node*);
+// static void copy_nodes(Map*, struct node*);
+static void add_node(Map*, struct node*, size_t);
 
 int map_resize(Map** old_m, size_t size)
 {
     Map* new_m = create_map(size);
-    new_m->item_count = (*old_m)->item_count;
 
-    struct node* tmp;
     size_t i;
+    struct node* tmp;
+    struct stack_node* stack = create_stack_node();
+
     for (i = 0; i < (*old_m)->__size; i++)
     {
         tmp = (*old_m)->__data[i];
         if (tmp != NULL)
-            copy_nodes(new_m, tmp);
+        {
+            push_tree(&stack, tmp);
+        }
     }
-    map_close(*old_m);
+
+    while (stack)
+    {
+        tmp = pop(&stack);
+        tmp->left = NULL;
+        tmp->right = NULL;
+        i = tmp->_hash_val % new_m->__size;
+        new_m->item_count++;
+        add_node(new_m, tmp, i);
+    }
+
+    new_m->item_count = (*old_m)->item_count;
+    free(*old_m);
     (*old_m) = new_m;
     return 0;
 }
@@ -193,7 +213,6 @@ void map_clear(Map* m)
 
 static struct node* _new_node(char*, mapval_t, hash_t);
 static void insert_node(struct node** root, struct node* new);
-static void add_node(Map*, struct node*, size_t);
 
 static inline void put_from_hash(Map* m, char* key, hash_t k_hash, mapval_t value)
 {
@@ -588,7 +607,8 @@ static _inline struct node* _delete_node_free_key(struct node* root, hash_t k_ha
     return _delete_node(root, k_hash, 1);
 }
 
-static void copy_nodes(Map* m, struct node* n)
+// static
+void copy_nodes(Map* m, struct node* n)
 {
     if (n->left != NULL)
         copy_nodes(m, n->left);
