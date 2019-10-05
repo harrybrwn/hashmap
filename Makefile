@@ -31,11 +31,10 @@ help:
 
 all: lib build-tests
 
-install: lib
+install: lib singleheader
 	sudo cp -f lib/libhashmap.so $(LibInstallDir)
 	sudo cp -f lib/libshashmap.a $(LibInstallDir)
-	sudo cp -f inc/hashmap.h $(HeaderInstallDir)
-	sudo cp -f inc/map_iter.h $(HeaderInstallDir)
+	sudo cp -f lib/hashmap.h $(HeaderInstallDir)
 
 uninstall:
 	sudo rm -f $(LibInstallDir)/libhashmap.so
@@ -66,7 +65,7 @@ bench: $(Benchmark)
 lib: lib-setup $(SharedLib) $(StaticLib)
 
 lib-setup:
-	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
+	@[ ! -d lib/static/internal ] && mkdir lib/static/internal lib/shared/internal -p
 
 LibBuildFlags = -Iinc -Wall -Wextra $(LibBuildMacros:%=-D%) -c
 
@@ -98,4 +97,7 @@ clean:
 	rm -f $(shell find . -name '*.so')
 	rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
 
-.PHONY: clean
+singleheader:
+	sh scripts/signleheader.sh
+
+.PHONY: clean singleheader
