@@ -33,7 +33,7 @@ $(Benchmark): $(Benchmark).c
 $(InternalTest): $(HASHMAP) $(UTEST) $(InternalTest).c tests/test.h
 	$(CC) -Isrc $(CFLAGS) -o $@ $(InternalTest).c $(UTEST) -lm
 
-$(IterTest): $(IterTest).c hashmap.o $(UTEST)
+$(IterTest): $(IterTest).c src/internal/node_stack.c hashmap.o $(UTEST)
 	$(CC) -Isrc $(CFLAGS) $^ -o $@
 
 $(LibTest): $(LibTest).c $(SharedLib)

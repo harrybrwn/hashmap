@@ -66,20 +66,20 @@ bench: $(Benchmark)
 lib: lib-setup $(SharedLib) $(StaticLib)
 
 lib-setup:
-	@if [ ! -d lib ]; then mkdir lib; fi
+	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
 
 LibBuildFlags += -Iinc -Wall -Wextra -O3 -c
 
-lib/%_static.o: lib-setup src/%.c inc/%.h
+lib/static/%.o: lib-setup lib/static/internal/node_stack.o src/%.c inc/%.h
 	$(CC) $(LibBuildFlags) $(filter %.c, $^) -o $@
 
-lib/%_shared.o: lib-setup src/%.c inc/%.h
+lib/shared/%.o: lib-setup lib/shared/internal/node_stack.o src/%.c inc/%.h
 	$(CC) $(LibBuildFlags) -fPIC $(filter %.c, $^) -o $@
 
-$(SharedLib): lib/hashmap_shared.o lib/map_iter_shared.o
-	$(CC) -shared $^ -o $@
+$(SharedLib): lib/shared/internal/node_stack.o lib/shared/hashmap.o lib/shared/map_iter.o
+	$(CC) -shared $^  -o $@
 
-$(StaticLib): lib/hashmap_static.o lib/map_iter_static.o
+$(StaticLib): lib/static/internal/node_stack.o lib/static/hashmap.o lib/static/map_iter.o
 	$(AR) rcs $@ $^
 
 clean:

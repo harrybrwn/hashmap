@@ -1,31 +1,8 @@
-#include "map_iter.h"
+#include "internal/node_stack.h"
+//
 #include "hashmap.h"
+#include "map_iter.h"
 #include <stdlib.h>
-
-struct stack_node
-{
-    struct node* node;
-    struct stack_node* next;
-    char* key;
-    mapval_t val;
-};
-
-struct node
-{
-#ifndef TRASH_KEY
-    char* key;
-#endif
-    mapval_t value;
-    unsigned char height;
-
-    struct node *right, *left;
-    hash_t _hash_val;
-};
-
-static struct stack_node* create_stack_node(void);
-static void push_tree(struct stack_node**, struct node*);
-static struct node* pop(struct stack_node**);
-static void push(struct stack_node**, struct node*);
 
 MapIterator* map_iter(Map* m)
 {
@@ -58,17 +35,18 @@ int iter_auto_done(MapIterator** it)
     return 0;
 }
 
-static void free_stack(struct stack_node*);
-
 void destroy_iter(MapIterator* it)
 {
-    if (it->root) {
+    if (it->root)
+    {
         free_stack(it->root);
         it->root = NULL;
     }
 
     free(it);
 }
+
+static void push_tree(struct stack_node**, struct node*);
 
 tuple_t iter_next(MapIterator* it)
 {
@@ -84,12 +62,13 @@ tuple_t iter_next(MapIterator* it)
     }
 
     it->counter--;
-    if (it->root == NULL) {
-        return (tuple_t){NULL, (mapval_t)0};
+    if (it->root == NULL)
+    {
+        return (tuple_t){ NULL, (mapval_t)0 };
     }
 
     struct node* n = pop(&it->root);
-    return (tuple_t){n->key, n->value};
+    return (tuple_t){ n->key, n->value };
 }
 
 char* iter_next_key(MapIterator* it)
@@ -108,44 +87,4 @@ static void push_tree(struct stack_node** stack, struct node* n)
         push_tree(stack, n->right);
     }
     push(stack, n);
-}
-
-static struct stack_node* create_stack_node(void)
-{
-    struct stack_node* s = malloc(sizeof(struct stack_node));
-    s->next = NULL;
-    s->node = NULL;
-    return s;
-}
-
-static void push(struct stack_node** stack, struct node* n)
-{
-    if ((*stack) != NULL && (*stack)->node == NULL)
-    {
-        (*stack)->node = n;
-        (*stack)->next = NULL;
-        return;
-    }
-
-    struct stack_node* new = malloc(sizeof(struct stack_node));
-    new->next = *stack;
-    new->node = n;
-    *stack = new;
-}
-
-static struct node* pop(struct stack_node** stack)
-{
-    struct stack_node* tmp = *stack;
-    *stack = (*stack)->next;
-    tmp->next = NULL;
-    struct node* value = tmp->node;
-    free(tmp);
-    return value;
-}
-
-static void free_stack(struct stack_node* stack)
-{
-    if (stack->next)
-        free_stack(stack->next);
-    free(stack);
 }
