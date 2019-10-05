@@ -155,7 +155,7 @@ int map_resize(Map** old_m, size_t size)
 
     size_t i;
     struct node* tmp;
-    struct stack_node* stack = create_stack_node();
+    struct node_stack* stack = create_node_stack();
 
     for (i = 0; i < (*old_m)->__size; i++)
     {
@@ -433,7 +433,14 @@ void map_close_free_keys(Map* m)
     free(m);
 }
 
-static struct node* _new_node(char* key, mapval_t val, hash_t key_hash)
+static struct node* _new_node(
+#ifdef TRASH_KEY
+  char* key __attribute__((unused)),
+#else
+  char* key,
+#endif
+  mapval_t val,
+  hash_t key_hash)
 {
     struct node* n = malloc(sizeof(struct node));
 #ifndef TRASH_KEY

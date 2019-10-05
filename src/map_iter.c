@@ -8,7 +8,7 @@ MapIterator* map_iter(Map* m)
 {
     MapIterator* iter = malloc(sizeof(MapIterator));
     iter->pos = 0;
-    iter->root = create_stack_node();
+    iter->root = create_node_stack();
     iter->_map = m;
     iter->counter = m->item_count;
     return iter;
@@ -45,8 +45,6 @@ void destroy_iter(MapIterator* it)
 
     free(it);
 }
-
-// static void push_tree(struct stack_node**, struct node*);
 
 tuple_t iter_next(MapIterator* it)
 {

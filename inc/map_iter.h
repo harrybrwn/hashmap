@@ -4,10 +4,11 @@
 #include "hashmap.h"
 #include <stddef.h>
 
-struct stack_node;
+struct node_stack;
 
-struct tuple {
-    char *key;
+struct tuple
+{
+    char* key;
     mapval_t value;
 };
 
@@ -15,7 +16,7 @@ typedef struct tuple tuple_t;
 
 typedef struct mapiter
 {
-    struct stack_node* root;
+    struct node_stack* root;
     size_t pos;
     long int counter;
     Map* _map;

@@ -1,15 +1,15 @@
 #include "internal/node_stack.h"
 #include <stdlib.h>
 
-struct stack_node* create_stack_node(void)
+struct node_stack* create_node_stack(void)
 {
-    struct stack_node* s = malloc(sizeof(struct stack_node));
+    struct node_stack* s = malloc(sizeof(struct node_stack));
     s->next = NULL;
     s->node = NULL;
     return s;
 }
 
-void push(struct stack_node** stack, struct node* n)
+void push(struct node_stack** stack, struct node* n)
 {
     if ((*stack) != NULL && (*stack)->node == NULL)
     {
@@ -18,15 +18,15 @@ void push(struct stack_node** stack, struct node* n)
         return;
     }
 
-    struct stack_node* new = malloc(sizeof(struct stack_node));
+    struct node_stack* new = malloc(sizeof(struct node_stack));
     new->next = *stack;
     new->node = n;
     *stack = new;
 }
 
-struct node* pop(struct stack_node** stack)
+struct node* pop(struct node_stack** stack)
 {
-    struct stack_node* tmp = *stack;
+    struct node_stack* tmp = *stack;
     *stack = (*stack)->next;
     tmp->next = NULL;
     struct node* value = tmp->node;
@@ -34,14 +34,14 @@ struct node* pop(struct stack_node** stack)
     return value;
 }
 
-void free_stack(struct stack_node* stack)
+void free_stack(struct node_stack* stack)
 {
     if (stack->next)
         free_stack(stack->next);
     free(stack);
 }
 
-void push_tree(struct stack_node** stack, struct node* n)
+void push_tree(struct node_stack** stack, struct node* n)
 {
     if (n->left != NULL)
     {

@@ -59,9 +59,9 @@ TEST(push)
     typedef struct node* node;
     node n1 = newnode(10);
     node n2 = newnode(11);
-    struct stack_node* stack = NULL;
+    struct node_stack* stack = NULL;
 
-    stack = create_stack_node();
+    stack = create_node_stack();
 
     push(&stack, n1);
     eq(stack->node, n1);
@@ -83,9 +83,9 @@ TEST(free_stack_valgrind)
     int i;
     const int len = 20;
     struct node* nodes[len];
-    struct stack_node* stack;
+    struct node_stack* stack;
 
-    stack = create_stack_node();
+    stack = create_node_stack();
     for (i = 0; i < len; i++)
     {
         nodes[i] = newnode(i);
@@ -103,7 +103,7 @@ TEST(push_tree_to_stack)
     struct node* n = newnode(10);
     n->left = newnode(5);
     n->right = newnode(15);
-    struct stack_node* stack = create_stack_node();
+    struct node_stack* stack = create_node_stack();
 
     push_tree(&stack, n);
 
@@ -182,9 +182,9 @@ TEST(auto_done_test)
 {
     Map* m = create_map(23);
     char* key = malloc(sizeof("key"));
-    int * val = malloc(sizeof(int));
+    int* val = malloc(sizeof(int));
     char* key2 = malloc(sizeof("huh"));
-    int * val2 = malloc(sizeof(int));
+    int* val2 = malloc(sizeof(int));
 
     strncpy(key, "key", 4);
     *val = 11;
@@ -219,7 +219,8 @@ TEST(destroy_iter_test)
         map_put(m, keys[i], keys[i]);
 
     MapIterator* it = map_iter(m);
-    for (i = 0; i < 25 && iter_hasnext(it); i++) {
+    for (i = 0; i < 25 && iter_hasnext(it); i++)
+    {
         tuple_t tuple = iter_next(it);
         assert(tuple.key != NULL);
         assert(tuple.value != NULL);
