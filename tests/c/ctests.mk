@@ -32,8 +32,8 @@ $(Benchmark): $(Benchmark).c
 $(LibTest): $(LibTest).c $(SharedLib)
 	$(CC) $(CFLAGS) $< -o $@ -lhashmap
 
-mem/%: tests/c/%
-	@valgrind $<
+mem-%: tests/c/%
+	@valgrind --leak-check=full $<
 
 test-cov: $(Test).c $(TestDir)/utest.c
 	$(CC) $(CFLAGS) -fprofile-arcs -ftest-coverage $^ -o $(Test) -lm
@@ -51,14 +51,14 @@ internal-cov: $(InternalTest).c $(TestDir)/utest.c
 prof: bench_prof.txt test_prof.txt
 
 bench_prof.txt: $(Benchmark).c
-	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
+	$(CC) -pg -Wall -Wextra -I. -Isrc $^ -o profile.bin
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi
 	gprof profile.bin gmon.out --no-time=randstring > $@
 	@rm profile.bin
 
 test_prof.txt: $(Test).c tests/utest.c
-	$(CC) -pg -Wall -Wextra -I. $^ -o profile.bin
+	$(CC) -pg -Wall -Wextra -I. -Isrc $^ -o profile.bin -lm
 	@./profile.bin
 	@if [ ! -f 'gmon.out' ]; then exit 1; fi
 	gprof profile.bin gmon.out > $@

@@ -183,6 +183,7 @@ int map_resize(Map** old_m, size_t size)
     }
 
     new_m->item_count = (*old_m)->item_count;
+    free((*old_m)->__data);
     free(*old_m);
     (*old_m) = new_m;
     return 0;

@@ -92,4 +92,4 @@ clean:
 	rm -f $(shell find . -name '*.so')
 	rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
 
-.PHONY: clean singleheader
+.PHONY: clean
