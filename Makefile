@@ -34,7 +34,7 @@ all: lib build-tests
 install: lib singleheader
 	sudo cp -f lib/libhashmap.so $(LibInstallDir)
 	sudo cp -f lib/libshashmap.a $(LibInstallDir)
-	sudo cp -f lib/hashmap.h $(HeaderInstallDir)
+	sudo cp -f inc/hashmap.h $(HeaderInstallDir)
 
 uninstall:
 	sudo rm -f $(LibInstallDir)/libhashmap.so
@@ -60,27 +60,25 @@ bench: $(Benchmark)
 %.o: src/%.c inc/%.h
 	$(CC) $(CFLAGS) -c $(filter %.c, $^) -o $(notdir $@)
 
-.PHONY: lib lib-setup
-lib: lib-setup $(SharedLib) $(StaticLib)
-
-lib-setup:
-	@[ ! -d lib/static ] && mkdir lib/static lib/shared -p
+.PHONY: lib
+lib: $(SharedLib) $(StaticLib)
 
 LibBuildFlags = -Iinc -Wall -Wextra $(LibBuildMacros:%=-D%) -c
 
-ifeq ($(BuildType), test)
-LibBuildFlags += -g
+ifeq ($(BuildType),test)
+LibBuildFlags+=-g
 else
-LibBuildFlags += -O3
+LibBuildFlags+=-O3
 endif
 
-lib/static/%.o: src/%.c inc/%.h
-	@if [ ! -d lib ]; then mkdir lib/static lib/shared -p; fi
+lib/static/%.o: src/%.c inc/%.h lib/static
 	$(CC) $(LibBuildFlags) $(filter %.c, $^) -o $@
 
-lib/shared/%.o: src/%.c inc/%.h
-	@if [ ! -d lib ]; then mkdir lib/static lib/shared -p; fi
+lib/shared/%.o: src/%.c inc/%.h lib/shared
 	$(CC) $(LibBuildFlags) -fPIC $(filter %.c, $^) -o $@
+
+lib/static lib/shared:
+	[ ! -d lib ] && mkdir lib/static lib/shared -p
 
 $(SharedLib): lib/shared/hashmap.o
 	$(CC) -shared $^ -o $@
@@ -93,8 +91,5 @@ clean:
 	rm -f $(shell find . -name '*.o')
 	rm -f $(shell find . -name '*.so')
 	rm -rf lib extentions/py/build tests/python/temp.* tests/cpp/test
-
-singleheader:
-	sh scripts/signleheader.sh
 
 .PHONY: clean singleheader

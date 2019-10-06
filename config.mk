@@ -6,4 +6,4 @@ HeaderInstallDir=/usr/include
 
 # this should ether be test or dist
 # This varable effects what flags are used to build the final libraries.
-BuildType = test # test or dist
+BuildType=test # test or dist
