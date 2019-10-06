@@ -8,8 +8,6 @@ hashmap = Extension(
 	library_dirs=['lib'],
 	sources=[
 		'src/hashmap.c',
-		'src/internal/node_stack.c',
-		'src/map_iter.c',
 		'extentions/py/py_hashmap.c'
 	],
 )

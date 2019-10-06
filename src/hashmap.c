@@ -1,10 +1,36 @@
 #include "hashmap.h"
-
-#define NODE_DEFINED
-#include "internal/node.h"
-#include "internal/node_stack.h"
-
 #include <stdlib.h>
+
+struct node
+{
+#ifndef TRASH_KEY
+    char* key;
+#endif
+    mapval_t value;
+
+    /**
+     * Using unsigned char to save space
+     *
+     * The height of a tree is log2(n), and the max height of
+     * this implementation is 255, which means that the maximum number
+     * of nodes in each tree is 2^255 or about 5.79e76, more than
+     * enough wiggle room seeing as though that is almost as many
+     * atoms in the observable universe, I think one byte will be enough.
+     */
+
+    unsigned char height;
+
+    struct node *right, *left;
+    hash_t _hash_val;
+};
+
+struct node_stack
+{
+    struct node* node;
+    struct node_stack* next;
+    char* key;
+    mapval_t val;
+};
 
 /**
  * fnv hashing specification found at http://isthe.com/chongo/tech/comp/fnv/
@@ -124,8 +150,10 @@ void map_deleten(Map* m, void* key, size_t n)
     return delete_from_hash(m, prehash_len(key, n));
 }
 
-// static void copy_nodes(Map*, struct node*);
 static void add_node(Map*, struct node*, size_t);
+struct node_stack* create_node_stack(void);
+struct node* pop(struct node_stack**);
+static void push_tree(struct node_stack**, struct node*);
 
 int map_resize(Map** old_m, size_t size)
 {
@@ -251,6 +279,82 @@ static inline void delete_from_hash(Map* m, hash_t k_hash)
 
     m->__data[index] = _delete_node(root, k_hash, 0);
     m->item_count--;
+}
+
+void free_stack(struct node_stack*);
+
+MapIterator* map_iter(Map* m)
+{
+    MapIterator* iter = malloc(sizeof(MapIterator));
+    iter->pos = 0;
+    iter->root = create_node_stack();
+    iter->_map = m;
+    iter->counter = m->item_count;
+    return iter;
+}
+
+int iter_done(MapIterator* it)
+{
+    return it->counter <= 0 && it->root == NULL;
+}
+
+int iter_hasnext(MapIterator* it)
+{
+    return it->counter > 0 || it->root != NULL;
+}
+
+int iter_auto_done(MapIterator** it)
+{
+    if ((*it)->counter <= 0 && (*it)->root == NULL)
+    {
+        free(*it);
+        *it = NULL;
+        return 1;
+    }
+    return 0;
+}
+
+void destroy_iter(MapIterator* it)
+{
+    if (it->root)
+    {
+        free_stack(it->root);
+        it->root = NULL;
+    }
+
+    free(it);
+}
+
+tuple_t iter_next(MapIterator* it)
+{
+    while (it->pos < it->_map->__size)
+    {
+        if (it->_map->__data[it->pos] == NULL)
+            it->pos++;
+        else
+        {
+            push_tree(&it->root, it->_map->__data[it->pos++]);
+            break;
+        }
+    }
+
+    it->counter--;
+    if (it->root == NULL)
+    {
+        return (tuple_t){ NULL, (mapval_t)0 };
+    }
+
+    struct node* n = pop(&it->root);
+#ifndef TRASH_KEY
+    return (tuple_t){ n->key, n->value };
+#else
+    return (tuple_t){ "", n->value };
+#endif
+}
+
+char* iter_next_key(MapIterator* it)
+{
+    return iter_next(it).key;
 }
 
 static struct node* search(struct node* root, hash_t key_hash)
@@ -625,4 +729,57 @@ static int node_keys(struct node* n, char** keys, int pos)
     if (n->right != NULL)
         pos = node_keys(n->right, keys, pos);
     return pos;
+}
+
+struct node_stack* create_node_stack(void)
+{
+    struct node_stack* s = malloc(sizeof(struct node_stack));
+    s->next = NULL;
+    s->node = NULL;
+    return s;
+}
+
+void push(struct node_stack** stack, struct node* n)
+{
+    if ((*stack) != NULL && (*stack)->node == NULL)
+    {
+        (*stack)->node = n;
+        (*stack)->next = NULL;
+        return;
+    }
+
+    struct node_stack* new = malloc(sizeof(struct node_stack));
+    new->next = *stack;
+    new->node = n;
+    *stack = new;
+}
+
+struct node* pop(struct node_stack** stack)
+{
+    struct node_stack* tmp = *stack;
+    *stack = (*stack)->next;
+    tmp->next = NULL;
+    struct node* value = tmp->node;
+    free(tmp);
+    return value;
+}
+
+void free_stack(struct node_stack* stack)
+{
+    if (stack->next)
+        free_stack(stack->next);
+    free(stack);
+}
+
+static void push_tree(struct node_stack** stack, struct node* n)
+{
+    if (n->left != NULL)
+    {
+        push_tree(stack, n->left);
+    }
+    if (n->right != NULL)
+    {
+        push_tree(stack, n->right);
+    }
+    push(stack, n);
 }

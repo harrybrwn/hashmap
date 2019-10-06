@@ -4,7 +4,6 @@
  */
 
 #include <hashmap.h>
-#include <map_iter.h>
 
 #include <stdio.h>
 #include <stdlib.h>

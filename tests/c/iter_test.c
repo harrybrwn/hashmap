@@ -1,8 +1,7 @@
 #define AUTOTEST
 #include "tests/utest.h"
 
-#include "hashmap.h"
-#include "map_iter.c"
+#include "hashmap.c"
 
 struct node* newnode(hash_t h)
 {

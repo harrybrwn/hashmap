@@ -23,6 +23,22 @@ typedef struct hashmap
     size_t item_count;
 } Map;
 
+typedef struct tuple
+{
+    char* key;
+    mapval_t value;
+} tuple_t;
+
+struct node_stack;
+
+typedef struct mapiter
+{
+    struct node_stack* root;
+    size_t pos;
+    long int counter;
+    Map* _map;
+} MapIterator;
+
 /**
  * The key struct is used for when you need to use a key that is not a string.
  */
@@ -123,6 +139,19 @@ void map_close_free_keys(Map*);
 void map_delete_free_key(Map*, char*);
 
 void map_clear_free_keys(Map*);
+
+/* create iterator */
+MapIterator* map_iter(Map*);
+
+void destroy_iter(MapIterator*);
+
+int iter_done(MapIterator*);
+
+int iter_hasnext(MapIterator*);
+
+tuple_t iter_next(MapIterator*);
+
+char* iter_next_key(MapIterator*);
 
 #ifdef __cplusplus
 }

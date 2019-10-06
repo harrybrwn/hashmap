@@ -1,4 +1,4 @@
-CPPFLAGS=-Wall -Wextra -Werror -Llib -I. -g
+CPPFLAGS=-Wall -Wextra -Werror -Llib -I. -Iinc -g
 CPP_FILE=$(ExtDir)/cpp/HashMap
 CPP_SRC=$(CPP_FILE).cpp $(CPP_FILE).hpp
 
