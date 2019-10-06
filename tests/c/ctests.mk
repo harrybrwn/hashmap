@@ -23,20 +23,11 @@ clean-ctests:
 
 TestFlags=-I. -Isrc -Iinc -Wall -Wextra -Llib -g -lm -lshashmap
 
-$(Test): $(HASHMAP) $(Test).c tests/test.h $(UTEST) tests/c/map_test.c
-	$(CC) -o $@ $(Test).c $(UTEST) $(TestFlags)
-
-$(Example): $(StaticLib) $(Example).c
-	$(CC) -o $@ $(CFLAGS) $@.c -lshashmap
+tests/c/%: tests/c/%.c $(UTEST) $(HASHMAP) $(StaticLib)
+	$(CC) -o $@ $(UTEST) $< $(TestFlags)
 
 $(Benchmark): $(Benchmark).c
 	$(CC) -DTRASH_KEY -o $@ -O3 $^ $(TestFlags)
-
-$(InternalTest): $(HASHMAP) $(UTEST) $(InternalTest).c tests/test.h
-	$(CC) -o $@ $(InternalTest).c $(UTEST) $(TestFlags)
-
-$(IterTest): $(IterTest).c hashmap.o src/internal/node_stack.c $(UTEST)
-	$(CC) -Isrc $(CFLAGS) $^ -o $@
 
 $(LibTest): $(LibTest).c $(SharedLib)
 	$(CC) $(CFLAGS) $< -o $@ -lhashmap

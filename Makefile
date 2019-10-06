@@ -43,7 +43,6 @@ uninstall:
 	sudo rm -f $(HeaderInstallDir)/map_iter.h
 
 HASHMAP=src/hashmap.c
-MAPITER=src/map_iter.c
 
 include $(CTestDir)/ctests.mk
 include $(CppTestDir)/cpptests.mk
@@ -65,7 +64,7 @@ bench: $(Benchmark)
 lib: lib-setup $(SharedLib) $(StaticLib)
 
 lib-setup:
-	@[ ! -d lib/static/internal ] && mkdir lib/static/internal lib/shared/internal -p
+	@[ ! -d lib/static ] && mkdir lib/static lib/shared -p
 
 LibBuildFlags = -Iinc -Wall -Wextra $(LibBuildMacros:%=-D%) -c
 
@@ -76,19 +75,17 @@ LibBuildFlags += -O3
 endif
 
 lib/static/%.o: src/%.c inc/%.h
-	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
+	@if [ ! -d lib ]; then mkdir lib/static lib/shared -p; fi
 	$(CC) $(LibBuildFlags) $(filter %.c, $^) -o $@
 
 lib/shared/%.o: src/%.c inc/%.h
-	@if [ ! -d lib ]; then mkdir lib/static/internal lib/shared/internal -p; fi
+	@if [ ! -d lib ]; then mkdir lib/static lib/shared -p; fi
 	$(CC) $(LibBuildFlags) -fPIC $(filter %.c, $^) -o $@
 
-$(SharedLib): lib/shared/internal/node_stack.o lib/shared/hashmap.o lib/shared/map_iter.o
-	@echo shared lib
+$(SharedLib): lib/shared/hashmap.o
 	$(CC) -shared $^ -o $@
 
-$(StaticLib): lib/static/internal/node_stack.o lib/static/hashmap.o lib/static/map_iter.o
-	@echo static lib
+$(StaticLib): lib/static/hashmap.o
 	$(AR) rcs $@ $^
 
 clean:
