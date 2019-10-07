@@ -107,12 +107,12 @@ TEST(push_tree_to_stack)
     push_tree(&stack, n);
 
     struct node* p = pop(&stack);
-    eq(p, n);
-    eq(p->_hash_val, n->_hash_val);
-
-    p = pop(&stack);
     eq(p, n->right);
     eq(p->_hash_val, n->right->_hash_val);
+
+    p = pop(&stack);
+    eq(p, n);
+    eq(p->_hash_val, n->_hash_val);
 
     p = pop(&stack);
     eq(p, n->left);

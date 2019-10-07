@@ -752,13 +752,32 @@ static void free_stack(struct node_stack* stack)
 
 static void push_tree(struct node_stack** stack, struct node* n)
 {
-    if (n->left != NULL)
+    struct node *pred, *curr = n;
+
+    while (curr)
     {
-        push_tree(stack, n->left);
+        if (!curr->left)
+        {
+            push(stack, curr);
+            curr = curr->right;
+        }
+        else
+        {
+            pred = curr->left;
+            while (pred->right && pred->right != curr)
+                pred = pred->right;
+
+            if (!pred->right)
+            {
+                pred->right = curr;
+                curr = curr->left;
+            }
+            else
+            {
+                push(stack, curr);
+                pred->right = NULL;
+                curr = curr->right;
+            }
+        }
     }
-    if (n->right != NULL)
-    {
-        push_tree(stack, n->right);
-    }
-    push(stack, n);
 }
