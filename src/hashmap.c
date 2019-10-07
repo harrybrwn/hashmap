@@ -750,7 +750,37 @@ static void free_stack(struct node_stack* stack)
     free(stack);
 }
 
+static inline void recursiveTraversal(struct node_stack** stack, struct node* n);
+static inline void morrisTraversal(struct node_stack** stack, struct node* n);
+
 static void push_tree(struct node_stack** stack, struct node* n)
+{
+    /**
+     * I dont really know if I should be using a recursive traversal
+     * or the Morris style traversal because my Map is very memory heavy.
+     *
+     * The memory saved by the morris style traversal probably doesnt compare
+     * to the amount of memory used my my hash-collision resolution.
+     *
+     * I have decided to use the recursive version for now because it is
+     * generally faster.
+     */
+    recursiveTraversal(stack, n);
+}
+
+static inline void recursiveTraversal(struct node_stack** stack, struct node* n)
+{
+    if (n->left)
+        recursiveTraversal(stack, n->left);
+
+    push(stack, n);
+
+    if (n->right)
+        recursiveTraversal(stack, n->right);
+}
+
+__attribute__((unused)) static inline void morrisTraversal(struct node_stack** stack,
+                                                           struct node* n)
 {
     struct node *pred, *curr = n;
 
