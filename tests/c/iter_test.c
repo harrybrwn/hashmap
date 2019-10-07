@@ -118,6 +118,9 @@ TEST(push_tree_to_stack)
     eq(p, n->left);
     eq(p->_hash_val, n->left->_hash_val);
 
+    assert(n->left->right == NULL);
+    assert(n->right->right == NULL);
+
     free(n->left);
     free(n->right);
     free(n);
