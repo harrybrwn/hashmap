@@ -745,9 +745,13 @@ static struct node* pop(struct node_stack** stack)
 
 static void free_stack(struct node_stack* stack)
 {
-    if (stack->next)
-        free_stack(stack->next);
-    free(stack);
+    struct node_stack* tmp;
+    while (stack)
+    {
+        tmp = stack;
+        stack = stack->next;
+        free(tmp);
+    }
 }
 
 static inline void recursiveTraversal(struct node_stack** stack, struct node* n);
