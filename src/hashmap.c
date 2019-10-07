@@ -353,11 +353,6 @@ tuple_t iter_next(MapIterator* it)
 #endif
 }
 
-char* iter_next_key(MapIterator* it)
-{
-    return iter_next(it).key;
-}
-
 static struct node* search(struct node* root, hash_t key_hash)
 {
     while (root)

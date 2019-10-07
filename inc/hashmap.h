@@ -140,18 +140,35 @@ void map_delete_free_key(Map*, char*);
 
 void map_clear_free_keys(Map*);
 
-/* create iterator */
+/* create a map iterator */
 MapIterator* map_iter(Map*);
 
+/**
+ * Free the recources allocated by the map_iter.
+ *
+ * If the iterator is empty then you only need to call free on
+ * the iterator returned by map_iter, but destroy_iter can be
+ * called in ether case.
+ */
 void destroy_iter(MapIterator*);
 
+/**
+ * returns 1 if the iterator is empty and 0 if there are
+ * still values in the iterator.
+ */
 int iter_done(MapIterator*);
 
+/**
+ * returns 1 if the iterator still has items lined up
+ */
 int iter_hasnext(MapIterator*);
 
+/**
+ * get the next key-value pair in the iterator (tuple_t).
+ * if the iterator is finished, then it will keep returning a tuple with
+ * a null key and a null value.
+ */
 tuple_t iter_next(MapIterator*);
-
-char* iter_next_key(MapIterator*);
 
 #ifdef __cplusplus
 }

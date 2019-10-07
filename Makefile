@@ -31,7 +31,7 @@ help:
 
 all: lib build-tests
 
-install: lib singleheader
+install: lib
 	sudo cp -f lib/libhashmap.so $(LibInstallDir)
 	sudo cp -f lib/libshashmap.a $(LibInstallDir)
 	sudo cp -f inc/hashmap.h $(HeaderInstallDir)
