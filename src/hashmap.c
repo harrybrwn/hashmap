@@ -151,8 +151,8 @@ void map_deleten(Map* m, void* key, size_t n)
 }
 
 static void add_node(Map*, struct node*, size_t);
-struct node_stack* create_node_stack(void);
-struct node* pop(struct node_stack**);
+static struct node_stack* create_node_stack(void);
+static struct node* pop(struct node_stack**);
 static void push_tree(struct node_stack**, struct node*);
 
 int map_resize(Map** old_m, size_t size)
@@ -282,7 +282,7 @@ static inline void delete_from_hash(Map* m, hash_t k_hash)
     m->item_count--;
 }
 
-void free_stack(struct node_stack*);
+static void free_stack(struct node_stack*);
 
 MapIterator* map_iter(Map* m)
 {
@@ -697,23 +697,6 @@ static _inline struct node* _delete_node_free_key(struct node* root, hash_t k_ha
     return _delete_node(root, k_hash, 1);
 }
 
-// static
-void copy_nodes(Map* m, struct node* n)
-{
-    if (n->left != NULL)
-        copy_nodes(m, n->left);
-
-    if (n->right != NULL)
-        copy_nodes(m, n->right);
-
-    size_t index = n->_hash_val % m->__size;
-#ifndef TRASH_KEY
-    add_node(m, _new_node(n->key, n->value, n->_hash_val), index);
-#else
-    add_node(m, _new_node("", n->value, n->_hash_val), index);
-#endif
-}
-
 static int node_keys(struct node* n, char** keys, int pos)
 {
     if (n == NULL)
@@ -732,7 +715,7 @@ static int node_keys(struct node* n, char** keys, int pos)
     return pos;
 }
 
-struct node_stack* create_node_stack(void)
+static struct node_stack* create_node_stack(void)
 {
     struct node_stack* s = malloc(sizeof(struct node_stack));
     s->next = NULL;
@@ -740,7 +723,7 @@ struct node_stack* create_node_stack(void)
     return s;
 }
 
-void push(struct node_stack** stack, struct node* n)
+static void push(struct node_stack** stack, struct node* n)
 {
     if ((*stack) != NULL && (*stack)->node == NULL)
     {
@@ -755,7 +738,7 @@ void push(struct node_stack** stack, struct node* n)
     *stack = new;
 }
 
-struct node* pop(struct node_stack** stack)
+static struct node* pop(struct node_stack** stack)
 {
     struct node_stack* tmp = *stack;
     *stack = (*stack)->next;
@@ -765,7 +748,7 @@ struct node* pop(struct node_stack** stack)
     return value;
 }
 
-void free_stack(struct node_stack* stack)
+static void free_stack(struct node_stack* stack)
 {
     if (stack->next)
         free_stack(stack->next);
